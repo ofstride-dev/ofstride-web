@@ -1,0 +1,156 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #334155;
+    background: #ffffff;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #F8FAFC;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+  }
+
+  /* Animation utilities */
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .animate-fade-up {
+    animation: fadeUp 0.6s ease-out forwards;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  /* Gradient text - using logo navy */
+  .gradient-text {
+    background: linear-gradient(135deg, #001150 0%, #2563EB 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Card hover effects */
+  .card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -12px rgba(0, 17, 80, 0.12);
+  }
+
+  /* Button animations */
+  .btn-primary {
+    transition: all 0.3s ease;
+  }
+  .btn-primary:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.4);
+  }
+
+  .btn-secondary {
+    transition: all 0.3s ease;
+  }
+  .btn-secondary:hover {
+    background: #F8FAFC;
+    transform: scale(1.02);
+  }
+
+  /* Link underline animation */
+  .link-underline {
+    position: relative;
+  }
+  .link-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #2563EB;
+    transition: width 0.3s ease;
+  }
+  .link-underline:hover::after {
+    width: 100%;
+  }
+
+  /* AI Badge pulse */
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+  .ai-badge {
+    animation: pulse-soft 3s ease-in-out infinite;
+  }
+
+  /* Section reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Hero background pattern - logo navy tint */
+  .hero-pattern {
+    background-image: 
+      radial-gradient(circle at 20% 50%, rgba(0, 35, 160, 0.06) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.04) 0%, transparent 50%);
+  }
+
+  /* Service page hero gradient */
+  .service-hero {
+    background: linear-gradient(135deg, #F8FAFC 0%, #ffffff 50%, #EFF6FF 100%);
+  }
+
+  /* Logo in header */
+  .logo-header {
+    height: 32px;
+    width: auto;
+  }
+
+  /* Logo in footer - invert for dark bg */
+  .logo-footer {
+    height: 36px;
+    width: auto;
+    filter: brightness(0) invert(1);
+  }
+}
