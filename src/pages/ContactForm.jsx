@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Send, CheckCircle2, User, Mail, Phone, Briefcase, MessageSquare, ArrowRight, MapPin, Globe, Calendar } from 'lucide-react'
 
 function ContactForm() {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -44,30 +46,58 @@ function ContactForm() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
+    setSubmitError('')
 
-    // TODO: Replace with your actual endpoint
-    // Option 1: Web3Forms (free) — https://web3forms.com/
-    //   const response = await fetch('https://api.web3forms.com/submit', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({
-    //       access_key: 'YOUR_WEB3FORMS_KEY',
-    //       ...formData,
-    //       subject: `New Contact Form - ${formData.name}`,
-    //       from_name: 'Ofstride Website'
-    //     })
-    //   })
+    const endpoint = import.meta.env.VITE_CONTACT_WEBHOOK_URL || import.meta.env.VITE_ZAPIER_WEBHOOK_URL
+    const accessKey = import.meta.env.VITE_WEB3FORMS_KEY
+    const payload = {
+      type: 'contact_request',
+      source: 'ofstride-website',
+      ...formData,
+    }
 
-    // Option 2: Formspree (free tier)
-    //   const response = await fetch('https://formspree.io/f/YOUR_FORM_ID', { ... })
+    try {
+      if (accessKey) {
+        const response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            access_key: accessKey,
+            subject: `Contact Request - ${formData.name}`,
+            from_name: 'Ofstride Website',
+            replyto: formData.email,
+            ...payload,
+          }),
+        })
 
-    // Option 3: Your own backend API
-    //   const response = await fetch('/api/contact', { ... })
+        const result = await response.json().catch(() => ({}))
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || 'Web3Forms submission failed')
+        }
+      } else if (endpoint) {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
 
-    // Simulating API call for now
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    setLoading(false)
-    setSubmitted(true)
+        if (!response.ok) {
+          throw new Error('Webhook submission failed')
+        }
+      } else {
+        throw new Error('No submission endpoint configured')
+      }
+
+      setSubmitted(true)
+    } catch (error) {
+      setSubmitError('We could not submit your request automatically. Please email support@ofstrideservices.com directly and we will follow up shortly.')
+      setSubmitted(true)
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (submitted) {
@@ -81,18 +111,21 @@ function ContactForm() {
               Thank you, <span className="font-semibold">{formData.name}</span>.
             </p>
             <p className="text-text mb-6">
-              We have received your message and will get back to you within 24 hours.
+              Your message has been received. Our team will review it and follow up within 24 hours.
             </p>
+            {submitError && (
+              <p className="text-sm text-amber-600 mb-4">{submitError}</p>
+            )}
             <div className="bg-surface rounded-xl p-4 text-left mb-6">
               <p className="text-sm text-muted mb-1">Ticket Reference</p>
               <p className="text-lg font-mono font-bold text-primary">OFS-{Date.now().toString(36).toUpperCase().slice(-6)}</p>
             </div>
             <p className="text-sm text-muted mb-6">
-              A copy has been sent to {formData.email}
+              We have recorded your request and will be in touch using the contact details you provided.
             </p>
-            <a href="/" className="inline-flex items-center gap-2 text-secondary font-semibold hover:gap-3 transition-all">
+            <Link to="/" className="inline-flex items-center gap-2 text-secondary font-semibold hover:gap-3 transition-all">
               Back to Home <ArrowRight className="w-4 h-4" />
-            </a>
+            </Link>
           </div>
         </div>
       </div>

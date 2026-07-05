@@ -1,9 +1,12 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Calendar, Clock, User, Mail, Phone, Briefcase, MessageSquare, CheckCircle2, ArrowRight } from 'lucide-react'
 
 function BookCall() {
   const [step, setStep] = useState(1)
   const [submitted, setSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -39,11 +42,61 @@ function BookCall() {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    setSubmitted(true)
-    // TODO: Connect to your backend, email service, or Cal.com API
-    // Example: fetch('/api/book-call', { method: 'POST', body: JSON.stringify(formData) })
+    setIsSubmitting(true)
+    setSubmitError('')
+
+    const endpoint = import.meta.env.VITE_BOOK_CALL_WEBHOOK_URL || import.meta.env.VITE_ZAPIER_WEBHOOK_URL
+    const accessKey = import.meta.env.VITE_WEB3FORMS_KEY
+    const payload = {
+      type: 'booking_request',
+      source: 'ofstride-website',
+      ...formData,
+    }
+
+    try {
+      if (accessKey) {
+        const response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            access_key: accessKey,
+            subject: `Consultation Request - ${formData.name}`,
+            from_name: 'Ofstride Website',
+            replyto: formData.email,
+            ...payload,
+          }),
+        })
+
+        const result = await response.json().catch(() => ({}))
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || 'Web3Forms submission failed')
+        }
+      } else if (endpoint) {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+
+        if (!response.ok) {
+          throw new Error('Webhook submission failed')
+        }
+      } else {
+        throw new Error('No submission endpoint configured')
+      }
+
+      setSubmitted(true)
+    } catch (error) {
+      setSubmitError('We could not submit your request automatically. Please email support@ofstrideservices.com directly and we will follow up shortly.')
+      setSubmitted(true)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const nextStep = () => setStep(step + 1)
@@ -63,15 +116,18 @@ function BookCall() {
               We have received your request for <span className="font-semibold">{formData.date}</span> at <span className="font-semibold">{formData.time}</span>.
             </p>
             <p className="text-sm text-muted mb-6">
-              A confirmation email has been sent to {formData.email}. Our team will send a calendar invite and video link shortly.
+              Your consultation request has been received. Our team will review it and follow up shortly.
             </p>
+            {submitError && (
+              <p className="text-sm text-amber-600 mb-4">{submitError}</p>
+            )}
             <div className="bg-surface rounded-xl p-4 text-left mb-6">
               <p className="text-sm text-muted mb-1">Booking Reference</p>
               <p className="text-lg font-mono font-bold text-primary">OFS-{Date.now().toString(36).toUpperCase().slice(-6)}</p>
             </div>
-            <a href="/" className="inline-flex items-center gap-2 text-secondary font-semibold hover:gap-3 transition-all">
+            <Link to="/" className="inline-flex items-center gap-2 text-secondary font-semibold hover:gap-3 transition-all">
               Back to Home <ArrowRight className="w-4 h-4" />
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -318,15 +374,25 @@ function BookCall() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 inline-flex items-center justify-center gap-2 bg-primary text-white px-6 py-4 rounded-xl font-semibold btn-primary"
+                  disabled={isSubmitting}
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-primary text-white px-6 py-4 rounded-xl font-semibold btn-primary disabled:opacity-70"
                 >
-                  <Calendar className="w-4 h-4" />
-                  Confirm Booking
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Calendar className="w-4 h-4" />
+                      Confirm Booking
+                    </>
+                  )}
                 </button>
               </div>
 
               <p className="text-xs text-muted text-center">
-                By booking, you agree to receive a confirmation email and calendar invite. 
+                By booking, you agree to receive a follow-up from our team regarding your consultation request.
                 You can reschedule up to 2 hours before the call.
               </p>
             </div>
