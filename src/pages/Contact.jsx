@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 import { MapPin, Phone, Mail, Globe, Calendar, ExternalLink } from 'lucide-react'
 
 function Contact() {
@@ -35,6 +34,8 @@ function Contact() {
               <div className="space-y-6">
                 {/* Book a Call */}
                 <Link to="/book-call"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-start gap-4 bg-surface rounded-2xl p-6 card-hover group"
                 >
                   <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
@@ -49,13 +50,15 @@ function Contact() {
                       Schedule a 30-minute consultation at a time that works for you.
                     </p>
                     <span className="inline-flex items-center gap-1 text-secondary text-sm font-medium">
-                      ofstride.services/book-call
+                      cal.id/aintric <ExternalLink className="w-3 h-3" />
                     </span>
                   </div>
                 </Link>
 
                 {/* Contact Form */}
                 <Link to="/contact-form"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-start gap-4 bg-surface rounded-2xl p-6 card-hover group"
                 >
                   <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
@@ -67,7 +70,7 @@ function Contact() {
                       Fill out our contact form and we will get back to you promptly.
                     </p>
                     <span className="inline-flex items-center gap-1 text-secondary text-sm font-medium">
-                      ofstride.services/contact-form
+                      aintric.com/contact <ExternalLink className="w-3 h-3" />
                     </span>
                   </div>
                 </Link>

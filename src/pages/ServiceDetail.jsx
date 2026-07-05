@@ -350,6 +350,8 @@ function ServiceDetail() {
                 Ready to see how this works for your business? Start with a free consultation.
               </p>
               <Link to="/book-call"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-secondary text-white px-6 py-3 rounded-xl font-semibold btn-primary"
               >
                 <Calendar className="w-4 h-4" />

@@ -96,7 +96,9 @@ function Home() {
   const clients = [
     'Cherry Pick Fine Furniture',
     'Fitness For Life',
+    'NT Pharma LLP',
     'Apple Industries',
+    'Vault by Virat Kohli',
     'Navshali Innovations',
     'Bokaro Steel City College',
   ]
@@ -134,9 +136,9 @@ function Home() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="min-h-screen flex items-center hero-pattern pt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <section className="min-h-screen flex items-start hero-pattern pt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
             <div className="animate-fade-up">
               <div className="inline-flex items-center gap-2 bg-blue-50 text-secondary px-4 py-2 rounded-full text-sm font-medium mb-6">
                 <span className="w-2 h-2 bg-accent rounded-full ai-badge"></span>
@@ -155,6 +157,8 @@ function Home() {
 
               <div className="flex flex-wrap gap-4">
                 <Link to="/book-call"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="btn-primary inline-flex items-center gap-2 bg-primary text-white px-7 py-3.5 rounded-xl font-semibold"
                 >
                   <Calendar className="w-4 h-4" />
@@ -187,8 +191,8 @@ function Home() {
                 <svg viewBox="0 0 400 400" className="w-full h-full">
                   <defs>
                     <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" style={{ stopColor: '#0023a0', stopOpacity: 0.15 }} />
-                      <stop offset="100%" style={{ stopColor: '#10B981', stopOpacity: 0.08 }} />
+                      <stop offset="0%" style={{stopColor:'#0023a0', stopOpacity:0.15}} />
+                      <stop offset="100%" style={{stopColor:'#10B981', stopOpacity:0.08}} />
                     </linearGradient>
                   </defs>
 

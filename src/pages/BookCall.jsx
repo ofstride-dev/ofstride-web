@@ -1,13 +1,9 @@
 import { useState } from 'react'
 import { Calendar, Clock, User, Mail, Phone, Briefcase, MessageSquare, CheckCircle2, ArrowRight } from 'lucide-react'
-import { submitBookingRequest } from '../services/notifications.js'
 
 function BookCall() {
   const [step, setStep] = useState(1)
   const [submitted, setSubmitted] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submissionError, setSubmissionError] = useState('')
-  const [bookingReference, setBookingReference] = useState('')
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -43,23 +39,11 @@ function BookCall() {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
-    setIsSubmitting(true)
-    setSubmissionError('')
-
-    const reference = `OFS-${Date.now().toString(36).toUpperCase().slice(-6)}`
-    setBookingReference(reference)
-
-    try {
-      await submitBookingRequest(formData, reference)
-      setSubmitted(true)
-    } catch (error) {
-      console.error('Booking submission failed', error)
-      setSubmissionError('We were unable to send the booking notification automatically. Please email support@ofstrideservices.com directly so we can confirm your consultation.')
-    } finally {
-      setIsSubmitting(false)
-    }
+    setSubmitted(true)
+    // TODO: Connect to your backend, email service, or Cal.com API
+    // Example: fetch('/api/book-call', { method: 'POST', body: JSON.stringify(formData) })
   }
 
   const nextStep = () => setStep(step + 1)
@@ -79,11 +63,11 @@ function BookCall() {
               We have received your request for <span className="font-semibold">{formData.date}</span> at <span className="font-semibold">{formData.time}</span>.
             </p>
             <p className="text-sm text-muted mb-6">
-              A confirmation request is being processed for {formData.email}. Our team will send a calendar invite and meeting link shortly.
+              A confirmation email has been sent to {formData.email}. Our team will send a calendar invite and video link shortly.
             </p>
             <div className="bg-surface rounded-xl p-4 text-left mb-6">
               <p className="text-sm text-muted mb-1">Booking Reference</p>
-              <p className="text-lg font-mono font-bold text-primary">{bookingReference}</p>
+              <p className="text-lg font-mono font-bold text-primary">OFS-{Date.now().toString(36).toUpperCase().slice(-6)}</p>
             </div>
             <a href="/" className="inline-flex items-center gap-2 text-secondary font-semibold hover:gap-3 transition-all">
               Back to Home <ArrowRight className="w-4 h-4" />
@@ -334,31 +318,17 @@ function BookCall() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="flex-1 inline-flex items-center justify-center gap-2 bg-primary text-white px-6 py-4 rounded-xl font-semibold btn-primary disabled:opacity-70"
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-primary text-white px-6 py-4 rounded-xl font-semibold btn-primary"
                 >
-                  {isSubmitting ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Calendar className="w-4 h-4" />
-                      Confirm Booking
-                    </>
-                  )}
+                  <Calendar className="w-4 h-4" />
+                  Confirm Booking
                 </button>
               </div>
 
-              {submissionError ? (
-                <p className="text-sm text-red-600 text-center">{submissionError}</p>
-              ) : (
-                <p className="text-xs text-muted text-center">
-                  By booking, you agree to receive a confirmation email and calendar invite. 
-                  You can reschedule up to 2 hours before the call.
-                </p>
-              )}
+              <p className="text-xs text-muted text-center">
+                By booking, you agree to receive a confirmation email and calendar invite. 
+                You can reschedule up to 2 hours before the call.
+              </p>
             </div>
           )}
         </form>
