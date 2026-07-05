@@ -96,9 +96,7 @@ function Home() {
   const clients = [
     'Cherry Pick Fine Furniture',
     'Fitness For Life',
-    'NT Pharma LLP',
     'Apple Industries',
-    'Vault by Virat Kohli',
     'Navshali Innovations',
     'Bokaro Steel City College',
   ]
@@ -245,7 +243,7 @@ function Home() {
           </p>
           <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-3">
             {clients.map((client) => (
-              <span key={client} className="text-slate-400 font-medium text-sm whitespace-nowrap">
+              <span key={client} className="text-slate-600 font-semibold text-sm whitespace-nowrap">
                 {client}
               </span>
             ))}
