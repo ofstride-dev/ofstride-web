@@ -28,28 +28,12 @@ function About() {
       color: 'bg-amber-50'
     },
     {
-      name: 'Senthil Kumar Varadarajan',
-      role: 'Senior Consultant — IT & Innovation',
-      icon: Briefcase,
-      desc: 'With over 25 years of cross-industry experience, specialising in digital transformation, managed IT services, analytics, enterprise technology, and innovation consulting.',
-      credentials: '25+ Years Cross-Industry | Aviation, Healthcare, Manufacturing, Logistics, Retail',
-      color: 'bg-purple-50'
-    },
-    {
       name: 'Girindra Kumar Pathak',
       role: 'Senior Consultant — Legal Services',
       icon: Scale,
       desc: 'A former Indian Air Force veteran and practicing advocate with more than 15 years of legal experience. Specialises in labour law, industrial disputes, civil litigation, arbitration, family law, and corporate legal advisory.',
       credentials: 'Ex-IAF | 15+ Years Legal Practice | Labour & Corporate Law Expert',
       color: 'bg-red-50'
-    },
-    {
-      name: 'Sunder Prakash Burkoti',
-      role: 'Senior Consultant — Finance & Taxation',
-      icon: BookOpen,
-      desc: 'A Practicing Cost & Management Accountant (CMA) with extensive expertise in finance, taxation, cost management, and regulatory compliance. Helps organizations strengthen financial governance and optimise costs.',
-      credentials: 'CMA | Financial Planning | Cost Accounting | Taxation & Audit',
-      color: 'bg-teal-50'
     }
   ]
 

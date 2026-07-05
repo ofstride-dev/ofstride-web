@@ -96,9 +96,7 @@ function Home() {
   const clients = [
     'Cherry Pick Fine Furniture',
     'Fitness For Life',
-    'NT Pharma LLP',
     'Apple Industries',
-    'Vault by Virat Kohli',
     'Navshali Innovations',
     'Bokaro Steel City College',
   ]
@@ -157,8 +155,6 @@ function Home() {
 
               <div className="flex flex-wrap gap-4">
                 <Link to="/book-call"
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="btn-primary inline-flex items-center gap-2 bg-primary text-white px-7 py-3.5 rounded-xl font-semibold"
                 >
                   <Calendar className="w-4 h-4" />
@@ -191,8 +187,8 @@ function Home() {
                 <svg viewBox="0 0 400 400" className="w-full h-full">
                   <defs>
                     <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" style={{stopColor:'#0023a0', stopOpacity:0.15}} />
-                      <stop offset="100%" style={{stopColor:'#10B981', stopOpacity:0.08}} />
+                      <stop offset="0%" style={{ stopColor: '#0023a0', stopOpacity: 0.15 }} />
+                      <stop offset="100%" style={{ stopColor: '#10B981', stopOpacity: 0.08 }} />
                     </linearGradient>
                   </defs>
 

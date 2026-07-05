@@ -1,9 +1,13 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Send, CheckCircle2, User, Mail, Phone, Briefcase, MessageSquare, ArrowRight, MapPin, Globe, Calendar } from 'lucide-react'
+import { submitContactRequest } from '../services/notifications.js'
 
 function ContactForm() {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [submissionError, setSubmissionError] = useState('')
+  const [ticketReference, setTicketReference] = useState('')
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -44,30 +48,20 @@ function ContactForm() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
+    setSubmissionError('')
 
-    // TODO: Replace with your actual endpoint
-    // Option 1: Web3Forms (free) — https://web3forms.com/
-    //   const response = await fetch('https://api.web3forms.com/submit', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({
-    //       access_key: 'YOUR_WEB3FORMS_KEY',
-    //       ...formData,
-    //       subject: `New Contact Form - ${formData.name}`,
-    //       from_name: 'Ofstride Website'
-    //     })
-    //   })
+    const reference = `OFS-${Date.now().toString(36).toUpperCase().slice(-6)}`
+    setTicketReference(reference)
 
-    // Option 2: Formspree (free tier)
-    //   const response = await fetch('https://formspree.io/f/YOUR_FORM_ID', { ... })
-
-    // Option 3: Your own backend API
-    //   const response = await fetch('/api/contact', { ... })
-
-    // Simulating API call for now
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    setLoading(false)
-    setSubmitted(true)
+    try {
+      await submitContactRequest(formData, reference)
+      setSubmitted(true)
+    } catch (error) {
+      console.error('Contact form submission failed', error)
+      setSubmissionError('We were unable to send your message automatically. Please email support@ofstrideservices.com directly and we will follow up shortly.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (submitted) {
@@ -85,10 +79,10 @@ function ContactForm() {
             </p>
             <div className="bg-surface rounded-xl p-4 text-left mb-6">
               <p className="text-sm text-muted mb-1">Ticket Reference</p>
-              <p className="text-lg font-mono font-bold text-primary">OFS-{Date.now().toString(36).toUpperCase().slice(-6)}</p>
+              <p className="text-lg font-mono font-bold text-primary">{ticketReference}</p>
             </div>
             <p className="text-sm text-muted mb-6">
-              A copy has been sent to {formData.email}
+              A confirmation note is being prepared for {formData.email}
             </p>
             <a href="/" className="inline-flex items-center gap-2 text-secondary font-semibold hover:gap-3 transition-all">
               Back to Home <ArrowRight className="w-4 h-4" />
@@ -163,13 +157,13 @@ function ContactForm() {
               <p className="text-slate-300 text-sm mb-4">
                 Schedule a free 30-minute consultation at your convenience.
               </p>
-              <a 
-                href="/book-call"
+              <Link 
+                to="/book-call"
                 className="inline-flex items-center gap-2 bg-secondary text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
               >
                 <Calendar className="w-4 h-4" />
                 Book a Free Call
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -309,9 +303,13 @@ function ContactForm() {
                 )}
               </button>
 
-              <p className="text-xs text-muted text-center">
-                We respect your privacy. Your information will never be shared with third parties.
-              </p>
+              {submissionError ? (
+                <p className="text-sm text-red-600 text-center">{submissionError}</p>
+              ) : (
+                <p className="text-xs text-muted text-center">
+                  We respect your privacy. Your information will never be shared with third parties.
+                </p>
+              )}
             </form>
           </div>
         </div>
