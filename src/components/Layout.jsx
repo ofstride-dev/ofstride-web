@@ -2,13 +2,15 @@ import { Outlet, Link, NavLink, useLocation } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import { 
   Menu, X, ChevronDown, Phone, Mail, MapPin, Calendar, Home, 
-  Briefcase, Users, Globe, Info 
+  Briefcase, Users, Globe, Info, MessageCircle 
 } from 'lucide-react'
+import { ChatWidget } from './chat/ChatWidget'
 
 function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isServicesOpen, setIsServicesOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isChatOpen, setIsChatOpen] = useState(false)
   const location = useLocation()
   const servicesRef = useRef(null)
   const closeTimerRef = useRef(null)
@@ -49,6 +51,7 @@ function Layout() {
       if (event.key === 'Escape') {
         setIsServicesOpen(false)
         setIsMenuOpen(false)
+        setIsChatOpen(false)
       }
     }
 
@@ -393,6 +396,28 @@ function Layout() {
           </div>
         </div>
       </footer>
+
+      {/* Floating Chat */}
+      <div
+        className="fixed right-3 sm:right-6 z-40"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}
+      >
+        {isChatOpen && (
+          <div className="mb-3 w-[calc(100vw-1.5rem)] sm:w-[420px] max-w-[420px]">
+            <ChatWidget onClose={() => setIsChatOpen(false)} />
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={() => setIsChatOpen((prev) => !prev)}
+          aria-expanded={isChatOpen}
+          aria-label={isChatOpen ? 'Close consultant chat' : 'Open consultant chat'}
+          className="ml-auto inline-flex items-center gap-2 rounded-full bg-secondary text-white px-4 py-3 shadow-lg hover:bg-blue-600 transition-colors"
+        >
+          {isChatOpen ? <X className="w-5 h-5" /> : <MessageCircle className="w-5 h-5" />}
+          <span className="text-sm font-semibold">Consultant Chat</span>
+        </button>
+      </div>
     </div>
   )
 }
