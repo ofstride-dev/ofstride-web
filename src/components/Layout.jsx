@@ -75,6 +75,10 @@ function Layout() {
   }
 
   const toggleServices = () => setIsServicesOpen((prev) => !prev)
+  const closeAllMenus = () => {
+    setIsServicesOpen(false)
+    setIsMenuOpen(false)
+  }
 
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">
@@ -176,7 +180,12 @@ function Layout() {
         {isMenuOpen && (
           <div className="lg:hidden bg-white border-t border-surface" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
             <div className="max-w-7xl mx-auto px-3 py-5 space-y-2">
-              <Link to="/" className="flex items-center gap-2 py-3 px-3 text-text hover:text-secondary hover:bg-surface rounded-lg transition-colors font-medium">
+              <Link
+                to="/"
+                onClick={closeAllMenus}
+                onTouchStart={closeAllMenus}
+                className="flex items-center gap-2 py-3 px-3 text-text hover:text-secondary hover:bg-surface rounded-lg transition-colors font-medium"
+              >
                 <Home className="w-5 h-5" /> Home
               </Link>
 
@@ -196,10 +205,8 @@ function Layout() {
                         key={s.slug}
                         to={`/services/${s.slug}`}
                         className="block py-2 text-sm text-text hover:text-secondary transition-colors"
-                        onClick={() => {
-                          setIsServicesOpen(false)
-                          setIsMenuOpen(false)
-                        }}
+                        onClick={closeAllMenus}
+                        onTouchStart={closeAllMenus}
                       >
                         {s.name}
                       </Link>
@@ -208,21 +215,46 @@ function Layout() {
                 )}
               </div>
 
-              <Link to="/about" className="flex items-center gap-2 py-3 px-3 text-text hover:text-secondary hover:bg-surface rounded-lg transition-colors font-medium">
+              <Link
+                to="/about"
+                onClick={closeAllMenus}
+                onTouchStart={closeAllMenus}
+                className="flex items-center gap-2 py-3 px-3 text-text hover:text-secondary hover:bg-surface rounded-lg transition-colors font-medium"
+              >
                 <Info className="w-5 h-5" /> About
               </Link>
-              <Link to="/industries" className="flex items-center gap-2 py-3 px-3 text-text hover:text-secondary hover:bg-surface rounded-lg transition-colors font-medium">
+              <Link
+                to="/industries"
+                onClick={closeAllMenus}
+                onTouchStart={closeAllMenus}
+                className="flex items-center gap-2 py-3 px-3 text-text hover:text-secondary hover:bg-surface rounded-lg transition-colors font-medium"
+              >
                 <Globe className="w-5 h-5" /> Industries
               </Link>
-              <Link to="/contact" className="flex items-center gap-2 py-3 px-3 text-text hover:text-secondary hover:bg-surface rounded-lg transition-colors font-medium">
+              <Link
+                to="/contact"
+                onClick={closeAllMenus}
+                onTouchStart={closeAllMenus}
+                className="flex items-center gap-2 py-3 px-3 text-text hover:text-secondary hover:bg-surface rounded-lg transition-colors font-medium"
+              >
                 <Mail className="w-5 h-5" /> Contact
               </Link>
 
               <div className="pt-4 border-t border-surface space-y-3">
-                <Link to="/book-call" className="flex items-center justify-center gap-2 w-full bg-primary text-white px-5 py-3 rounded-lg font-medium">
+                <Link
+                  to="/book-call"
+                  onClick={closeAllMenus}
+                  onTouchStart={closeAllMenus}
+                  className="flex items-center justify-center gap-2 w-full bg-primary text-white px-5 py-3 rounded-lg font-medium"
+                >
                   <Calendar className="w-4 h-4" /> Book a Free Call
                 </Link>
-                <Link to="/contact-form" className="flex items-center justify-center gap-2 w-full border-2 border-slate-200 text-primary px-5 py-3 rounded-lg font-medium">
+                <Link
+                  to="/contact-form"
+                  onClick={closeAllMenus}
+                  onTouchStart={closeAllMenus}
+                  className="flex items-center justify-center gap-2 w-full border-2 border-slate-200 text-primary px-5 py-3 rounded-lg font-medium"
+                >
                   <Mail className="w-4 h-4" /> Send a Message
                 </Link>
               </div>
