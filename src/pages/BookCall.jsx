@@ -84,7 +84,11 @@ function BookCall() {
         }
       }
 
-      if (!submitted && endpoint) {
+      if (!submitted) {
+        if (!endpoint) {
+          throw new Error('No submission endpoint configured')
+        }
+
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -96,8 +100,6 @@ function BookCall() {
         }
 
         submitted = true
-      } else {
-        throw new Error('No submission endpoint configured')
       }
 
       if (!submitted) {
@@ -107,7 +109,6 @@ function BookCall() {
       setSubmitted(true)
     } catch (error) {
       setSubmitError('We could not submit your request automatically. Please email support@ofstrideservices.com directly and we will follow up shortly.')
-      setSubmitted(true)
     } finally {
       setIsSubmitting(false)
     }
@@ -179,6 +180,12 @@ function BookCall() {
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-5 sm:p-8 shadow-sm">
+          {submitError && (
+            <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              {submitError}
+            </div>
+          )}
+
           {/* Step 1: Your Info */}
           {step === 1 && (
             <div className="space-y-5 animate-fade-up">

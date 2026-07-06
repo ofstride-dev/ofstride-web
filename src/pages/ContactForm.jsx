@@ -85,7 +85,11 @@ function ContactForm() {
         }
       }
 
-      if (!submitted && endpoint) {
+      if (!submitted) {
+        if (!endpoint) {
+          throw new Error('No submission endpoint configured')
+        }
+
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -97,8 +101,6 @@ function ContactForm() {
         }
 
         submitted = true
-      } else {
-        throw new Error('No submission endpoint configured')
       }
 
       if (!submitted) {
@@ -106,9 +108,9 @@ function ContactForm() {
       }
 
       setSubmitted(true)
+
     } catch (error) {
       setSubmitError('We could not submit your request automatically. Please email support@ofstrideservices.com directly and we will follow up shortly.')
-      setSubmitted(true)
     } finally {
       setLoading(false)
     }
@@ -127,9 +129,6 @@ function ContactForm() {
             <p className="text-text mb-6">
               Your message has been received. Our team will review it and follow up within 24 hours.
             </p>
-            {submitError && (
-              <p className="text-sm text-amber-600 mb-4">{submitError}</p>
-            )}
             <div className="bg-surface rounded-xl p-4 text-left mb-6">
               <p className="text-sm text-muted mb-1">Ticket Reference</p>
               <p className="text-lg font-mono font-bold text-primary">OFS-{Date.now().toString(36).toUpperCase().slice(-6)}</p>
@@ -224,6 +223,11 @@ function ContactForm() {
           <div className="lg:col-span-3">
             <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-5 sm:p-8 shadow-sm space-y-5">
               <h2 className="text-xl font-bold text-primary mb-6">Send us a Message</h2>
+              {submitError && (
+                <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  {submitError}
+                </div>
+              )}
 
               <div className="grid sm:grid-cols-2 gap-5">
                 <div>
