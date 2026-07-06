@@ -87,17 +87,17 @@ function Services() {
   ]
 
   return (
-    <div className="pt-20">
+    <div className="pt-16 sm:pt-20">
       {/* Hero */}
-      <section className="py-20 lg:py-28 bg-surface">
+      <section className="py-14 sm:py-20 lg:py-28 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <span className="inline-block text-secondary text-sm font-semibold uppercase tracking-wider mb-3">
+          <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
             Our Services
           </span>
-          <h1 className="text-4xl sm:text-5xl font-bold text-primary mb-6">
+          <h1 className="text-3xl sm:text-5xl font-bold text-primary mb-4 sm:mb-6">
             AI at Every Layer
           </h1>
-          <p className="text-text text-lg max-w-2xl mx-auto">
+          <p className="text-text text-base sm:text-lg max-w-2xl mx-auto">
             Ten integrated services. One intelligent partner. Every solution is designed 
             with AI and agentic thinking at its core.
           </p>
@@ -105,9 +105,9 @@ function Services() {
       </section>
 
       {/* Services List */}
-      <section className="py-20 lg:py-28">
+      <section className="py-14 sm:py-20 lg:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="space-y-8">
+          <div className="space-y-5 sm:space-y-8">
             {allServices.map((service, index) => (
               <div 
                 key={service.slug}
@@ -115,15 +115,15 @@ function Services() {
                   service.featured ? 'ring-2 ring-secondary/20' : ''
                 }`}
               >
-                <div className="p-8 lg:p-10">
-                  <div className="flex flex-col lg:flex-row lg:items-start gap-8">
+                <div className="p-5 sm:p-8 lg:p-10">
+                  <div className="flex flex-col lg:flex-row lg:items-start gap-6 sm:gap-8">
                     {/* Left: Icon + Title */}
                     <div className="lg:w-1/3">
-                      <div className="flex items-center gap-4 mb-4">
-                        <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
+                      <div className="flex items-center gap-3 sm:gap-4 mb-4">
+                        <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center ${
                           service.featured ? 'bg-primary text-white' : 'bg-blue-50 text-secondary'
                         }`}>
-                          <service.icon className="w-7 h-7" />
+                          <service.icon className="w-6 h-6 sm:w-7 sm:h-7" />
                         </div>
                         {service.featured && (
                           <span className="text-xs font-bold text-white bg-secondary px-3 py-1 rounded-full">
@@ -131,10 +131,10 @@ function Services() {
                           </span>
                         )}
                       </div>
-                      <h2 className="text-2xl font-bold text-primary mb-2">
+                      <h2 className="text-xl sm:text-2xl font-bold text-primary mb-2">
                         {service.title}
                       </h2>
-                      <p className="text-secondary font-semibold text-lg">
+                      <p className="text-secondary font-semibold text-base sm:text-lg">
                         {service.tagline}
                       </p>
                     </div>
@@ -145,7 +145,7 @@ function Services() {
                         {service.desc}
                       </p>
 
-                      <div className="grid sm:grid-cols-2 gap-3 mb-6">
+                      <div className="grid sm:grid-cols-2 gap-2.5 sm:gap-3 mb-6">
                         {service.features.map((feature, i) => (
                           <div key={i} className="flex items-start gap-2">
                             <div className="w-1.5 h-1.5 bg-accent rounded-full mt-2 shrink-0"></div>
@@ -170,9 +170,9 @@ function Services() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 bg-surface">
+      <section className="py-14 sm:py-20 bg-surface">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-primary mb-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4">
             Not Sure Where to Start?
           </h2>
           <p className="text-text mb-8">

@@ -61,19 +61,19 @@ function About() {
   ]
 
   return (
-    <div className="pt-20">
+    <div className="pt-16 sm:pt-20">
       {/* Hero */}
-      <section className="py-20 lg:py-28 bg-surface">
+      <section className="py-14 sm:py-20 lg:py-28 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <span className="inline-block text-secondary text-sm font-semibold uppercase tracking-wider mb-3">
+          <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
             About Us
           </span>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-primary mb-6 max-w-4xl">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-primary mb-4 sm:mb-6 max-w-4xl">
             Defence Discipline.<br />
             Corporate Leadership.<br />
             <span className="gradient-text">Intelligent Systems.</span>
           </h1>
-          <p className="text-xl text-text max-w-2xl leading-relaxed">
+          <p className="text-base sm:text-xl text-text max-w-2xl leading-relaxed">
             Established in 2019, Ofstride Services LLP is a multidisciplinary business consulting firm 
             providing integrated solutions in Human Resources, Finance, Legal, IT, Business Strategy, 
             Artificial Intelligence, and Workforce Development.
@@ -82,13 +82,13 @@ function About() {
       </section>
 
       {/* Stats */}
-      <section className="py-16 border-b border-slate-100">
+      <section className="py-12 sm:py-16 border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-8">
             {stats.map((stat, i) => (
               <div key={i} className="text-center">
-                <div className="text-4xl lg:text-5xl font-bold text-primary mb-2">{stat.number}</div>
-                <div className="text-sm text-muted">{stat.label}</div>
+                <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary mb-2">{stat.number}</div>
+                <div className="text-xs sm:text-sm text-muted">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -96,14 +96,14 @@ function About() {
       </section>
 
       {/* Philosophy */}
-      <section className="py-20 lg:py-28">
+      <section className="py-14 sm:py-20 lg:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
             <div>
               <span className="inline-block text-secondary text-sm font-semibold uppercase tracking-wider mb-3">
                 Our Philosophy
               </span>
-              <h2 className="text-3xl sm:text-4xl font-bold text-primary mb-6">
+              <h2 className="text-2xl sm:text-4xl font-bold text-primary mb-5 sm:mb-6">
                 We Do Not Just Advise.<br />We Build Systems.
               </h2>
               <p className="text-text leading-relaxed mb-6">
@@ -122,7 +122,7 @@ function About() {
                 Explore Our Services <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
-            <div className="bg-surface rounded-2xl p-8 lg:p-10">
+            <div className="bg-surface rounded-2xl p-5 sm:p-8 lg:p-10">
               <h3 className="text-xl font-bold text-primary mb-6">Why Partner With Us</h3>
               <ul className="space-y-4">
                 {[
@@ -147,16 +147,16 @@ function About() {
       </section>
 
       {/* Free Consultation Banner */}
-      <section className="py-16 bg-primary text-white">
+      <section className="py-12 sm:py-16 bg-primary text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-2 bg-white/10 text-white px-4 py-2 rounded-full text-sm font-medium mb-6">
             <Calendar className="w-4 h-4" />
             Free Initial Consultation
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+          <h2 className="text-2xl sm:text-4xl font-bold mb-4">
             Start With a Free 30-Minute Call
           </h2>
-          <p className="text-slate-300 text-lg mb-8 max-w-2xl mx-auto">
+          <p className="text-slate-300 text-base sm:text-lg mb-8 max-w-2xl mx-auto">
             No commitment. No pitch decks. Just a conversation about your business 
             and how we can help — completely free.
           </p>
@@ -178,9 +178,9 @@ function About() {
       </section>
 
       {/* Leadership Team */}
-      <section className="py-20 lg:py-28 bg-surface">
+      <section className="py-14 sm:py-20 lg:py-28 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12 sm:mb-16">
             <span className="inline-block text-secondary text-sm font-semibold uppercase tracking-wider mb-3">
               Leadership
             </span>
@@ -193,16 +193,16 @@ function About() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {team.map((member, index) => (
               <div 
                 key={index}
-                className="bg-white rounded-2xl p-8 border border-slate-100 card-hover"
+                className="bg-white rounded-2xl p-5 sm:p-8 border border-slate-100 card-hover"
               >
                 <div className={`w-14 h-14 ${member.color} rounded-xl flex items-center justify-center mb-6`}>
                   <member.icon className="w-7 h-7 text-primary" />
                 </div>
-                <h3 className="text-xl font-bold text-primary mb-1">{member.name}</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-primary mb-1">{member.name}</h3>
                 <p className="text-secondary font-medium text-sm mb-4">{member.role}</p>
                 <p className="text-text text-sm leading-relaxed mb-4">
                   {member.desc}
@@ -217,14 +217,14 @@ function About() {
       </section>
 
       {/* Corporate Info */}
-      <section className="py-20 lg:py-28">
+      <section className="py-14 sm:py-20 lg:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12">
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12">
             <div>
               <span className="inline-block text-secondary text-sm font-semibold uppercase tracking-wider mb-3">
                 Corporate Information
               </span>
-              <h2 className="text-3xl font-bold text-primary mb-8">
+              <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-8">
                 Get in Touch
               </h2>
 
@@ -266,7 +266,7 @@ function About() {
               <div className="bg-surface rounded-2xl p-6">
                 <h4 className="font-semibold text-primary mb-2">Contact</h4>
                 <p className="text-text text-sm space-y-1">
-                  <a href="mailto:support@ofstrideservices.com" className="text-secondary hover:underline block">support@ofstrideservices.com</a>
+                  <a href="mailto:support@ofstrideservices.com" className="text-secondary hover:underline block break-all">support@ofstrideservices.com</a>
                   <a href="tel:+918951606862" className="text-secondary hover:underline block">+91 89516 06862</a>
                   <a href="tel:+919740997984" className="text-secondary hover:underline block">+91 9740997984</a>
                   <a href="https://www.ofstrideservices.com" target="_blank" rel="noopener noreferrer" className="text-secondary hover:underline block">www.ofstrideservices.com</a>

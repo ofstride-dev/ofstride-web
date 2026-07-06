@@ -5,6 +5,12 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
   }
 
   body {
@@ -13,6 +19,21 @@
     background: #ffffff;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  #root {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
+    height: auto;
   }
 }
 
@@ -152,5 +173,29 @@
     height: 36px;
     width: auto;
     filter: brightness(0) invert(1);
+  }
+
+  /* Extra-small phones: reduce control sizes and prevent edge overflows */
+  @media (max-width: 420px) {
+    .logo-header {
+      height: 28px;
+    }
+
+    .logo-footer {
+      height: 32px;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+      width: 100%;
+      justify-content: center;
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+
+    .card-hover:hover {
+      transform: none;
+      box-shadow: 0 12px 24px -12px rgba(0, 17, 80, 0.2);
+    }
   }
 }

@@ -234,9 +234,9 @@ function ServiceDetail() {
   const relatedServices = service.related.map(r => servicesData[r]).filter(Boolean)
 
   return (
-    <div className="pt-20">
+    <div className="pt-16 sm:pt-20">
       {/* Hero */}
-      <section className="py-20 lg:py-28 service-hero">
+      <section className="py-14 sm:py-20 lg:py-28 service-hero">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link 
             to="/services" 
@@ -252,18 +252,18 @@ function ServiceDetail() {
               </span>
             )}
 
-            <div className="flex items-center gap-4 mb-6">
-              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${
+            <div className="flex items-center gap-4 mb-5 sm:mb-6">
+              <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center ${
                 service.featured ? 'bg-primary text-white' : 'bg-blue-50 text-secondary'
               }`}>
-                <service.icon className="w-8 h-8" />
+                <service.icon className="w-6 h-6 sm:w-8 sm:h-8" />
               </div>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-primary mb-4">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-primary mb-4">
               {service.tagline}
             </h1>
-            <p className="text-xl text-text leading-relaxed max-w-2xl">
+            <p className="text-base sm:text-xl text-text leading-relaxed max-w-2xl">
               {service.heroDesc}
             </p>
           </div>
@@ -271,14 +271,14 @@ function ServiceDetail() {
       </section>
 
       {/* What You Get */}
-      <section className="py-16 lg:py-20">
+      <section className="py-12 sm:py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-20">
             <div>
               <span className="text-secondary text-sm font-semibold uppercase tracking-wider">
                 What You Get
               </span>
-              <h2 className="text-3xl font-bold text-primary mt-2 mb-8">
+              <h2 className="text-2xl sm:text-3xl font-bold text-primary mt-2 mb-6 sm:mb-8">
                 Practical outcomes, delivered.
               </h2>
               <ul className="space-y-4">
@@ -291,11 +291,11 @@ function ServiceDetail() {
               </ul>
             </div>
 
-            <div className="bg-surface rounded-2xl p-8 lg:p-10">
+            <div className="bg-surface rounded-2xl p-5 sm:p-8 lg:p-10">
               <span className="text-secondary text-sm font-semibold uppercase tracking-wider">
                 How AI Helps
               </span>
-              <h2 className="text-3xl font-bold text-primary mt-2 mb-8">
+              <h2 className="text-2xl sm:text-3xl font-bold text-primary mt-2 mb-6 sm:mb-8">
                 Intelligence built in.
               </h2>
               <div className="space-y-6">
@@ -317,21 +317,21 @@ function ServiceDetail() {
       </section>
 
       {/* For Whom + Outcome */}
-      <section className="py-16 lg:py-20 bg-surface">
+      <section className="py-12 sm:py-16 lg:py-20 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12">
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12">
             <div>
               <span className="text-secondary text-sm font-semibold uppercase tracking-wider">
                 For Whom
               </span>
-              <h2 className="text-3xl font-bold text-primary mt-2 mb-6">
+              <h2 className="text-2xl sm:text-3xl font-bold text-primary mt-2 mb-6">
                 Built for your stage.
               </h2>
               <div className="flex flex-wrap gap-3">
                 {service.forWhom.map((item, i) => (
                   <span 
                     key={i}
-                    className="bg-white text-text px-4 py-2 rounded-full text-sm font-medium border border-slate-200"
+                    className="bg-white text-text px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium border border-slate-200"
                   >
                     {item}
                   </span>
@@ -339,11 +339,11 @@ function ServiceDetail() {
               </div>
             </div>
 
-            <div className="bg-primary text-white rounded-2xl p-8 lg:p-10">
+            <div className="bg-primary text-white rounded-2xl p-5 sm:p-8 lg:p-10">
               <span className="text-slate-400 text-sm font-semibold uppercase tracking-wider">
                 The Outcome
               </span>
-              <h2 className="text-3xl font-bold mt-2 mb-4">
+              <h2 className="text-2xl sm:text-3xl font-bold mt-2 mb-4">
                 {service.outcome}
               </h2>
               <p className="text-slate-300 mb-6">
@@ -363,7 +363,7 @@ function ServiceDetail() {
       </section>
 
       {/* Related Services */}
-      <section className="py-16 lg:py-20">
+      <section className="py-12 sm:py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-primary mb-8">
             Related Services
@@ -389,9 +389,9 @@ function ServiceDetail() {
       </section>
 
       {/* Contact CTA */}
-      <section className="py-16 bg-surface">
+      <section className="py-12 sm:py-16 bg-surface">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-primary mb-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4">
             Questions about {service.title}?
           </h2>
           <p className="text-text mb-8">

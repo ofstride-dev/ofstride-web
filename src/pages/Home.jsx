@@ -134,44 +134,44 @@ function Home() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="min-h-screen flex items-start hero-pattern pt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-          <div className="grid lg:grid-cols-2 gap-12 items-start">
+      <section className="min-h-screen flex items-start hero-pattern pt-16 sm:pt-20 lg:pt-24">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 lg:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-12 items-start">
             <div className="animate-fade-up">
-              <div className="inline-flex items-center gap-2 bg-blue-50 text-secondary px-4 py-2 rounded-full text-sm font-medium mb-6">
+              <div className="inline-flex items-center gap-2 bg-blue-50 text-secondary px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium mb-4 sm:mb-6">
                 <span className="w-2 h-2 bg-accent rounded-full ai-badge"></span>
                 AI-Powered Business Consulting
               </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-primary leading-tight mb-6">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary leading-tight mb-4 sm:mb-6">
                 Build a Business<br />
                 <span className="gradient-text">That Thinks Ahead.</span>
               </h1>
 
-              <p className="text-lg text-text leading-relaxed mb-8 max-w-xl">
+              <p className="text-base sm:text-lg text-text leading-relaxed mb-6 sm:mb-8 max-w-xl">
                 AI-powered consulting for HR, finance, legal, and IT. 
                 Where human expertise meets intelligent systems.
               </p>
 
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
                 <Link to="/book-call"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn-primary inline-flex items-center gap-2 bg-primary text-white px-7 py-3.5 rounded-xl font-semibold"
+                  className="btn-primary inline-flex items-center justify-center sm:justify-start gap-2 bg-primary text-white px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl font-semibold text-sm sm:text-base"
                 >
                   <Calendar className="w-4 h-4" />
                   Book a Free Call
                 </Link>
                 <Link 
                   to="/services"
-                  className="btn-secondary inline-flex items-center gap-2 border-2 border-slate-200 text-primary px-7 py-3.5 rounded-xl font-semibold"
+                  className="btn-secondary inline-flex items-center justify-center sm:justify-start gap-2 border-2 border-slate-200 text-primary px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl font-semibold text-sm sm:text-base"
                 >
                   Explore Services
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
 
-              <div className="mt-10 flex items-center gap-6 text-sm text-muted">
+              <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 text-xs sm:text-sm text-muted">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 bg-accent rounded-full"></div>
                   <span>New Delhi & Bengaluru</span>
@@ -236,14 +236,14 @@ function Home() {
       </section>
 
       {/* Social Proof Bar */}
-      <section className="bg-surface py-8 border-y border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-sm text-muted uppercase tracking-wider mb-4 font-medium">
+      <section className="bg-surface py-6 sm:py-8 border-y border-slate-100">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-xs sm:text-sm text-muted uppercase tracking-wider mb-3 sm:mb-4 font-medium">
             Trusted by teams at
           </p>
-          <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-3">
+          <div className="flex flex-wrap justify-center items-center gap-x-4 sm:gap-x-8 gap-y-2 sm:gap-y-3">
             {clients.map((client) => (
-              <span key={client} className="text-slate-600 font-semibold text-sm whitespace-nowrap">
+              <span key={client} className="text-slate-600 font-semibold text-xs sm:text-sm whitespace-nowrap">
                 {client}
               </span>
             ))}
@@ -252,46 +252,46 @@ function Home() {
       </section>
 
       {/* Services Bento Grid */}
-      <section className="py-24 lg:py-32" ref={addToRefs}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="inline-block text-secondary text-sm font-semibold uppercase tracking-wider mb-3">
+      <section className="py-16 sm:py-24 lg:py-32" ref={addToRefs}>
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 sm:mb-16">
+            <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
               What We Do
             </span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-primary mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-3 sm:mb-4">
               AI at Every Layer
             </h2>
-            <p className="text-text max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base text-text max-w-2xl mx-auto">
               Every service is designed with intelligent systems at its core — 
               so your business moves faster, decides smarter, and scales without friction.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {services.map((service, index) => (
               <Link
                 key={service.slug}
                 to={`/services/${service.slug}`}
-                className="card-hover bg-white border border-slate-100 rounded-2xl p-8 group"
+                className="card-hover bg-white border border-slate-100 rounded-xl sm:rounded-2xl p-5 sm:p-8 group"
               >
-                <div className="flex items-center justify-between mb-6">
-                  <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
-                    <service.icon className="w-6 h-6 text-secondary group-hover:text-white transition-colors" />
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+                    <service.icon className="w-5 h-5 sm:w-6 sm:h-6 text-secondary group-hover:text-white transition-colors" />
                   </div>
                   {service.ai && (
-                    <span className="text-xs font-semibold text-accent bg-emerald-50 px-2.5 py-1 rounded-full ai-badge">
+                    <span className="text-xs font-semibold text-accent bg-emerald-50 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full ai-badge">
                       AI-Enabled
                     </span>
                   )}
                 </div>
-                <h3 className="text-xl font-bold text-primary mb-2 group-hover:text-secondary transition-colors">
+                <h3 className="text-lg sm:text-xl font-bold text-primary mb-2 group-hover:text-secondary transition-colors">
                   {service.title}
                 </h3>
-                <p className="text-text text-sm leading-relaxed mb-4">
+                <p className="text-text text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4">
                   {service.desc}
                 </p>
-                <span className="inline-flex items-center gap-1 text-secondary text-sm font-medium group-hover:gap-2 transition-all">
-                  Learn more <ArrowRight className="w-4 h-4" />
+                <span className="inline-flex items-center gap-1 text-secondary text-xs sm:text-sm font-medium group-hover:gap-2 transition-all">
+                  Learn more <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
                 </span>
               </Link>
             ))}
@@ -309,13 +309,13 @@ function Home() {
       </section>
 
       {/* Why Ofstride */}
-      <section className="py-24 lg:py-32 bg-surface" ref={addToRefs}>
+      <section className="py-16 sm:py-24 lg:py-32 bg-surface" ref={addToRefs}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="inline-block text-secondary text-sm font-semibold uppercase tracking-wider mb-3">
+          <div className="text-center mb-12 sm:mb-16">
+            <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
               Why Us
             </span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-primary mb-4">
+            <h2 className="text-2xl sm:text-4xl font-bold text-primary mb-4">
               Not Traditional Consulting.<br />Intelligent Consulting.
             </h2>
             <p className="text-text max-w-2xl mx-auto">
@@ -323,11 +323,11 @@ function Home() {
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {whyPoints.map((point, index) => (
               <div 
                 key={index}
-                className="bg-white rounded-2xl p-8 border border-slate-100 card-hover"
+                className="bg-white rounded-2xl p-5 sm:p-8 border border-slate-100 card-hover"
               >
                 <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6">
                   <point.icon className="w-6 h-6 text-secondary" />
@@ -354,16 +354,16 @@ function Home() {
       </section>
 
       {/* Free Services Banner */}
-      <section className="py-16 bg-primary text-white">
+      <section className="py-12 sm:py-16 bg-primary text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-2 bg-white/10 text-white px-4 py-2 rounded-full text-sm font-medium mb-6">
             <Calendar className="w-4 h-4" />
             Free Initial Consultation
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+          <h2 className="text-2xl sm:text-4xl font-bold mb-4">
             Start With a Free 30-Minute Call
           </h2>
-          <p className="text-slate-300 text-lg mb-8 max-w-2xl mx-auto">
+          <p className="text-slate-300 text-base sm:text-lg mb-8 max-w-2xl mx-auto">
             No commitment. No pitch decks. Just a conversation about your business 
             and how we can help — completely free.
           </p>
@@ -385,13 +385,13 @@ function Home() {
       </section>
 
       {/* Industries */}
-      <section className="py-24 lg:py-32" ref={addToRefs}>
+      <section className="py-16 sm:py-24 lg:py-32" ref={addToRefs}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="inline-block text-secondary text-sm font-semibold uppercase tracking-wider mb-3">
+          <div className="text-center mb-12 sm:mb-16">
+            <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
               Industries
             </span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-primary mb-4">
+            <h2 className="text-2xl sm:text-4xl font-bold text-primary mb-4">
               Built for Every Sector.<br />Powered by Intelligence.
             </h2>
           </div>
@@ -400,7 +400,7 @@ function Home() {
             {industries.map((industry) => (
               <span 
                 key={industry}
-                className="bg-surface text-text px-5 py-2.5 rounded-full text-sm font-medium border border-slate-100 hover:border-secondary hover:text-secondary transition-colors cursor-default"
+                className="bg-surface text-text px-4 sm:px-5 py-2.5 rounded-full text-xs sm:text-sm font-medium border border-slate-100 hover:border-secondary hover:text-secondary transition-colors cursor-default"
               >
                 {industry}
               </span>
@@ -419,12 +419,12 @@ function Home() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-24 lg:py-32 bg-primary text-white" ref={addToRefs}>
+      <section className="py-16 sm:py-24 lg:py-32 bg-primary text-white" ref={addToRefs}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
+          <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold mb-6">
             Ready to Build Smarter?
           </h2>
-          <p className="text-slate-300 text-lg mb-10">
+          <p className="text-slate-300 text-base sm:text-lg mb-10">
             Book a free 30-minute consultation. No pitch decks. 
             Just clarity on your next move.
           </p>

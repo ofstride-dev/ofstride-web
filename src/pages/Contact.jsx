@@ -3,26 +3,26 @@ import { MapPin, Phone, Mail, Globe, Calendar, ExternalLink } from 'lucide-react
 
 function Contact() {
   return (
-    <div className="pt-20">
+    <div className="pt-16 sm:pt-20">
       {/* Hero */}
-      <section className="py-20 lg:py-28 bg-surface">
+      <section className="py-14 sm:py-20 lg:py-28 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <span className="inline-block text-secondary text-sm font-semibold uppercase tracking-wider mb-3">
+          <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
             Contact
           </span>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-primary mb-6">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-primary mb-4 sm:mb-6">
             Let&apos;s Build Your Next Move.
           </h1>
-          <p className="text-xl text-text max-w-2xl mx-auto">
+          <p className="text-base sm:text-xl text-text max-w-2xl mx-auto">
             New Delhi | Bengaluru | Pan-India
           </p>
         </div>
       </section>
 
       {/* Contact Options */}
-      <section className="py-20 lg:py-28">
+      <section className="py-14 sm:py-20 lg:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20">
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-20">
             {/* Left: Contact Options */}
             <div>
               <h2 className="text-2xl font-bold text-primary mb-6">
@@ -35,7 +35,7 @@ function Contact() {
               <div className="space-y-6">
                 {/* Book a Call */}
                 <Link to="/book-call"
-                  className="flex items-start gap-4 bg-surface rounded-2xl p-6 card-hover group"
+                  className="flex items-start gap-4 bg-surface rounded-2xl p-5 sm:p-6 card-hover group"
                 >
                   <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
                     <Calendar className="w-6 h-6 text-secondary group-hover:text-white transition-colors" />
@@ -56,7 +56,7 @@ function Contact() {
 
                 {/* Contact Form */}
                 <Link to="/contact-form"
-                  className="flex items-start gap-4 bg-surface rounded-2xl p-6 card-hover group"
+                  className="flex items-start gap-4 bg-surface rounded-2xl p-5 sm:p-6 card-hover group"
                 >
                   <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
                     <Mail className="w-6 h-6 text-secondary group-hover:text-white transition-colors" />
@@ -75,7 +75,7 @@ function Contact() {
                 {/* Phone */}
                 <a 
                   href="tel:+918951606862"
-                  className="flex items-start gap-4 bg-surface rounded-2xl p-6 card-hover group"
+                  className="flex items-start gap-4 bg-surface rounded-2xl p-5 sm:p-6 card-hover group"
                 >
                   <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
                     <Phone className="w-6 h-6 text-secondary group-hover:text-white transition-colors" />
@@ -95,7 +95,7 @@ function Contact() {
 
             {/* Right: Contact Info Cards */}
             <div className="space-y-6">
-              <div className="bg-surface rounded-2xl p-8">
+              <div className="bg-surface rounded-2xl p-5 sm:p-8">
                 <h3 className="text-xl font-bold text-primary mb-6">Contact Information</h3>
                 <div className="space-y-5">
                   <div className="flex items-start gap-4">
@@ -104,7 +104,7 @@ function Contact() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-primary mb-1">New Delhi Office</h4>
-                      <p className="text-sm text-text">FF B-68, Mansa Ram Park, Uttam Nagar, New Delhi – 110059</p>
+                      <p className="text-sm text-text break-words">FF B-68, Mansa Ram Park, Uttam Nagar, New Delhi – 110059</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-4">
@@ -113,7 +113,7 @@ function Contact() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-primary mb-1">Bengaluru Office</h4>
-                      <p className="text-sm text-text">No. 51, 4th Main, Postal Colony, Sanjaynagar, Bengaluru – 560094</p>
+                      <p className="text-sm text-text break-words">No. 51, 4th Main, Postal Colony, Sanjaynagar, Bengaluru – 560094</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-4">
@@ -122,7 +122,7 @@ function Contact() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-primary mb-1">Email</h4>
-                      <a href="mailto:support@ofstrideservices.com" className="text-sm text-secondary hover:underline">
+                      <a href="mailto:support@ofstrideservices.com" className="text-sm text-secondary hover:underline break-all">
                         support@ofstrideservices.com
                       </a>
                     </div>
@@ -151,7 +151,7 @@ function Contact() {
                 </div>
               </div>
 
-              <div className="bg-primary text-white rounded-2xl p-8">
+              <div className="bg-primary text-white rounded-2xl p-5 sm:p-8">
                 <h3 className="text-xl font-bold mb-2">GSTIN</h3>
                 <p className="text-slate-300 text-sm mb-4">07AAGFO4479B1Z9</p>
                 <p className="text-slate-400 text-sm">

@@ -11,6 +11,7 @@ function Layout() {
   const [isScrolled, setIsScrolled] = useState(false)
   const location = useLocation()
   const servicesRef = useRef(null)
+  const closeTimerRef = useRef(null)
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -36,6 +37,14 @@ function Layout() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current)
+      }
+    }
+  }, [])
+
   const services = [
     { name: 'Human Resources', slug: 'human-resource-consulting' },
     { name: 'Executive Search', slug: 'executive-search-recruitment' },
@@ -49,18 +58,34 @@ function Layout() {
     { name: 'EOR & Workforce', slug: 'employer-of-record-workforce' },
   ]
 
-  const toggleServices = () => setIsServicesOpen(!isServicesOpen)
+  const openServices = () => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current)
+    }
+    setIsServicesOpen(true)
+  }
+
+  const closeServices = () => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current)
+    }
+    closeTimerRef.current = setTimeout(() => {
+      setIsServicesOpen(false)
+    }, 120)
+  }
+
+  const toggleServices = () => setIsServicesOpen((prev) => !prev)
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col overflow-x-hidden">
       {/* Header */}
       <header 
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-transparent'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 lg:h-20">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 lg:h-20 gap-2">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3">
               <img src="/logo.png" alt="Ofstride Services LLP" className="logo-header" />
@@ -73,9 +98,17 @@ function Layout() {
                 Home
               </Link>
 
-              <div ref={servicesRef} className="relative">
+              <div
+                ref={servicesRef}
+                className="relative"
+                onMouseEnter={openServices}
+                onMouseLeave={closeServices}
+              >
                 <button 
                   onClick={toggleServices}
+                  onFocus={openServices}
+                  aria-expanded={isServicesOpen}
+                  aria-haspopup="menu"
                   className="flex items-center gap-1 text-text hover:text-secondary transition-colors font-medium px-2 py-1 rounded-lg hover:bg-surface"
                 >
                   <Briefcase className="w-4 h-4" />
@@ -85,12 +118,16 @@ function Layout() {
 
                 {isServicesOpen && (
                   <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 p-2 z-50"
+                    role="menu"
+                    onMouseEnter={openServices}
+                    onMouseLeave={closeServices}
                     style={{ maxHeight: '320px', overflowY: 'auto' }}
                   >
                     {services.map((s) => (
                       <Link
                         key={s.slug}
                         to={`/services/${s.slug}`}
+                        role="menuitem"
                         className="block px-4 py-2.5 text-sm text-text hover:bg-surface hover:text-secondary rounded-lg transition-colors"
                         onClick={() => setIsServicesOpen(false)}
                       >
@@ -116,7 +153,7 @@ function Layout() {
             </nav>
 
             {/* CTA + Mobile Menu */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <Link 
                 to="/book-call"
                 className="hidden sm:inline-flex btn-primary bg-primary text-white px-5 py-2.5 rounded-lg font-medium text-sm"
@@ -126,7 +163,7 @@ function Layout() {
               </Link>
 
               <button 
-                className="lg:hidden p-2"
+                className="lg:hidden p-2 rounded-md"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
                 {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -138,7 +175,7 @@ function Layout() {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="lg:hidden bg-white border-t border-surface" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
-            <div className="max-w-7xl mx-auto px-4 py-6 space-y-2">
+            <div className="max-w-7xl mx-auto px-3 py-5 space-y-2">
               <Link to="/" className="flex items-center gap-2 py-3 px-3 text-text hover:text-secondary hover:bg-surface rounded-lg transition-colors font-medium">
                 <Home className="w-5 h-5" /> Home
               </Link>
@@ -159,6 +196,10 @@ function Layout() {
                         key={s.slug}
                         to={`/services/${s.slug}`}
                         className="block py-2 text-sm text-text hover:text-secondary transition-colors"
+                        onClick={() => {
+                          setIsServicesOpen(false)
+                          setIsMenuOpen(false)
+                        }}
                       >
                         {s.name}
                       </Link>
@@ -197,8 +238,8 @@ function Layout() {
 
       {/* Footer */}
       <footer className="bg-primary text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12">
             {/* Brand */}
             <div className="lg:col-span-1">
               <div className="flex items-center gap-3 mb-4">
@@ -248,7 +289,7 @@ function Layout() {
                 </li>
                 <li className="flex items-center gap-2 text-slate-300 text-sm">
                   <Mail className="w-4 h-4 shrink-0" />
-                  <a href="mailto:support@ofstrideservices.com" className="hover:text-white transition-colors">
+                  <a href="mailto:support@ofstrideservices.com" className="hover:text-white transition-colors break-all">
                     support@ofstrideservices.com
                   </a>
                 </li>
@@ -279,8 +320,8 @@ function Layout() {
             </div>
           </div>
 
-          <div className="mt-12 pt-8 border-t border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-slate-400 text-sm">
+          <div className="mt-10 sm:mt-12 pt-8 border-t border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-slate-400 text-sm text-center sm:text-left">
               © 2026 Ofstride Services LLP. All rights reserved.
             </p>
             <div className="flex gap-6">

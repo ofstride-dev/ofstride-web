@@ -102,9 +102,9 @@ function ContactForm() {
 
   if (submitted) {
     return (
-      <div className="pt-20 min-h-screen flex items-center justify-center bg-surface">
+      <div className="pt-16 sm:pt-20 min-h-screen flex items-center justify-center bg-surface">
         <div className="max-w-md mx-auto px-4 text-center">
-          <div className="bg-white rounded-2xl p-10 shadow-sm">
+          <div className="bg-white rounded-2xl p-6 sm:p-10 shadow-sm">
             <CheckCircle2 className="w-16 h-16 text-accent mx-auto mb-6" />
             <h2 className="text-2xl font-bold text-primary mb-3">Message Sent!</h2>
             <p className="text-text mb-2">
@@ -133,15 +133,15 @@ function ContactForm() {
   }
 
   return (
-    <div className="pt-20 min-h-screen bg-surface">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid lg:grid-cols-5 gap-12">
+    <div className="pt-16 sm:pt-20 min-h-screen bg-surface">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+        <div className="grid lg:grid-cols-5 gap-8 sm:gap-12">
           {/* Left: Info */}
           <div className="lg:col-span-2">
             <span className="inline-block text-secondary text-sm font-semibold uppercase tracking-wider mb-3">
               Contact Us
             </span>
-            <h1 className="text-3xl sm:text-4xl font-bold text-primary mb-4">
+            <h1 className="text-2xl sm:text-4xl font-bold text-primary mb-4">
               Let&apos;s Start a Conversation
             </h1>
             <p className="text-text mb-8">
@@ -174,7 +174,7 @@ function ContactForm() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-primary text-sm">Email</h4>
-                  <a href="mailto:support@ofstrideservices.com" className="text-sm text-secondary hover:underline">
+                  <a href="mailto:support@ofstrideservices.com" className="text-sm text-secondary hover:underline break-all">
                     support@ofstrideservices.com
                   </a>
                 </div>
@@ -208,7 +208,7 @@ function ContactForm() {
 
           {/* Right: Form */}
           <div className="lg:col-span-3">
-            <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-8 shadow-sm space-y-5">
+            <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-5 sm:p-8 shadow-sm space-y-5">
               <h2 className="text-xl font-bold text-primary mb-6">Send us a Message</h2>
 
               <div className="grid sm:grid-cols-2 gap-5">

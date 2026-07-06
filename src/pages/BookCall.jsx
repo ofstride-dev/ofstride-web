@@ -104,9 +104,9 @@ function BookCall() {
 
   if (submitted) {
     return (
-      <div className="pt-20 min-h-screen flex items-center justify-center bg-surface">
+      <div className="pt-16 sm:pt-20 min-h-screen flex items-center justify-center bg-surface">
         <div className="max-w-md mx-auto px-4 text-center">
-          <div className="bg-white rounded-2xl p-10 shadow-sm">
+          <div className="bg-white rounded-2xl p-6 sm:p-10 shadow-sm">
             <CheckCircle2 className="w-16 h-16 text-accent mx-auto mb-6" />
             <h2 className="text-2xl font-bold text-primary mb-3">Booking Confirmed!</h2>
             <p className="text-text mb-2">
@@ -135,8 +135,8 @@ function BookCall() {
   }
 
   return (
-    <div className="pt-20 min-h-screen bg-surface">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="pt-16 sm:pt-20 min-h-screen bg-surface">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
         {/* Header */}
         <div className="text-center mb-10">
           <span className="inline-block text-secondary text-sm font-semibold uppercase tracking-wider mb-3">
@@ -151,20 +151,20 @@ function BookCall() {
         </div>
 
         {/* Progress */}
-        <div className="flex items-center justify-center gap-2 mb-10">
+        <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-8 sm:mb-10">
           {[1, 2, 3].map((s) => (
             <div key={s} className="flex items-center gap-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+              <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold ${
                 s <= step ? 'bg-primary text-white' : 'bg-slate-200 text-muted'
               }`}>
                 {s}
               </div>
-              {s < 3 && <div className={`w-8 h-0.5 ${s < step ? 'bg-primary' : 'bg-slate-200'}`} />}
+              {s < 3 && <div className={`w-6 sm:w-8 h-0.5 ${s < step ? 'bg-primary' : 'bg-slate-200'}`} />}
             </div>
           ))}
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-8 shadow-sm">
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-5 sm:p-8 shadow-sm">
           {/* Step 1: Your Info */}
           {step === 1 && (
             <div className="space-y-5 animate-fade-up">
@@ -323,30 +323,30 @@ function BookCall() {
                 Confirm & Add Details
               </h2>
 
-              <div className="bg-surface rounded-xl p-5 space-y-3 text-sm">
-                <div className="flex justify-between">
+              <div className="bg-surface rounded-xl p-4 sm:p-5 space-y-3 text-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3">
                   <span className="text-muted">Name</span>
-                  <span className="font-medium text-primary">{formData.name}</span>
+                  <span className="font-medium text-primary text-left sm:text-right break-words">{formData.name}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3">
                   <span className="text-muted">Email</span>
-                  <span className="font-medium text-primary">{formData.email}</span>
+                  <span className="font-medium text-primary text-left sm:text-right break-all">{formData.email}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3">
                   <span className="text-muted">Phone</span>
-                  <span className="font-medium text-primary">{formData.phone}</span>
+                  <span className="font-medium text-primary text-left sm:text-right break-words">{formData.phone}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3">
                   <span className="text-muted">Service</span>
-                  <span className="font-medium text-primary">{formData.service}</span>
+                  <span className="font-medium text-primary text-left sm:text-right break-words">{formData.service}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3">
                   <span className="text-muted">Date</span>
-                  <span className="font-medium text-primary">{formData.date}</span>
+                  <span className="font-medium text-primary text-left sm:text-right">{formData.date}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-3">
                   <span className="text-muted">Time</span>
-                  <span className="font-medium text-primary">{formData.time} IST</span>
+                  <span className="font-medium text-primary text-left sm:text-right">{formData.time} IST</span>
                 </div>
               </div>
 
@@ -364,7 +364,7 @@ function BookCall() {
                 />
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   type="button"
                   onClick={prevStep}
