@@ -57,27 +57,35 @@ function ContactForm() {
     }
 
     try {
-      if (accessKey) {
-        const response = await fetch('https://api.web3forms.com/submit', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          body: JSON.stringify({
-            access_key: accessKey,
-            subject: `Contact Request - ${formData.name}`,
-            from_name: 'Ofstride Website',
-            replyto: formData.email,
-            ...payload,
-          }),
-        })
+      let submitted = false
 
-        const result = await response.json().catch(() => ({}))
-        if (!response.ok || !result.success) {
-          throw new Error(result.message || 'Web3Forms submission failed')
+      if (accessKey) {
+        try {
+          const response = await fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            body: JSON.stringify({
+              access_key: accessKey,
+              subject: `Contact Request - ${formData.name}`,
+              from_name: 'Ofstride Website',
+              replyto: formData.email,
+              ...payload,
+            }),
+          })
+
+          const result = await response.json().catch(() => ({}))
+          if (response.ok && result.success) {
+            submitted = true
+          }
+        } catch {
+          // Fall through to webhook fallback.
         }
-      } else if (endpoint) {
+      }
+
+      if (!submitted && endpoint) {
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -87,8 +95,14 @@ function ContactForm() {
         if (!response.ok) {
           throw new Error('Webhook submission failed')
         }
+
+        submitted = true
       } else {
         throw new Error('No submission endpoint configured')
+      }
+
+      if (!submitted) {
+        throw new Error('No submission provider accepted the request')
       }
 
       setSubmitted(true)

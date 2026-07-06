@@ -63,8 +63,9 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WHITE_WATER_027449900 }}
           action: "upload"
-          app_location: "/"
-          output_location: "dist"
+          app_location: "dist"
+          output_location: ""
+          skip_app_build: true
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
