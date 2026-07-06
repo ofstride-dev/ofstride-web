@@ -1,4 +1,4 @@
-import { Outlet, Link, useLocation } from 'react-router-dom'
+import { Outlet, Link, NavLink, useLocation } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import { 
   Menu, X, ChevronDown, Phone, Mail, MapPin, Calendar, Home, 
@@ -12,6 +12,13 @@ function Layout() {
   const location = useLocation()
   const servicesRef = useRef(null)
   const closeTimerRef = useRef(null)
+
+  const navLinkClass = ({ isActive }) => {
+    const base = 'flex items-center gap-1.5 transition-colors font-medium px-2 py-1 rounded-lg'
+    return isActive
+      ? `${base} text-secondary bg-surface`
+      : `${base} text-text hover:text-secondary hover:bg-surface`
+  }
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -36,6 +43,25 @@ function Layout() {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  useEffect(() => {
+    const onEscape = (event) => {
+      if (event.key === 'Escape') {
+        setIsServicesOpen(false)
+        setIsMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('keydown', onEscape)
+    return () => document.removeEventListener('keydown', onEscape)
+  }, [])
+
+  useEffect(() => {
+    document.body.style.overflow = isMenuOpen ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isMenuOpen])
 
   useEffect(() => {
     return () => {
@@ -82,6 +108,7 @@ function Layout() {
 
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">
+      <a href="#main-content" className="skip-link">Skip to main content</a>
       {/* Header */}
       <header 
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -97,10 +124,10 @@ function Layout() {
 
             {/* Desktop Nav */}
             <nav className="hidden lg:flex items-center gap-6">
-              <Link to="/" className="flex items-center gap-1.5 text-text hover:text-secondary transition-colors font-medium px-2 py-1 rounded-lg hover:bg-surface">
+              <NavLink to="/" end className={navLinkClass}>
                 <Home className="w-4 h-4" />
                 Home
-              </Link>
+              </NavLink>
 
               <div
                 ref={servicesRef}
@@ -109,10 +136,12 @@ function Layout() {
                 onMouseLeave={closeServices}
               >
                 <button 
+                  type="button"
                   onClick={toggleServices}
                   onFocus={openServices}
                   aria-expanded={isServicesOpen}
                   aria-haspopup="menu"
+                  aria-label="Open services menu"
                   className="flex items-center gap-1 text-text hover:text-secondary transition-colors font-medium px-2 py-1 rounded-lg hover:bg-surface"
                 >
                   <Briefcase className="w-4 h-4" />
@@ -142,18 +171,18 @@ function Layout() {
                 )}
               </div>
 
-              <Link to="/about" className="flex items-center gap-1.5 text-text hover:text-secondary transition-colors font-medium px-2 py-1 rounded-lg hover:bg-surface">
+              <NavLink to="/about" className={navLinkClass}>
                 <Info className="w-4 h-4" />
                 About
-              </Link>
-              <Link to="/industries" className="flex items-center gap-1.5 text-text hover:text-secondary transition-colors font-medium px-2 py-1 rounded-lg hover:bg-surface">
+              </NavLink>
+              <NavLink to="/industries" className={navLinkClass}>
                 <Globe className="w-4 h-4" />
                 Industries
-              </Link>
-              <Link to="/contact" className="flex items-center gap-1.5 text-text hover:text-secondary transition-colors font-medium px-2 py-1 rounded-lg hover:bg-surface">
+              </NavLink>
+              <NavLink to="/contact" className={navLinkClass}>
                 <Mail className="w-4 h-4" />
                 Contact
-              </Link>
+              </NavLink>
             </nav>
 
             {/* CTA + Mobile Menu */}
@@ -167,7 +196,11 @@ function Layout() {
               </Link>
 
               <button 
+                type="button"
                 className="lg:hidden p-2 rounded-md"
+                aria-label={isMenuOpen ? 'Close mobile menu' : 'Open mobile menu'}
+                aria-expanded={isMenuOpen}
+                aria-controls="mobile-menu"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
                 {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -178,20 +211,23 @@ function Layout() {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="lg:hidden bg-white border-t border-surface" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+          <div id="mobile-menu" className="lg:hidden bg-white border-t border-surface" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
             <div className="max-w-7xl mx-auto px-3 py-5 space-y-2">
-              <Link
+              <NavLink
                 to="/"
+                end
                 onClick={closeAllMenus}
-                onTouchStart={closeAllMenus}
-                className="flex items-center gap-2 py-3 px-3 text-text hover:text-secondary hover:bg-surface rounded-lg transition-colors font-medium"
+                className={({ isActive }) => `flex items-center gap-2 py-3 px-3 rounded-lg transition-colors font-medium ${isActive ? 'text-secondary bg-surface' : 'text-text hover:text-secondary hover:bg-surface'}`}
               >
                 <Home className="w-5 h-5" /> Home
-              </Link>
+              </NavLink>
 
               <div className="px-3">
                 <button 
+                  type="button"
                   onClick={toggleServices}
+                  aria-expanded={isServicesOpen}
+                  aria-label="Toggle services in mobile menu"
                   className="flex items-center gap-2 py-3 text-text hover:text-secondary transition-colors font-medium w-full"
                 >
                   <Briefcase className="w-5 h-5" /> Services
@@ -206,7 +242,6 @@ function Layout() {
                         to={`/services/${s.slug}`}
                         className="block py-2 text-sm text-text hover:text-secondary transition-colors"
                         onClick={closeAllMenus}
-                        onTouchStart={closeAllMenus}
                       >
                         {s.name}
                       </Link>
@@ -215,36 +250,32 @@ function Layout() {
                 )}
               </div>
 
-              <Link
+              <NavLink
                 to="/about"
                 onClick={closeAllMenus}
-                onTouchStart={closeAllMenus}
-                className="flex items-center gap-2 py-3 px-3 text-text hover:text-secondary hover:bg-surface rounded-lg transition-colors font-medium"
+                className={({ isActive }) => `flex items-center gap-2 py-3 px-3 rounded-lg transition-colors font-medium ${isActive ? 'text-secondary bg-surface' : 'text-text hover:text-secondary hover:bg-surface'}`}
               >
                 <Info className="w-5 h-5" /> About
-              </Link>
-              <Link
+              </NavLink>
+              <NavLink
                 to="/industries"
                 onClick={closeAllMenus}
-                onTouchStart={closeAllMenus}
-                className="flex items-center gap-2 py-3 px-3 text-text hover:text-secondary hover:bg-surface rounded-lg transition-colors font-medium"
+                className={({ isActive }) => `flex items-center gap-2 py-3 px-3 rounded-lg transition-colors font-medium ${isActive ? 'text-secondary bg-surface' : 'text-text hover:text-secondary hover:bg-surface'}`}
               >
                 <Globe className="w-5 h-5" /> Industries
-              </Link>
-              <Link
+              </NavLink>
+              <NavLink
                 to="/contact"
                 onClick={closeAllMenus}
-                onTouchStart={closeAllMenus}
-                className="flex items-center gap-2 py-3 px-3 text-text hover:text-secondary hover:bg-surface rounded-lg transition-colors font-medium"
+                className={({ isActive }) => `flex items-center gap-2 py-3 px-3 rounded-lg transition-colors font-medium ${isActive ? 'text-secondary bg-surface' : 'text-text hover:text-secondary hover:bg-surface'}`}
               >
                 <Mail className="w-5 h-5" /> Contact
-              </Link>
+              </NavLink>
 
               <div className="pt-4 border-t border-surface space-y-3">
                 <Link
                   to="/book-call"
                   onClick={closeAllMenus}
-                  onTouchStart={closeAllMenus}
                   className="flex items-center justify-center gap-2 w-full bg-primary text-white px-5 py-3 rounded-lg font-medium"
                 >
                   <Calendar className="w-4 h-4" /> Book a Free Call
@@ -252,7 +283,6 @@ function Layout() {
                 <Link
                   to="/contact-form"
                   onClick={closeAllMenus}
-                  onTouchStart={closeAllMenus}
                   className="flex items-center justify-center gap-2 w-full border-2 border-slate-200 text-primary px-5 py-3 rounded-lg font-medium"
                 >
                   <Mail className="w-4 h-4" /> Send a Message
@@ -264,7 +294,7 @@ function Layout() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1">
+      <main id="main-content" className="flex-1" tabIndex="-1">
         <Outlet />
       </main>
 

@@ -1,4 +1,5 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import Layout from './components/Layout.jsx'
 import Home from './pages/Home.jsx'
 import Services from './pages/Services.jsx'
@@ -10,6 +11,27 @@ import BookCall from './pages/BookCall.jsx'
 import ContactForm from './pages/ContactForm.jsx'
 
 function App() {
+  const location = useLocation()
+
+  useEffect(() => {
+    const routeTitleMap = {
+      '/': 'Ofstride Services LLP — AI-Powered Business Consulting',
+      '/services': 'Services | Ofstride Services LLP',
+      '/about': 'About | Ofstride Services LLP',
+      '/industries': 'Industries | Ofstride Services LLP',
+      '/contact': 'Contact | Ofstride Services LLP',
+      '/book-call': 'Book a Call | Ofstride Services LLP',
+      '/contact-form': 'Contact Form | Ofstride Services LLP',
+    }
+
+    if (location.pathname.startsWith('/services/')) {
+      document.title = 'Service Details | Ofstride Services LLP'
+      return
+    }
+
+    document.title = routeTitleMap[location.pathname] || 'Ofstride Services LLP'
+  }, [location.pathname])
+
   return (
     <Routes>
       <Route path="/" element={<Layout />}>

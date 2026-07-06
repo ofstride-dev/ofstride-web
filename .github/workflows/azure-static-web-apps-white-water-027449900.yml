@@ -35,6 +35,17 @@ jobs:
 
       - name: Build Application
         run: npm run build
+        env:
+          VITE_WEB3FORMS_KEY: ${{ secrets.VITE_WEB3FORMS_KEY }}
+          VITE_ZAPIER_WEBHOOK_URL: ${{ secrets.VITE_ZAPIER_WEBHOOK_URL }}
+          VITE_BOOK_CALL_WEBHOOK_URL: ${{ secrets.VITE_BOOK_CALL_WEBHOOK_URL }}
+          VITE_CONTACT_WEBHOOK_URL: ${{ secrets.VITE_CONTACT_WEBHOOK_URL }}
+          VITE_EMAILJS_SERVICE_ID: ${{ secrets.VITE_EMAILJS_SERVICE_ID }}
+          VITE_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_EMAILJS_PUBLIC_KEY }}
+          VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
+          VITE_EMAILJS_BOOKING_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_BOOKING_TEMPLATE_ID }}
+          VITE_EMAILJS_CONTACT_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_CONTACT_TEMPLATE_ID }}
+          VITE_CAL_COM_LINK: ${{ secrets.VITE_CAL_COM_LINK }}
 
       - name: Check Azure secret presence
         shell: bash

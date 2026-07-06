@@ -35,9 +35,32 @@
     max-width: 100%;
     height: auto;
   }
+
+  :focus-visible {
+    outline: 3px solid #2563EB;
+    outline-offset: 2px;
+  }
 }
 
 @layer components {
+  .skip-link {
+    position: absolute;
+    left: 0.75rem;
+    top: -3rem;
+    z-index: 70;
+    background: #001150;
+    color: #ffffff;
+    padding: 0.6rem 0.9rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: top 0.2s ease;
+  }
+
+  .skip-link:focus {
+    top: 0.75rem;
+  }
+
   /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 8px;
