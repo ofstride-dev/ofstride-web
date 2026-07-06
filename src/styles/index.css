@@ -157,6 +157,10 @@
       radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.04) 0%, transparent 50%);
   }
 
+  .hero-orb {
+    box-shadow: 0 14px 36px -22px rgba(0, 17, 80, 0.28);
+  }
+
   /* Service page hero gradient */
   .service-hero {
     background: linear-gradient(135deg, #F8FAFC 0%, #ffffff 50%, #EFF6FF 100%);
@@ -196,6 +200,25 @@
     .card-hover:hover {
       transform: none;
       box-shadow: 0 12px 24px -12px rgba(0, 17, 80, 0.2);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    .animate-fade-up,
+    .animate-float,
+    .ai-badge {
+      animation: none !important;
+    }
+
+    .card-hover,
+    .btn-primary,
+    .btn-secondary,
+    .link-underline::after {
+      transition: none !important;
     }
   }
 }

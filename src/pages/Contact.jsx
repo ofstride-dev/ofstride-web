@@ -49,7 +49,7 @@ function Contact() {
                       Schedule a 30-minute consultation at a time that works for you.
                     </p>
                     <span className="inline-flex items-center gap-1 text-secondary text-sm font-medium">
-                      cal.id/aintric <ExternalLink className="w-3 h-3" />
+                      cal.id/ofstride <ExternalLink className="w-3 h-3" />
                     </span>
                   </div>
                 </Link>
@@ -67,7 +67,7 @@ function Contact() {
                       Fill out our contact form and we will get back to you promptly.
                     </p>
                     <span className="inline-flex items-center gap-1 text-secondary text-sm font-medium">
-                      aintric.com/contact <ExternalLink className="w-3 h-3" />
+                      ofstrideservices.com/contact <ExternalLink className="w-3 h-3" />
                     </span>
                   </div>
                 </Link>

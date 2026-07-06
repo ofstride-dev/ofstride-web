@@ -153,6 +153,34 @@ function Home() {
                 Where human expertise meets intelligent systems.
               </p>
 
+              {/* Mobile Hero Visual */}
+              <div className="lg:hidden mb-6 sm:mb-8">
+                <div className="hero-orb relative mx-auto w-full max-w-xs sm:max-w-sm rounded-2xl border border-blue-100 bg-white/80 backdrop-blur-sm p-4 sm:p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-secondary">
+                      Ofstride Intelligence
+                    </span>
+                    <span className="text-[11px] sm:text-xs font-semibold text-accent bg-emerald-50 px-2 py-1 rounded-full">
+                      Live Signals
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-[11px] sm:text-xs">
+                    <div className="rounded-lg bg-slate-50 p-2 text-center">
+                      <p className="font-bold text-primary">HR</p>
+                      <p className="text-muted">Adaptive</p>
+                    </div>
+                    <div className="rounded-lg bg-slate-50 p-2 text-center">
+                      <p className="font-bold text-primary">Finance</p>
+                      <p className="text-muted">Predictive</p>
+                    </div>
+                    <div className="rounded-lg bg-slate-50 p-2 text-center">
+                      <p className="font-bold text-primary">Legal</p>
+                      <p className="text-muted">Proactive</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
                 <Link to="/book-call"
                   target="_blank"
@@ -179,6 +207,10 @@ function Home() {
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 bg-accent rounded-full"></div>
                   <span>Since 2019</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-accent rounded-full"></div>
+                  <span>32+ Years Leadership</span>
                 </div>
               </div>
             </div>
