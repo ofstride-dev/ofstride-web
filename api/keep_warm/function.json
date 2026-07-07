@@ -1,12 +1,18 @@
 {
   "scriptFile": "function.py",
-  "disabled": "%KEEP_WARM_DISABLED%",
   "bindings": [
     {
-      "name": "mytimer",
-      "type": "timerTrigger",
+      "authLevel": "anonymous",
+      "type": "httpTrigger",
       "direction": "in",
-      "schedule": "0 */5 * * * *"
+      "name": "req",
+      "methods": ["get"],
+      "route": "keep-warm"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "$return"
     }
   ]
 }
