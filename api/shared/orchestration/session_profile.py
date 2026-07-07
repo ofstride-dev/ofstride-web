@@ -6,6 +6,7 @@ EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
 PHONE_RE = re.compile(r"(?:\+?\d[\d\s\-]{7,}\d)")
 
 INTEREST_KEYWORDS = {
+    "business strategy": "Business Strategy",
     "hr": "HR",
     "finance": "Finance",
     "legal": "Legal",
@@ -28,6 +29,7 @@ CONTACT_MODE_PATTERNS = {
 }
 
 SERVICE_KEYWORDS = {
+    "business strategy": "Business Strategy",
     "hr": "HR Consulting",
     "hiring": "Executive Search",
     "recruit": "Executive Search",

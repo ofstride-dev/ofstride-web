@@ -174,17 +174,20 @@ class RAGGraph:
         name = (profile.get("name") or "").strip()
         greeting = f"Certainly, {name}." if name else "Certainly."
 
+        # Use specific service type if captured in profile, otherwise use domain
+        service_type = profile.get("service_needed") or domain
+
         if not docs:
             return (
-                f"{greeting} Based on your interest in {domain}, I can help shortlist the right Ofstride consultant.\n\n"
+                f"{greeting} Based on your interest in {service_type}, I can help shortlist the right Ofstride consultant.\n\n"
                 "Summary:\n"
-                f"- Domain: {domain}\n"
+                f"- Focus area: {service_type}\n"
                 "- Consultant options: I am preparing the best-fit shortlist.\n"
                 "- Next step: share your exact scope or timeline and I will refine the recommendation politely and precisely."
             )
 
         lines = [
-            f"{greeting} Based on your interest in {domain}, here is a concise consultant shortlist.",
+            f"{greeting} Based on your interest in {service_type}, here is a concise consultant shortlist.",
             "",
             "Recommended consultants:",
         ]
