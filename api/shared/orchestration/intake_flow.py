@@ -129,11 +129,11 @@ def build_domain_search_query(domain: str) -> str:
 
 def build_intro_prompt() -> str:
     return (
-        "🤖 Hi there! I'd love to help you find the right consultant. "
-        "What kind of consulting service are you looking for today?\n\n"
-        "💼 Business Strategy\n"
-        "💻 IT & Digital\n"
-        "📊 Financial Advisory"
+        "Welcome to Ofstride. I can help match you with the right consultant.\n\n"
+        "What kind of service are you looking for?\n"
+        "• People & Workforce\n"
+        "• Finance & Compliance\n"
+        "• Technology & Growth"
     )
 
 
@@ -151,66 +151,44 @@ def build_next_required_prompt(missing_fields: list[str]) -> str:
 
     next_field = missing_fields[0]
     if next_field == "name":
-        return (
-            "🤖 That sounds exciting! Before I show you the best-matched consultants, "
-            "could I quickly grab a few details so I can personalize your recommendations?\n\n"
-            "👤 Your Name\n"
-            "e.g. John Smith"
-        )
+        return "What's your name?"
 
     if next_field == "phone":
-        return (
-            "📱 Phone Number\n"
-            "+1 (555) 000-0000"
-        )
+        return "Could you share your phone number?"
 
     if next_field == "email":
-        return (
-            "📧 Email Address\n"
-            "john@company.com"
-        )
+        return "What's your email address?"
 
-    return "Could you share one more detail so I can proceed accurately?"
+    return "One more detail please?"
 
 
 def build_intake_completed_message() -> str:
-    return (
-        "✅ Thank you! I've saved your details. "
-        "Here are the top consultants who specialize in your area:"
-    )
+    return "Thank you. Now let me find the right consultant for you."
 
 
 def build_interest_prompt(name: str | None = None) -> str:
-    display_name = (name or "there").strip() or "there"
     return (
-        f"🤖 What specific consulting service are you looking for?\n\n"
-        f"💼 Business Strategy\n"
-        f"💻 IT & Digital\n"
-        f"📊 Financial Advisory"
+        "Which service area interests you?\n"
+        "• People & Workforce\n"
+        "• Finance & Compliance\n"
+        "• Technology & Growth"
     )
 
 
 def build_services_catalog_response() -> tuple[str, list[dict]]:
     message = (
-        "🤖 Here are our service areas:\n\n"
-        "💼 People & Workforce\n"
-        "• Human Resources Consulting\n"
-        "• Executive Search & Recruitment\n"
-        "• Payroll, HR & Compliance\n"
-        "• Employer of Record (EOR) & Workforce Solutions\n\n"
-        "💻 Technology & Growth\n"
-        "• IT Consulting & Digital Transformation\n"
-        "• AI & Data Science Consulting\n"
-        "• Business Strategy & Process Improvement\n\n"
-        "📊 Finance & Compliance\n"
-        "• Financial Consulting / Virtual CFO\n"
-        "• GST & Tax Advisory\n"
-        "• Legal & Regulatory Compliance"
+        "Our Services:\n\n"
+        "People & Workforce:\n"
+        "HR, Recruitment, Payroll, Compliance, EOR\n\n"
+        "Finance & Compliance:\n"
+        "Financial Advisory, Tax, Legal, Regulatory\n\n"
+        "Technology & Growth:\n"
+        "IT, Digital Transformation, AI, Data Science, Strategy"
     )
 
     sources = [
         {
-            "content": "Ofstride services grouped by domain: People & Workforce, Technology & Growth, Finance & Compliance.",
+            "content": "Ofstride service areas",
             "metadata": {
                 "source": "ofstride_service_catalog",
                 "source_type": "company_service_catalog",
@@ -222,13 +200,8 @@ def build_services_catalog_response() -> tuple[str, list[dict]]:
 
 def build_exit_message() -> str:
     return (
-        "👋 No problem at all! I completely understand.\n\n"
-        "I've saved everything we discussed including your details and your interest in our services. "
-        "When you're ready, just jump back in and I'll pick up right where we left off.\n\n"
-        "I've also sent a quick summary to your email with consultant profiles and booking links, "
-        "so you can review them at your convenience.\n\n"
-        "📧 You're all set\n"
-        "Check your inbox for a personalized summary with consultant profiles and direct booking links."
+        "No problem. I've saved your information. Come back anytime to continue, "
+        "and I'll pick up where we left off."
     )
 
 
