@@ -1,22 +1,26 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Calendar, Clock, User, Mail, Phone, Briefcase, MessageSquare, CheckCircle2, ArrowRight } from 'lucide-react'
 
 function BookCall() {
+  const location = useLocation()
+  const incomingPrefill = location.state?.prefill || {}
   const [step, setStep] = useState(1)
   const [submitted, setSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
+    name: incomingPrefill.name || '',
+    email: incomingPrefill.email || '',
+    phone: incomingPrefill.phone || '',
     company: '',
-    service: '',
+    service: incomingPrefill.service || '',
     date: '',
     time: '',
-    message: ''
+    message: incomingPrefill.message || ''
   })
+
+  const hasValidPhone = (value) => value.replace(/\D/g, '').length >= 10
 
   const timeSlots = [
     '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
@@ -266,11 +270,14 @@ function BookCall() {
               <button
                 type="button"
                 onClick={nextStep}
-                disabled={!formData.name || !formData.email || !formData.phone || !formData.service}
+                  disabled={!formData.name || !formData.email || !hasValidPhone(formData.phone) || !formData.service}
                 className="w-full inline-flex items-center justify-center gap-2 bg-primary text-white px-6 py-4 rounded-xl font-semibold btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next: Pick a Date <ArrowRight className="w-4 h-4" />
               </button>
+                {!!formData.phone && !hasValidPhone(formData.phone) && (
+                  <p className="text-sm text-red-600">Please enter at least 10 digits, with country code if applicable.</p>
+                )}
             </div>
           )}
 

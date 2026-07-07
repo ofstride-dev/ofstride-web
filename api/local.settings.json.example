@@ -1,0 +1,47 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "KEEP_WARM_DISABLED": "true",
+    "ENV": "dev",
+
+    "LLM_PROVIDER": "mock",
+    "MODEL_NAME": "gpt-4o-mini",
+    "FALLBACK_MODEL_NAME": "gpt-4o-mini",
+    "OPENAI_API_KEY": "",
+    "AZURE_OPENAI_API_KEY": "",
+    "AZURE_OPENAI_ENDPOINT": "",
+    "AZURE_OPENAI_API_VERSION": "2024-12-01-preview",
+    "AZURE_OPENAI_DEPLOYMENT": "",
+    "AZURE_OPENAI_EMBEDDING_DEPLOYMENT": "",
+    "ALLOW_MOCK_PROVIDER": "true",
+
+    "EMBEDDING_MODEL": "text-embedding-3-small",
+    "EMBEDDING_DIMENSION": "1536",
+
+    "QDRANT_URL": "",
+    "QDRANT_API_KEY": "",
+    "QDRANT_COLLECTION": "ofstride_consultants",
+    "USE_INMEMORY_VECTOR_STORE": "true",
+    "RETRIEVAL_K": "6",
+
+    "SESSION_TTL_MINUTES": "30",
+    "SESSION_MAX_MESSAGES": "16",
+
+    "INGEST_CHUNK_SIZE": "1400",
+    "INGEST_CHUNK_OVERLAP": "200",
+
+    "CHAT_EVENTS_ENABLED": "true",
+    "CHAT_EVENT_QUEUE_FILE": "api/.runtime/chat_events.ndjson",
+    "CHAT_EVENT_REMINDER_DELAY_MINUTES": "1440",
+    "CHAT_REMINDER_STATE_FILE": "api/.runtime/chat_reminder_state.json",
+    "CHAT_REMINDER_BATCH_SIZE": "20",
+    "CHAT_WEBHOOK_URL": "",
+    "CONTACT_WEBHOOK_URL": "",
+    "ZAPIER_WEBHOOK_URL": "",
+
+    "DURABLE_STORE_ENABLED": "true",
+    "DURABLE_SQLITE_PATH": "api/.runtime/chat_state.db"
+  }
+}

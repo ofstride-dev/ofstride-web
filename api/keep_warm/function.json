@@ -1,0 +1,12 @@
+{
+  "scriptFile": "function.py",
+  "disabled": "%KEEP_WARM_DISABLED%",
+  "bindings": [
+    {
+      "name": "mytimer",
+      "type": "timerTrigger",
+      "direction": "in",
+      "schedule": "0 */5 * * * *"
+    }
+  ]
+}

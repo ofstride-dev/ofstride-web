@@ -6,10 +6,18 @@ package-lock.json
 dist
 dist-ssr
 
+# Runtime data (generated at runtime, not for version control)
+api/.runtime/
+*.db
+*.ndjson
+
 # Environment files
 .env
+.env.example
 .env.local
 .env.*.local
+api/.env
+api/local.settings.json
 
 # IDE
 .vscode
@@ -18,3 +26,12 @@ dist-ssr
 # OS
 .DS_Store
 Thumbs.db
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.python-version
+
+# Local logs
+debug.log

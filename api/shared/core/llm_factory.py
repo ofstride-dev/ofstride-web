@@ -1,0 +1,242 @@
+from __future__ import annotations
+
+import asyncio
+import time
+from dataclasses import dataclass
+from enum import Enum
+from typing import Protocol
+
+from openai import AsyncAzureOpenAI, AsyncOpenAI
+
+from .settings import get_settings
+
+
+def _is_configured_secret(value: str | None) -> bool:
+    if not value:
+        return False
+
+    normalized = value.strip().lower()
+    if not normalized:
+        return False
+
+    placeholder_markers = (
+        "your-",
+        "replace-",
+        "example",
+        "placeholder",
+        "changeme",
+    )
+    return not any(marker in normalized for marker in placeholder_markers)
+
+
+class LLMProvider(str, Enum):
+    OPENAI = "openai"
+    AZURE_OPENAI = "azure_openai"
+    MOCK = "mock"
+
+
+class LLMClient(Protocol):
+    async def agenerate(
+        self,
+        *,
+        system_prompt: str,
+        user_prompt: str,
+        temperature: float,
+        max_tokens: int,
+    ) -> str:
+        ...
+
+
+@dataclass
+class LLMSelection:
+    client: LLMClient
+    provider: LLMProvider
+    fallback_reason: str | None = None
+
+
+@dataclass
+class OpenAILLMClient:
+    client: AsyncOpenAI
+    model: str
+
+    async def agenerate(
+        self,
+        *,
+        system_prompt: str,
+        user_prompt: str,
+        temperature: float,
+        max_tokens: int,
+    ) -> str:
+        settings = get_settings()
+        completion = await asyncio.wait_for(
+            self.client.chat.completions.create(
+                model=self.model,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+            ),
+            timeout=max(3, settings.llm_timeout_seconds),
+        )
+
+        return (completion.choices[0].message.content or "").strip()
+
+
+class MockLLMClient:
+    async def agenerate(
+        self,
+        *,
+        system_prompt: str,
+        user_prompt: str,
+        temperature: float,
+        max_tokens: int,
+    ) -> str:
+        del system_prompt, temperature, max_tokens
+        prompt = user_prompt.strip()
+        if len(prompt) > 600:
+            prompt = f"{prompt[:600]}..."
+        return (
+            "I can help with consultant discovery and planning. "
+            "Based on your request, I suggest we shortlist candidates by domain, skills, "
+            f"and availability.\n\nRequest summary: {prompt}"
+        )
+
+
+class LLMFactory:
+    def __init__(self):
+        self._settings = get_settings()
+        self._openai_client: AsyncOpenAI | None = None
+        self._azure_openai_client: AsyncAzureOpenAI | None = None
+        self._provider_failures: dict[LLMProvider, int] = {
+            LLMProvider.OPENAI: 0,
+            LLMProvider.AZURE_OPENAI: 0,
+            LLMProvider.MOCK: 0,
+        }
+        self._provider_open_until: dict[LLMProvider, float] = {
+            LLMProvider.OPENAI: 0.0,
+            LLMProvider.AZURE_OPENAI: 0.0,
+            LLMProvider.MOCK: 0.0,
+        }
+
+    def _is_provider_open(self, provider: LLMProvider) -> bool:
+        return time.time() < self._provider_open_until.get(provider, 0.0)
+
+    def _record_provider_success(self, provider: LLMProvider) -> None:
+        self._provider_failures[provider] = 0
+        self._provider_open_until[provider] = 0.0
+
+    def _record_provider_failure(self, provider: LLMProvider) -> None:
+        failures = self._provider_failures.get(provider, 0) + 1
+        self._provider_failures[provider] = failures
+        threshold = max(1, self._settings.llm_circuit_fail_threshold)
+        if failures >= threshold:
+            cooldown = max(5, self._settings.llm_circuit_reset_seconds)
+            self._provider_open_until[provider] = time.time() + cooldown
+
+    def _get_openai_client(self) -> AsyncOpenAI:
+        if self._openai_client is None:
+            self._openai_client = AsyncOpenAI(api_key=self._settings.openai_api_key)
+        return self._openai_client
+
+    def _get_azure_openai_client(self) -> AsyncAzureOpenAI:
+        if self._azure_openai_client is None:
+            if not self._settings.azure_openai_api_key or not self._settings.azure_openai_endpoint:
+                raise RuntimeError("Azure OpenAI endpoint and API key are required.")
+
+            self._azure_openai_client = AsyncAzureOpenAI(
+                api_key=self._settings.azure_openai_api_key,
+                azure_endpoint=self._settings.azure_openai_endpoint,
+                api_version=self._settings.azure_openai_api_version,
+            )
+        return self._azure_openai_client
+
+    async def get_healthy_llm(self) -> tuple[LLMClient, LLMProvider]:
+        selected = await self.get_healthy_llm_with_metadata()
+        return selected.client, selected.provider
+
+    async def get_healthy_llm_with_metadata(self) -> LLMSelection:
+        provider = (self._settings.llm_provider or LLMProvider.OPENAI.value).lower()
+        openai_configured = _is_configured_secret(self._settings.openai_api_key)
+        azure_key_configured = _is_configured_secret(self._settings.azure_openai_api_key)
+        azure_endpoint_configured = bool((self._settings.azure_openai_endpoint or "").strip())
+        azure_configured = azure_key_configured and azure_endpoint_configured
+
+        if provider == LLMProvider.MOCK.value:
+            if self._settings.allow_mock_provider:
+                return LLMSelection(client=MockLLMClient(), provider=LLMProvider.MOCK)
+            raise RuntimeError("Mock LLM provider is disabled.")
+
+        if provider == LLMProvider.AZURE_OPENAI.value:
+            if self._is_provider_open(LLMProvider.AZURE_OPENAI):
+                if self._settings.allow_mock_provider:
+                    return LLMSelection(
+                        client=MockLLMClient(),
+                        provider=LLMProvider.MOCK,
+                        fallback_reason="azure_openai_circuit_open",
+                    )
+                raise RuntimeError("Azure OpenAI circuit breaker is open.")
+
+            if azure_configured:
+                deployment = self._settings.azure_openai_deployment or self._settings.model_name
+                self._record_provider_success(LLMProvider.AZURE_OPENAI)
+                return LLMSelection(
+                    client=OpenAILLMClient(
+                        client=self._get_azure_openai_client(),
+                        model=deployment,
+                    ),
+                    provider=LLMProvider.AZURE_OPENAI,
+                )
+
+            if self._settings.allow_mock_provider:
+                self._record_provider_failure(LLMProvider.AZURE_OPENAI)
+                return LLMSelection(
+                    client=MockLLMClient(),
+                    provider=LLMProvider.MOCK,
+                    fallback_reason="azure_openai_not_configured",
+                )
+
+            raise RuntimeError("Azure OpenAI is not configured.")
+
+        if self._is_provider_open(LLMProvider.OPENAI):
+            if self._settings.allow_mock_provider:
+                return LLMSelection(
+                    client=MockLLMClient(),
+                    provider=LLMProvider.MOCK,
+                    fallback_reason="openai_circuit_open",
+                )
+            raise RuntimeError("OpenAI circuit breaker is open.")
+
+        if openai_configured:
+            self._record_provider_success(LLMProvider.OPENAI)
+            return LLMSelection(
+                client=OpenAILLMClient(
+                    client=self._get_openai_client(),
+                    model=self._settings.model_name,
+                ),
+                provider=LLMProvider.OPENAI,
+            )
+
+        if self._settings.allow_mock_provider:
+            self._record_provider_failure(LLMProvider.OPENAI)
+            return LLMSelection(
+                client=MockLLMClient(),
+                provider=LLMProvider.MOCK,
+                fallback_reason="openai_not_configured",
+            )
+
+        raise RuntimeError("No healthy LLM provider available.")
+
+    def mark_provider_result(self, provider: LLMProvider, *, success: bool) -> None:
+        if success:
+            self._record_provider_success(provider)
+            return
+        self._record_provider_failure(provider)
+
+
+_factory = LLMFactory()
+
+
+def get_llm_factory() -> LLMFactory:
+    return _factory
