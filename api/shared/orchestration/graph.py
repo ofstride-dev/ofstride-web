@@ -233,6 +233,10 @@ class RAGGraph:
         profile = self.session_store.get_profile(session_id)
         current_state = profile.get("state", STATE_OPEN)
         
+        # DEBUG: Log session state
+        history_len = len(history) if history else 0
+        profile_keys = list(profile.keys()) if profile else []
+        
         # 1. TOPIC GUARD CHECK (skip during intake to allow single-word inputs like names)
         if current_state not in [STATE_INTAKE_FIELDS, STATE_INTAKE_SUBMITTED]:
             allowed, reason = self.topic_guard.check(query)
@@ -393,5 +397,10 @@ class RAGGraph:
                     ]
                 ),
                 "next_required_field": missing_required[0] if missing_required else None,
+            },
+            "debug": {
+                "history_length": len(history) if history else 0,
+                "profile_fields": list(profile.keys()) if profile else [],
+                "missing_required_fields": missing_required,
             },
         }

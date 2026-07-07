@@ -39,12 +39,28 @@ function generateSessionId(): string {
 }
 
 function getOrCreateSessionId(): string {
-  let id = sessionStorage.getItem("ofstride_session_id");
-  if (!id) {
-    id = generateSessionId();
-    sessionStorage.setItem("ofstride_session_id", id);
+  // Try localStorage first (persistent across page reloads)
+  let id = localStorage.getItem("ofstride_session_id");
+  if (id) {
+    return id;
   }
+
+  // Generate new session ID if none exists
+  id = generateSessionId();
+  
+  // Store in both localStorage (persistence) and sessionStorage (security boundary)
+  localStorage.setItem("ofstride_session_id", id);
+  sessionStorage.setItem("ofstride_session_id", id);
+  
   return id;
+}
+
+/**
+ * Clear session ID (call on logout or explicit session end)
+ */
+export function clearSessionId(): void {
+  localStorage.removeItem("ofstride_session_id");
+  sessionStorage.removeItem("ofstride_session_id");
 }
 
 function isEnvelope<T>(value: unknown): value is ApiEnvelope<T> {
