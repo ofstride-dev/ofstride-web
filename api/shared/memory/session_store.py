@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 
 from core.settings import get_settings
+from persistence.sqlite_store import get_durable_store
 
 
 @dataclass
@@ -16,6 +17,8 @@ class SessionRecord:
 class SessionStore:
     def __init__(self):
         self._settings = get_settings()
+        self._durable = get_durable_store()
+        self._use_durable = bool(self._settings.durable_store_enabled)
         self.sessions: dict[str, SessionRecord] = {}
 
     def _is_expired(self, record: SessionRecord) -> bool:
@@ -32,6 +35,10 @@ class SessionStore:
             self.sessions.pop(key, None)
 
     def get(self, session_id: str) -> list[dict]:
+        if self._use_durable:
+            self._durable.prune_sessions()
+            return self._durable.get_messages(session_id)
+
         self._prune_expired()
         record = self.sessions.get(session_id)
         if not record:
@@ -39,6 +46,11 @@ class SessionStore:
         return list(record.messages)
 
     def append(self, session_id: str, message: dict) -> None:
+        if self._use_durable:
+            self._durable.prune_sessions()
+            self._durable.append_message(session_id, message)
+            return
+
         self._prune_expired()
         record = self.sessions.get(session_id)
         if not record:
@@ -51,6 +63,10 @@ class SessionStore:
         record.updated_at = datetime.now(timezone.utc)
 
     def get_profile(self, session_id: str) -> dict[str, str]:
+        if self._use_durable:
+            self._durable.prune_sessions()
+            return self._durable.get_profile(session_id)
+
         self._prune_expired()
         record = self.sessions.get(session_id)
         if not record:
@@ -58,6 +74,10 @@ class SessionStore:
         return dict(record.profile)
 
     def upsert_profile(self, session_id: str, updates: dict[str, str]) -> dict[str, str]:
+        if self._use_durable:
+            self._durable.prune_sessions()
+            return self._durable.upsert_profile(session_id, updates)
+
         self._prune_expired()
         record = self.sessions.get(session_id)
         if not record:
@@ -72,6 +92,11 @@ class SessionStore:
         return dict(record.profile)
 
     def save(self, session_id: str, messages: list[dict]) -> None:
+        if self._use_durable:
+            self._durable.prune_sessions()
+            self._durable.save_messages(session_id, messages)
+            return
+
         trimmed = messages[-self._settings.session_max_messages :]
         existing_profile = {}
         if session_id in self.sessions:

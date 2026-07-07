@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from "react";
-import { sendChatMessage } from "../services/api";
-import type { ConsultantSource } from "../types/chat";
+import { getChatSessionId, postChatEvent, sendChatMessage } from "../services/api";
+import type { ChatAction, ChatEventType, ConsultantSource } from "../types/chat";
 
 export interface ChatMessage {
   id: string;
@@ -8,13 +8,19 @@ export interface ChatMessage {
   content: string;
   timestamp: Date;
   sources?: ConsultantSource[];
+  actions?: ChatAction[];
   isLoading?: boolean;
 }
 
 interface UseChatReturn {
   messages: ChatMessage[];
   sendMessage: (text: string) => Promise<void>;
+  sendQuickReply: (value: string) => Promise<void>;
   retryLastMessage: () => Promise<void>;
+  emitEvent: (eventType: ChatEventType, payload?: Record<string, unknown>) => Promise<void>;
+  sessionId: string;
+  sessionProfile: Record<string, string>;
+  pendingRequiredField: "name" | "phone" | "email" | null;
   isLoading: boolean;
   error: string | null;
   clearChat: () => void;
@@ -25,7 +31,29 @@ export function useChat(): UseChatReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUserMessage, setLastUserMessage] = useState<string | null>(null);
+  const [sessionProfile, setSessionProfile] = useState<Record<string, string>>({});
+  const [pendingRequiredField, setPendingRequiredField] = useState<"name" | "phone" | "email" | null>(null);
   const messageIdRef = useRef(0);
+  const sessionId = getChatSessionId();
+
+  const hasCompleteLead = useCallback((profile: Record<string, string>) => {
+    return Boolean(profile.name && profile.phone && profile.email);
+  }, []);
+
+  const emitEvent = useCallback(
+    async (eventType: ChatEventType, payload: Record<string, unknown> = {}) => {
+      try {
+        await postChatEvent({
+          event_type: eventType,
+          session_id: sessionId,
+          payload,
+        });
+      } catch {
+        // Event tracking should never break the chat experience.
+      }
+    },
+    [sessionId]
+  );
 
   const generateId = () => `msg_${++messageIdRef.current}_${Date.now()}`;
 
@@ -51,9 +79,12 @@ export function useChat(): UseChatReturn {
     setIsLoading(true);
     setError(null);
     setLastUserMessage(text.trim());
+    await emitEvent("intent_selected", { query: text.trim() });
 
     try {
       const response = await sendChatMessage(text.trim());
+      const nextProfile = response.session_profile ?? {};
+      const becameComplete = hasCompleteLead(nextProfile) && !hasCompleteLead(sessionProfile);
 
       setMessages((prev) =>
         prev.map((msg) =>
@@ -63,10 +94,49 @@ export function useChat(): UseChatReturn {
                 content: response.response,
                 isLoading: false,
                 sources: response.sources,
+                actions: response.ui_hints?.actions,
               }
             : msg
         )
       );
+
+      setSessionProfile(nextProfile);
+      setPendingRequiredField(response.ui_hints?.next_required_field ?? null);
+
+      await emitEvent("response_generated", {
+        query: text.trim(),
+        route_decision: response.route_decision,
+        provider_used: response.provider_used,
+        fallback_reason: response.fallback_reason ?? null,
+        next_required_field: response.ui_hints?.next_required_field ?? null,
+        actions: response.ui_hints?.actions?.map((action) => action.value) ?? [],
+        consultants: response.sources?.map((src) => src.metadata?.consultant_name).filter(Boolean) ?? [],
+      });
+
+      if (response.route_decision === "blocked") {
+        await emitEvent("off_topic_query", {
+          query: text.trim(),
+          reason: response.fallback_reason ?? "blocked",
+        });
+      }
+
+      if (response.sources?.length) {
+        await emitEvent("consultant_viewed", {
+          count: response.sources.length,
+          consultants: response.sources
+            .map((src) => src.metadata?.consultant_name)
+            .filter(Boolean),
+        });
+      }
+
+      if (becameComplete) {
+        await emitEvent("lead_form_submitted", {
+          name: nextProfile.name,
+          email: nextProfile.email,
+          phone: nextProfile.phone,
+          service_needed: nextProfile.service_needed,
+        });
+      }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : "Failed to get response";
       setError(errorMsg);
@@ -85,7 +155,12 @@ export function useChat(): UseChatReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading]);
+  }, [emitEvent, hasCompleteLead, isLoading, sessionProfile]);
+
+  const sendQuickReply = useCallback(async (value: string) => {
+    await emitEvent("cta_selected", { value });
+    await sendMessage(value);
+  }, [emitEvent, sendMessage]);
 
   const retryLastMessage = useCallback(async () => {
     if (!lastUserMessage || isLoading) return;
@@ -93,11 +168,30 @@ export function useChat(): UseChatReturn {
   }, [isLoading, lastUserMessage, sendMessage]);
 
   const clearChat = useCallback(() => {
+    emitEvent("session_exit", {
+      reason: "user_cleared_chat",
+      profile: sessionProfile,
+      last_message: lastUserMessage,
+    });
     setMessages([]);
     setError(null);
     setLastUserMessage(null);
+    setSessionProfile({});
+    setPendingRequiredField(null);
     sessionStorage.removeItem("ofstride_session_id");
-  }, []);
+  }, [emitEvent, lastUserMessage, sessionProfile]);
 
-  return { messages, sendMessage, retryLastMessage, isLoading, error, clearChat };
+  return {
+    messages,
+    sendMessage,
+    sendQuickReply,
+    retryLastMessage,
+    emitEvent,
+    sessionId,
+    sessionProfile,
+    pendingRequiredField,
+    isLoading,
+    error,
+    clearChat,
+  };
 }

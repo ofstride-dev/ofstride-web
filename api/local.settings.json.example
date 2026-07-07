@@ -3,6 +3,7 @@
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "python",
+    "KEEP_WARM_DISABLED": "true",
     "ENV": "dev",
 
     "LLM_PROVIDER": "mock",
@@ -29,6 +30,18 @@
     "SESSION_MAX_MESSAGES": "16",
 
     "INGEST_CHUNK_SIZE": "1400",
-    "INGEST_CHUNK_OVERLAP": "200"
+    "INGEST_CHUNK_OVERLAP": "200",
+
+    "CHAT_EVENTS_ENABLED": "true",
+    "CHAT_EVENT_QUEUE_FILE": "api/.runtime/chat_events.ndjson",
+    "CHAT_EVENT_REMINDER_DELAY_MINUTES": "1440",
+    "CHAT_REMINDER_STATE_FILE": "api/.runtime/chat_reminder_state.json",
+    "CHAT_REMINDER_BATCH_SIZE": "20",
+    "CHAT_WEBHOOK_URL": "",
+    "CONTACT_WEBHOOK_URL": "",
+    "ZAPIER_WEBHOOK_URL": "",
+
+    "DURABLE_STORE_ENABLED": "true",
+    "DURABLE_SQLITE_PATH": "api/.runtime/chat_state.db"
   }
 }

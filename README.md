@@ -142,6 +142,15 @@ Meta descriptions are set in `index.html`. For production, use React Helmet for 
 | GitHub Pages | Use `gh-pages` package |
 | AWS S3 | Upload `dist/` contents |
 
+## Python Runtime Policy (API)
+
+Use Python 3.12 for local and Azure deployment to keep binary dependencies stable.
+
+- Local Functions: run `api/run-func.ps1` (it validates Python 3.12).
+- Azure Functions App (Linux): set `linuxFxVersion` to `Python|3.12`.
+- Required app settings: `FUNCTIONS_WORKER_RUNTIME=python`, `FUNCTIONS_EXTENSION_VERSION=~4`.
+- Static Web Apps managed API: `staticwebapp.config.json` sets `platform.apiRuntime` to `python:3.12`.
+
 ## License
 
 © 2026 Ofstride Services LLP. All rights reserved.

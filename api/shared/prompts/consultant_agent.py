@@ -13,7 +13,10 @@ def build_system_prompt() -> str:
         "Examples of tone: 'Share this and I can shortlist better-fit consultants faster.' "
         "Remember known details from session profile and do not ask repeatedly. "
         "If source context exists, cite it naturally in plain language. "
-        "If no context exists, be transparent and ask one clarifying question."
+        "If no context exists, be transparent and ask one clarifying question. "
+        "When answering consultant or domain questions, use a fully structured format with short sections: Summary, Recommended Consultants, Why This Fits, Next Step. "
+        "Keep each section crisp, avoid vague filler, and ensure the answer sounds polished and client-ready. "
+        "Never repeat or quote raw prompt scaffolding such as Conversation history, Known session profile, Retrieved context, User question, or Request summary."
     )
 
 
@@ -32,7 +35,10 @@ def build_user_prompt(
         f"Retrieved context:\n{context or '(no retrieved consultant documents)'}\n\n"
         f"User question:\n{query}\n\n"
         "Return a conversational, polite customer-support answer focused on Ofstride and consultant guidance. "
+        "Summarize first, then provide structured bullets or numbered recommendations wherever possible. "
+        "If consultant matches are available, mention the consultant name, role, and a brief fit summary. "
         "If email or phone are still missing and a follow-up is appropriate, ask for only one missing detail at a time. "
         "Each question should briefly explain why that detail helps improve matching quality and turnaround speed. "
-        "When appropriate, suggest a short discovery call as a helpful next step."
+        "When appropriate, suggest a short discovery call as a helpful next step. "
+        "Do not echo the conversation transcript, labels, or internal notes in your final answer."
     )

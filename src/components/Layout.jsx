@@ -411,11 +411,11 @@ function Layout() {
           type="button"
           onClick={() => setIsChatOpen((prev) => !prev)}
           aria-expanded={isChatOpen}
-          aria-label={isChatOpen ? 'Close consultant chat' : 'Open consultant chat'}
+          aria-label={isChatOpen ? 'Close Ofstride Assistance' : 'Open Ofstride Assistance'}
           className="ml-auto inline-flex items-center gap-2 rounded-full bg-secondary text-white px-4 py-3 shadow-lg hover:bg-blue-600 transition-colors"
         >
           {isChatOpen ? <X className="w-5 h-5" /> : <MessageCircle className="w-5 h-5" />}
-          <span className="text-sm font-semibold">Consultant Chat</span>
+          <span className="text-sm font-semibold">Ofstride Assistance</span>
         </button>
       </div>
     </div>

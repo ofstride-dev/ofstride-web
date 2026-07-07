@@ -5,7 +5,7 @@ import re
 REQUIRED_FIELDS = ["name", "phone", "email"]
 
 YES_TOKENS = {"yes", "y", "interested", "show", "services", "service", "tell me services"}
-NO_EXIT_TOKENS = {"no", "not interested", "quit", "exit", "stop", "bye", "close"}
+NO_EXIT_TOKENS = {"no", "not interested", "quit", "exit", "stop", "bye", "goodbye", "good bye", "close", "done", "see you", "take care"}
 DIRECT_INTENT_HINTS = {
     "consultant",
     "recommend",
@@ -25,6 +25,50 @@ DIRECT_INTENT_HINTS = {
     "ai",
     "data",
     "strategy",
+    "technology",
+    "digital",
+    "growth",
+    "workforce",
+    "people",
+    "compliance",
+}
+
+DOMAIN_INTENT_MAP = {
+    "People & Workforce": {
+        "people",
+        "workforce",
+        "hr",
+        "human resources",
+        "payroll",
+        "recruitment",
+        "hiring",
+        "eor",
+    },
+    "Finance & Compliance": {
+        "finance",
+        "compliance",
+        "tax",
+        "gst",
+        "legal",
+        "cfo",
+        "regulatory",
+    },
+    "Technology & Growth": {
+        "technology",
+        "tech",
+        "it",
+        "digital",
+        "ai",
+        "data",
+        "strategy",
+        "growth",
+    },
+}
+
+DOMAIN_SEARCH_QUERIES = {
+    "People & Workforce": "HR payroll recruitment executive search workforce EOR consultant",
+    "Finance & Compliance": "finance compliance legal GST tax virtual CFO consultant",
+    "Technology & Growth": "technology IT digital transformation AI data science business strategy consultant",
 }
 
 
@@ -50,10 +94,27 @@ def has_direct_consulting_intent(text: str) -> bool:
     return any(_contains_token(normalized, token) for token in DIRECT_INTENT_HINTS)
 
 
+def detect_domain_interest(text: str) -> str | None:
+    normalized = text.lower().strip()
+    if not normalized:
+        return None
+
+    for domain, tokens in DOMAIN_INTENT_MAP.items():
+        if normalized == domain.lower():
+            return domain
+        if any(_contains_token(normalized, token) for token in tokens):
+            return domain
+    return None
+
+
+def build_domain_search_query(domain: str) -> str:
+    return DOMAIN_SEARCH_QUERIES.get(domain, domain)
+
+
 def build_intro_prompt() -> str:
     return (
-        "Hello! How can I help you?\n"
-        "I am Ofstride Assistance. To get started, may I know your name?"
+        "That sounds exciting. I can help you identify the right Ofstride consulting service and consultant fit.\n"
+        "To personalize recommendations quickly, may I know your name?"
     )
 
 
@@ -94,8 +155,8 @@ def build_intake_completed_message() -> str:
 def build_interest_prompt(name: str | None = None) -> str:
     display_name = (name or "there").strip() or "there"
     return (
-        f"Welcome, {display_name}. I can help you with Ofstride services. "
-        "Would you like to see our services by domain?"
+        f"Welcome, {display_name}. I can map your requirement to Ofstride service domains and suggest consultant options. "
+        "Would you like to review services by domain first?"
     )
 
 
@@ -131,12 +192,20 @@ def build_services_catalog_response() -> tuple[str, list[dict]]:
 
 
 def build_exit_message() -> str:
-    return "Thank you. Let me know if you have any other question."
+    return (
+        "No problem at all. I have saved your current discussion context. "
+        "When you return, I can continue from here and help schedule the right consultant call."
+    )
 
 
 def append_cta_options(answer: str) -> str:
     base = answer.rstrip()
-    if "schedule a call" in base.lower() or "send a message" in base.lower():
+    lowered = base.lower()
+    if (
+        "schedule a call" in lowered
+        or "send a message" in lowered
+        or "would you like to continue with:" in lowered
+    ):
         return base
 
     return (

@@ -7,6 +7,8 @@ import type {
   ApiEnvelope,
   ApiErrorPayload,
   ChatResponse,
+  ChatEventRequest,
+  ChatEventResponse,
   ConsultantSearchResult,
   HealthCheck,
 } from "../types/chat";
@@ -111,4 +113,18 @@ export async function searchConsultants(query: string): Promise<ConsultantSearch
     `${API_BASE}/consultants/search?${new URLSearchParams({ query })}`
   );
   return parseEnvelope<ConsultantSearchResult>(response);
+}
+
+export function getChatSessionId(): string {
+  return getOrCreateSessionId();
+}
+
+export async function postChatEvent(payload: ChatEventRequest): Promise<ChatEventResponse> {
+  const response = await fetch(`${API_BASE}/events`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  return parseEnvelope<ChatEventResponse>(response);
 }

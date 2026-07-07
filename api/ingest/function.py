@@ -12,7 +12,6 @@ if shared_path not in sys.path:
     sys.path.insert(0, shared_path)
 
 import azure.functions as func
-from pydantic import BaseModel, Field, ValidationError
 
 from core.api_contract import error_response, get_trace_id, ok_response, options_response
 from ingestion.parsers import parse_file
@@ -23,10 +22,22 @@ from security.rate_limiter import enforce_rate_limit, get_client_key
 logger = logging.getLogger("ofstride")
 
 
-class IngestRequest(BaseModel):
-    filename: str = Field(..., min_length=1)
-    content_base64: str = Field(..., min_length=1)
-    metadata: dict = Field(default_factory=dict)
+def _validate_ingest_body(body: object) -> tuple[str, str, dict]:
+    if not isinstance(body, dict):
+        raise ValueError("Request body must be an object.")
+
+    filename = str(body.get("filename", "")).strip()
+    content_base64 = str(body.get("content_base64", "")).strip()
+    metadata = body.get("metadata") or {}
+
+    if not filename:
+        raise ValueError("filename is required.")
+    if not content_base64:
+        raise ValueError("content_base64 is required.")
+    if not isinstance(metadata, dict):
+        raise ValueError("metadata must be an object.")
+
+    return filename, content_base64, metadata
 
 
 async def main(req: func.HttpRequest) -> func.HttpResponse:
@@ -84,8 +95,8 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
     
     try:
         body = req.get_json()
-        ingest_req = IngestRequest(**body)
-    except (ValueError, ValidationError) as e:
+        filename, content_base64, metadata = _validate_ingest_body(body)
+    except ValueError as e:
         return error_response(
             error_type="validation",
             message="Invalid request payload.",
@@ -100,7 +111,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
         for ext in settings.ingest_allowed_extensions.split(",")
         if ext.strip()
     }
-    extension = os.path.splitext(ingest_req.filename)[1].lower()
+    extension = os.path.splitext(filename)[1].lower()
     if extension not in allowed_extensions:
         return error_response(
             error_type="validation",
@@ -113,7 +124,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
     
     try:
         # Decode base64 content
-        file_bytes = base64.b64decode(ingest_req.content_base64)
+        file_bytes = base64.b64decode(content_base64)
         if len(file_bytes) > settings.ingest_max_file_bytes:
             return error_response(
                 error_type="validation",
@@ -128,7 +139,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
             )
         
         # Parse document
-        parsed_docs = list(parse_file(file_bytes, ingest_req.filename))
+        parsed_docs = list(parse_file(file_bytes, filename))
         
         if not parsed_docs:
             return error_response(
@@ -146,7 +157,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
                     "content": parsed.content,
                     "metadata": {
                         **parsed.metadata,
-                        **ingest_req.metadata,
+                        **metadata,
                         "ingested_at": __import__("datetime").datetime.utcnow().isoformat(),
                     },
                 }
@@ -177,6 +188,6 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
             req=req,
             status_code=500,
             details={
-                "reason": str(e) if getattr(get_settings(), "ENV", "dev") == "dev" else "Please try again"
+                "reason": str(e) if get_settings().env == "dev" else "Please try again"
             },
         )

@@ -29,15 +29,51 @@ class LocalConsultantDirectory:
             ]
 
     @staticmethod
+    def _infer_domain(row: dict[str, str]) -> str:
+        role = (row.get("role") or "").lower()
+        email = (row.get("email") or "").lower()
+        name = (row.get("name") or "").lower()
+        combined = " ".join([role, email, name])
+
+        if any(token in combined for token in ["hr", "payroll", "recruit", "hiring", "eor", "workforce"]):
+            return "People & Workforce"
+        if any(token in combined for token in ["finance", "tax", "gst", "legal", "compliance", "cfo"]):
+            return "Finance & Compliance"
+        if any(token in combined for token in ["it", "technology", "digital", "ai", "data", "strategy"]):
+            return "Technology & Growth"
+        return "Business Consulting"
+
+    @classmethod
+    def _infer_brief_summary(cls, row: dict[str, str]) -> str:
+        domain = cls._infer_domain(row)
+        role = row.get("role") or "Consultant"
+        location = row.get("location") or "India"
+
+        if domain == "People & Workforce":
+            focus = "workforce planning, HR operations, payroll, and hiring support"
+        elif domain == "Finance & Compliance":
+            focus = "finance controls, compliance readiness, tax, and regulatory coordination"
+        elif domain == "Technology & Growth":
+            focus = "digital transformation, IT consulting, AI and data initiatives, and growth execution"
+        else:
+            focus = "business advisory and execution support"
+
+        return f"{role} based in {location}, supporting {focus}."
+
+    @classmethod
     def _score_row(query: str, row: dict[str, str]) -> float:
         lowered_query = query.lower()
         tokens = [token for token in lowered_query.replace(",", " ").split() if token]
+        domain = cls._infer_domain(row)
+        summary = cls._infer_brief_summary(row)
         haystack = " ".join(
             [
                 row.get("name", ""),
                 row.get("location", ""),
                 row.get("role", ""),
                 row.get("email", ""),
+                domain,
+                summary,
             ]
         ).lower()
 
@@ -71,21 +107,18 @@ class LocalConsultantDirectory:
 
         results: list[RetrievedDocument] = []
         for score, row in top:
-            summary = (
-                f"Consultant: {row.get('name', 'Unknown')}\n"
-                f"Role: {row.get('role') or 'Not specified'}\n"
-                f"Location: {row.get('location') or 'Not specified'}\n"
-                f"Email: {row.get('email') or 'Not specified'}\n"
-                f"Phone: {row.get('mobile') or 'Not specified'}"
-            )
+            domain = self._infer_domain(row)
+            summary = self._infer_brief_summary(row)
             metadata = {
                 "source": "consultants_seed.csv",
                 "source_type": "consultant_data",
                 "consultant_name": row.get("name", "Unknown"),
                 "location": row.get("location", ""),
-                "role": row.get("role", ""),
+                "role": row.get("role", "") or domain,
                 "email": row.get("email", ""),
                 "mobile": row.get("mobile", ""),
+                "domain": domain,
+                "brief_summary": summary,
             }
             results.append(RetrievedDocument(page_content=summary, metadata=metadata, score=score))
 

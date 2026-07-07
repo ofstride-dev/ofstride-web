@@ -39,7 +39,13 @@ SERVICE_KEYWORDS = {
     "it": "IT & Digital Transformation",
     "ai": "AI & Data Science",
     "data": "AI & Data Science",
+    "technology": "IT & Digital Transformation",
+    "digital": "IT & Digital Transformation",
     "strategy": "Business Strategy",
+    "growth": "Business Strategy",
+    "people": "HR Consulting",
+    "workforce": "EOR & Workforce",
+    "compliance": "Legal & Regulatory",
     "eor": "EOR & Workforce",
 }
 
@@ -76,6 +82,17 @@ def _contains_token(text: str, token: str) -> bool:
     return re.search(rf"\b{re.escape(token)}\b", normalized) is not None
 
 
+def _normalize_phone(candidate: str) -> str | None:
+    raw = " ".join(candidate.split())
+    digits = "".join(ch for ch in raw if ch.isdigit())
+    if len(digits) < 10:
+        return None
+
+    if raw.startswith("+"):
+        return "+" + digits
+    return digits
+
+
 def extract_profile_updates(text: str) -> dict[str, str]:
     lowered = text.lower()
     updates: dict[str, str] = {}
@@ -86,7 +103,9 @@ def extract_profile_updates(text: str) -> dict[str, str]:
 
     phone_match = PHONE_RE.search(text)
     if phone_match:
-        updates["phone"] = " ".join(phone_match.group(0).split())
+        normalized_phone = _normalize_phone(phone_match.group(0))
+        if normalized_phone:
+            updates["phone"] = normalized_phone
 
     name_patterns = [
         r"(?:my name is|i am|this is)\s+([A-Za-z][A-Za-z\s.'-]{1,60})",

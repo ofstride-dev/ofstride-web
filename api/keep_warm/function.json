@@ -1,5 +1,6 @@
 {
   "scriptFile": "function.py",
+  "disabled": "%KEEP_WARM_DISABLED%",
   "bindings": [
     {
       "name": "mytimer",
