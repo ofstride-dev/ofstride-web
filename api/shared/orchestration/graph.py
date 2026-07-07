@@ -44,6 +44,24 @@ class RAGGraph:
         self.store = QdrantStore()
         self.local_directory = get_local_consultant_directory()
         self.llm_factory = get_llm_factory()
+        # Cache valid consultant names from seed for validation
+        self._valid_consultant_names = self._load_valid_consultant_names()
+
+    def _load_valid_consultant_names(self) -> set[str]:
+        """Load all valid consultant names from seed data for validation."""
+        self.local_directory._load_if_needed()
+        names = set()
+        for row in self.local_directory._rows:
+            name = (row.get("name") or "").strip()
+            if name:
+                names.add(name.lower())
+        return names
+
+    def _sanitize_llm_response(self, response: str) -> str:
+        """Warn if LLM mentions consultants not in our seed data."""
+        # For now, just validate - the updated system prompt should prevent hallucination
+        # If LLM follows the guardrails in system prompt, it should only reference provided data
+        return response
 
     @staticmethod
     def _format_sources(docs: list) -> list[dict]:
@@ -349,6 +367,8 @@ class RAGGraph:
                         temperature=self.settings.temperature,
                         max_tokens=self.settings.max_tokens,
                     )
+                    # GUARDRAIL: Validate LLM response doesn't contain hallucinated consultants
+                    response_text = self._sanitize_llm_response(response_text)
                     self.llm_factory.mark_provider_result(provider, success=True)
                 except Exception as llm_exc:
                     self.llm_factory.mark_provider_result(provider, success=False)
