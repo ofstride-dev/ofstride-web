@@ -2,6 +2,14 @@ from __future__ import annotations
 
 import re
 
+# ============ STATE MACHINE CONSTANTS ============
+STATE_OPEN = "OPEN"
+STATE_INTAKE_FIELDS = "INTAKE_FIELDS"
+STATE_INTAKE_SUBMITTED = "INTAKE_SUBMITTED"
+STATE_DOMAIN_SELECTED = "DOMAIN_SELECTED"
+STATE_CONSULTANTS_SHOWN = "CONSULTANTS_SHOWN"
+STATE_CONVERSATION = "CONVERSATION"
+
 REQUIRED_FIELDS = ["name", "phone", "email"]
 
 YES_TOKENS = {"yes", "y", "interested", "show", "services", "service", "tell me services"}
@@ -43,6 +51,8 @@ DOMAIN_INTENT_MAP = {
         "recruitment",
         "hiring",
         "eor",
+        "talent",
+        "staffing",
     },
     "Finance & Compliance": {
         "finance",
@@ -52,6 +62,8 @@ DOMAIN_INTENT_MAP = {
         "legal",
         "cfo",
         "regulatory",
+        "accounting",
+        "audit",
     },
     "Technology & Growth": {
         "technology",
@@ -61,7 +73,11 @@ DOMAIN_INTENT_MAP = {
         "ai",
         "data",
         "strategy",
+        "business strategy",
         "growth",
+        "transformation",
+        "innovation",
+        "data science",
     },
 }
 
@@ -213,4 +229,129 @@ def append_cta_options(answer: str) -> str:
         "Would you like to continue with:\n"
         "1) Send a message\n"
         "2) Schedule a call"
+    )
+
+
+# ============ STATE MACHINE ORCHESTRATION ============
+def get_next_state(
+    current_state: str,
+    profile: dict[str, str],
+    query: str,
+) -> tuple[str, str, list[dict]]:
+    """
+    Determine next state and response based on current state, profile, and user query.
+    
+    Returns: (next_state, response_text, actions)
+    """
+    
+    # Check for exit intent at any state
+    if is_exit_intent(query):
+        return STATE_OPEN, build_exit_message(), [
+            {"id": "act_1", "label": "Send a message", "value": "Send a message", "kind": "quick_reply"},
+            {"id": "act_2", "label": "Schedule a call", "value": "Schedule a call", "kind": "quick_reply"},
+        ]
+    
+    # STATE: OPEN (chat just started)
+    if current_state == STATE_OPEN:
+        return (
+            STATE_INTAKE_FIELDS,
+            build_intro_prompt(),
+            [],
+        )
+    
+    # STATE: INTAKE_FIELDS (collecting name, phone, email)
+    if current_state == STATE_INTAKE_FIELDS:
+        missing = missing_required_fields(profile)
+        
+        if missing:
+            # Still have missing fields, stay in INTAKE_FIELDS
+            next_prompt = build_next_required_prompt(missing)
+            return (
+                STATE_INTAKE_FIELDS,
+                next_prompt,
+                [],
+            )
+        else:
+            # All fields collected, move to next state
+            intake_complete = build_intake_completed_message()
+            interest_prompt = build_interest_prompt(profile.get("name"))
+            combined_response = f"{intake_complete}\n\n{interest_prompt}"
+            return (
+                STATE_INTAKE_SUBMITTED,
+                combined_response,
+                [
+                    {"id": "act_1", "label": "Yes, show services", "value": "Yes, show services", "kind": "quick_reply"},
+                    {"id": "act_2", "label": "Schedule a call", "value": "Schedule a call", "kind": "quick_reply"},
+                ],
+            )
+    
+    # STATE: INTAKE_SUBMITTED (waiting for domain selection or service catalog view)
+    if current_state == STATE_INTAKE_SUBMITTED:
+        domain = detect_domain_interest(query)
+        
+        if domain:
+            # User selected a domain
+            return (
+                STATE_DOMAIN_SELECTED,
+                f"Great! You're interested in {domain}. I'm finding the best consultant match for you.",
+                [],
+            )
+        elif is_affirmative_interest(query):
+            # User wants to see services catalog
+            services_msg, _ = build_services_catalog_response()
+            return (
+                STATE_DOMAIN_SELECTED,
+                services_msg,
+                [
+                    {"id": "act_1", "label": "People & Workforce", "value": "People & Workforce", "kind": "quick_reply"},
+                    {"id": "act_2", "label": "Finance & Compliance", "value": "Finance & Compliance", "kind": "quick_reply"},
+                    {"id": "act_3", "label": "Technology & Growth", "value": "Technology & Growth", "kind": "quick_reply"},
+                ],
+            )
+        else:
+            # Re-ask
+            prompt = build_interest_prompt(profile.get("name"))
+            return (
+                STATE_INTAKE_SUBMITTED,
+                prompt,
+                [
+                    {"id": "act_1", "label": "Yes, show services", "value": "Yes, show services", "kind": "quick_reply"},
+                    {"id": "act_2", "label": "Schedule a call", "value": "Schedule a call", "kind": "quick_reply"},
+                ],
+            )
+    
+    # STATE: DOMAIN_SELECTED (user selected domain, ready to show consultants)
+    if current_state == STATE_DOMAIN_SELECTED:
+        # In graph.py, this state triggers consultant retrieval
+        # Move to CONSULTANTS_SHOWN (handled by graph.py after retrieval)
+        return (
+            STATE_CONSULTANTS_SHOWN,
+            "",  # Response will be built by graph.py with consultant data
+            [],
+        )
+    
+    # STATE: CONSULTANTS_SHOWN (showing consultants, open for Q&A)
+    if current_state == STATE_CONSULTANTS_SHOWN:
+        # User can ask follow-up questions, view more consultants, etc.
+        # Stay in conversation mode
+        return (
+            STATE_CONVERSATION,
+            "",  # Response will be LLM-generated
+            [],
+        )
+    
+    # STATE: CONVERSATION (ongoing Q&A)
+    if current_state == STATE_CONVERSATION:
+        # Continue in conversation
+        return (
+            STATE_CONVERSATION,
+            "",  # Response will be LLM-generated
+            [],
+        )
+    
+    # Default fallback
+    return (
+        STATE_OPEN,
+        "I'm not sure what happened. Let's start fresh. How can I help you today?",
+        [],
     )

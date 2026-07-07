@@ -19,6 +19,13 @@ from orchestration.intake_flow import (
     is_affirmative_interest,
     is_exit_intent,
     missing_required_fields,
+    get_next_state,
+    STATE_OPEN,
+    STATE_INTAKE_FIELDS,
+    STATE_INTAKE_SUBMITTED,
+    STATE_DOMAIN_SELECTED,
+    STATE_CONSULTANTS_SHOWN,
+    STATE_CONVERSATION,
 )
 from orchestration.session_profile import (
     build_profile_summary,
@@ -221,348 +228,170 @@ class RAGGraph:
         return "\n".join(lines)
 
     async def run(self, *, query: str, session_id: str) -> dict:
-        allowed, reason = self.topic_guard.check(query)
-        if not allowed:
-            polite_redirect = (
-                "I am focused on Ofstride services, consultant recommendations, and engagement planning. "
-                "If you share your business requirement, preferred domain, or need for a call, I can help concisely."
-            )
-            response_text = self._normalize_response_text(polite_redirect)
-            return {
-                "response": response_text,
-                "session_id": session_id,
-                "route_decision": "blocked",
-                "confidence": 0.0,
-                "sources": [],
-                "provider_used": "none",
-                "fallback_reason": reason or "out_of_scope",
-                "ui_hints": {
-                    "actions": self._build_actions(
-                        [
-                            "People & Workforce services",
-                            "Finance & Compliance services",
-                            "Technology & Growth services",
-                            "Schedule a call",
-                        ]
-                    ),
-                    "next_required_field": None,
-                },
-            }
-
+        # Get session data first to check current state
         history = self.session_store.get(session_id)
-        previous_profile = self.session_store.get_profile(session_id)
-        profile_updates = extract_profile_updates(query)
-        profile = self.session_store.upsert_profile(session_id, profile_updates)
-
-        lowered_query = query.lower().strip()
-        first_turn = len(history) == 0
-        domain_interest = detect_domain_interest(query)
-        direct_lookup = has_direct_consulting_intent(query) and (
-            "consultant" in lowered_query
-            or "who is" in lowered_query
-            or "tell me about" in lowered_query
-            or "profile" in lowered_query
-        )
-        bypass_intake = direct_lookup or domain_interest is not None
-
-        if is_exit_intent(query):
-            answer = self._normalize_response_text(build_exit_message())
-            self.session_store.append(session_id, {"role": "user", "content": query})
-            self.session_store.append(session_id, {"role": "assistant", "content": answer})
-            return {
-                "response": answer,
-                "session_id": session_id,
-                "route_decision": "conversational",
-                "confidence": 0.95,
-                "sources": [],
-                "provider_used": "intake_router",
-                "fallback_reason": None,
-                "session_profile": profile,
-                "ui_hints": {
-                    "actions": self._build_actions(["Send a message", "Schedule a call"]),
-                    "next_required_field": None,
-                },
-            }
-
-        missing_required = missing_required_fields(profile)
-        missing_required_before = missing_required_fields(previous_profile)
-
-        if missing_required and not bypass_intake:
-            if first_turn and not profile.get("intro_shown") and missing_required[0] == "name":
-                intake_prompt = build_intro_prompt()
-                profile = self.session_store.upsert_profile(session_id, {"intro_shown": "yes"})
-            else:
-                intake_prompt = build_next_required_prompt(missing_required)
-
-            if (len(missing_required_before) > len(missing_required)) and not first_turn:
-                intake_prompt = (
-                    "Thanks, that helps. "
-                    f"{intake_prompt}"
+        profile = self.session_store.get_profile(session_id)
+        current_state = profile.get("state", STATE_OPEN)
+        
+        # 1. TOPIC GUARD CHECK (skip during intake to allow single-word inputs like names)
+        if current_state not in [STATE_INTAKE_FIELDS, STATE_INTAKE_SUBMITTED]:
+            allowed, reason = self.topic_guard.check(query)
+            if not allowed:
+                polite_redirect = (
+                    "I am focused on Ofstride services, consultant recommendations, and engagement planning. "
+                    "If you share your business requirement, preferred domain, or need for a call, I can help concisely."
                 )
-
-            intake_prompt = self._normalize_response_text(intake_prompt)
-
-            self.session_store.append(
-                session_id,
-                {"role": "user", "content": query},
-            )
-            self.session_store.append(
-                session_id,
-                {"role": "assistant", "content": intake_prompt},
-            )
-
-            return {
-                "response": intake_prompt,
-                "session_id": session_id,
-                "route_decision": "conversational",
-                "confidence": 0.9,
-                "sources": [],
-                "provider_used": "intake_router",
-                "fallback_reason": None,
-                "session_profile": profile,
-                "ui_hints": {
-                    "actions": self._build_actions(
-                        [
-                            "People & Workforce",
-                            "Finance & Compliance",
-                            "Technology & Growth",
-                            "Schedule a call",
-                        ]
-                    ),
-                    "next_required_field": missing_required[0],
-                },
-            }
-
-        if domain_interest:
-            search_query = build_domain_search_query(domain_interest)
-            docs, retrieval_warning = await self._search_consultants(search_query)
-            if not docs:
-                docs, fallback_warning = await self._search_consultants(query)
-                retrieval_warning = retrieval_warning or fallback_warning
-
-            answer = self._normalize_response_text(
-                self._build_domain_consultant_response(domain_interest, docs, profile, missing_required)
-            )
-            self.session_store.append(session_id, {"role": "user", "content": query})
-            self.session_store.append(session_id, {"role": "assistant", "content": answer})
-
-            return {
-                "response": answer,
-                "session_id": session_id,
-                "route_decision": "kb_success" if docs else "kb_no_results",
-                "confidence": 0.92 if docs else 0.55,
-                "sources": self._format_sources(docs),
-                "provider_used": "domain_router",
-                "fallback_reason": retrieval_warning,
-                "session_profile": profile,
-                "ui_hints": {
-                    "actions": self._build_actions(
-                        [
-                            "People & Workforce",
-                            "Finance & Compliance",
-                            "Technology & Growth",
-                            "Schedule a call",
-                        ]
-                    ),
-                    "highlight_consultants": bool(docs),
-                    "next_required_field": missing_required[0] if missing_required else None,
-                },
-            }
-
-        if profile.get("interest_prompted") != "yes":
-            # If the user already asked a specific consultant/service question,
-            # continue directly to retrieval instead of forcing a generic interest prompt.
-            if not has_direct_consulting_intent(query):
-                base = build_interest_prompt(profile.get("name"))
-                if len(missing_required_before) > 0:
-                    base = f"{build_intake_completed_message()}\n\n{base}"
-                answer = self._normalize_response_text(append_cta_options(base))
-                profile = self.session_store.upsert_profile(session_id, {"interest_prompted": "yes"})
-
-                self.session_store.append(session_id, {"role": "user", "content": query})
-                self.session_store.append(session_id, {"role": "assistant", "content": answer})
-
+                response_text = self._normalize_response_text(polite_redirect)
                 return {
-                    "response": answer,
+                    "response": response_text,
                     "session_id": session_id,
-                    "route_decision": "conversational",
-                    "confidence": 0.95,
+                    "state": STATE_OPEN,
+                    "route_decision": "blocked",
+                    "confidence": 0.0,
                     "sources": [],
-                    "provider_used": "intake_router",
-                    "fallback_reason": None,
-                    "session_profile": profile,
+                    "provider_used": "none",
+                    "fallback_reason": reason or "out_of_scope",
                     "ui_hints": {
-                        "actions": self._build_actions(["Yes, show services", "Schedule a call"]),
+                        "actions": self._build_actions(
+                            [
+                                "People & Workforce services",
+                                "Finance & Compliance services",
+                                "Technology & Growth services",
+                                "Schedule a call",
+                            ]
+                        ),
                         "next_required_field": None,
                     },
                 }
-            profile = self.session_store.upsert_profile(session_id, {"interest_prompted": "yes"})
+        
+        # 2. EXTRACT PROFILE FIELDS
+        profile_updates = extract_profile_updates(query)
+        profile = self.session_store.upsert_profile(session_id, profile_updates)
+        
+        # 3. USE STATE MACHINE TO DETERMINE NEXT STATE AND RESPONSE
+        next_state, response_text, actions = get_next_state(current_state, profile, query)
+        
+        # Save state
+        profile = self.session_store.upsert_profile(session_id, {"state": next_state})
+        
+        # 4. HANDLE DOMAIN-SELECTED STATE (retrieve consultants)
+        if next_state == STATE_DOMAIN_SELECTED:
+            domain = detect_domain_interest(query)
+            if domain:
+                search_query = build_domain_search_query(domain)
+                docs, retrieval_warning = await self._search_consultants(search_query)
+                if not docs:
+                    docs, fallback_warning = await self._search_consultants(query)
+                    retrieval_warning = retrieval_warning or fallback_warning
+                
+                missing_required = missing_required_fields(profile)
+                response_text = self._normalize_response_text(
+                    self._build_domain_consultant_response(domain, docs, profile, missing_required)
+                )
+                
+                # Move to CONSULTANTS_SHOWN after retrieving
+                next_state = STATE_CONSULTANTS_SHOWN
+                profile = self.session_store.upsert_profile(session_id, {"state": next_state})
+                
+                sources = self._format_sources(docs)
+                route_decision = "kb_success" if docs else "kb_no_results"
+            else:
+                sources = []
+                route_decision = "kb_no_results"
+        
+        # 5. HANDLE CONVERSATION STATE (LLM-based retrieval)
+        elif next_state == STATE_CONVERSATION:
+            docs, retrieval_warning = await self._search_consultants(query)
+            route_decision = "kb_success" if docs else "kb_no_results"
+            context = self._build_context(docs)
+            context = self._cap_text(context, self.settings.retrieval_max_context_chars)
+            company_context = get_company_profile_context()
+            short_history = history[-6:]
+            history_block = "\n".join(
+                [f"{msg.get('role', 'user')}: {msg.get('content', '')}" for msg in short_history]
+            )
+            profile_summary = build_profile_summary(profile)
 
-        if is_affirmative_interest(query):
-            services_message, services_sources = build_services_catalog_response()
-            answer = self._normalize_response_text(append_cta_options(services_message))
-            self.session_store.append(session_id, {"role": "user", "content": query})
-            self.session_store.append(session_id, {"role": "assistant", "content": answer})
-            return {
-                "response": answer,
-                "session_id": session_id,
-                "route_decision": "conversational",
-                "confidence": 0.95,
-                "sources": services_sources,
-                "provider_used": "intake_router",
-                "fallback_reason": None,
-                "session_profile": profile,
-                "ui_hints": {
-                    "actions": self._build_actions(
-                        [
-                            "People & Workforce",
-                            "Finance & Compliance",
-                            "Technology & Growth",
-                        ]
-                    ),
-                    "highlight_consultants": True,
-                    "next_required_field": None,
-                },
-            }
-
-        # If user does not want service catalog but asks a specific consultant/service question,
-        # continue to retrieval branch below.
-        if ("service" in lowered_query or "consultant" in lowered_query) and (
-            "not interested" in lowered_query
-        ):
-            answer = self._normalize_response_text(build_exit_message())
-            self.session_store.append(session_id, {"role": "user", "content": query})
-            self.session_store.append(session_id, {"role": "assistant", "content": answer})
-            return {
-                "response": answer,
-                "session_id": session_id,
-                "route_decision": "conversational",
-                "confidence": 0.95,
-                "sources": [],
-                "provider_used": "intake_router",
-                "fallback_reason": None,
-                "session_profile": profile,
-                "ui_hints": {
-                    "actions": self._build_actions(["Send a message", "Schedule a call"]),
-                    "next_required_field": None,
-                },
-            }
-
-        docs, retrieval_warning = await self._search_consultants(query)
-
-        route = "kb_success" if docs else "kb_no_results"
-        context = self._build_context(docs)
-        context = self._cap_text(context, self.settings.retrieval_max_context_chars)
-        company_context = get_company_profile_context()
-        short_history = history[-6:]
-        history_block = "\n".join(
-            [f"{msg.get('role', 'user')}: {msg.get('content', '')}" for msg in short_history]
-        )
-        profile_summary = build_profile_summary(profile)
-
-        system_prompt = build_system_prompt()
-        user_prompt = build_user_prompt(
-            history_block=history_block,
-            profile_summary=profile_summary,
-            company_context=company_context,
-            context=context,
-            query=query,
-        )
-
-        try:
-            selection = await self.llm_factory.get_healthy_llm_with_metadata()
-            provider = selection.provider
-            fallback_reason = selection.fallback_reason or retrieval_warning
-        except Exception as provider_exc:
-            fallback_reason = retrieval_warning or f"provider_selection_failed:{str(provider_exc)[:120]}"
-            answer = self._deterministic_fallback_answer(
+            system_prompt = build_system_prompt()
+            user_prompt = build_user_prompt(
+                history_block=history_block,
+                profile_summary=profile_summary,
+                company_context=company_context,
+                context=context,
                 query=query,
-                profile=profile,
-                reason=fallback_reason,
-            )
-            answer = self._normalize_response_text(append_cta_options(answer))
-
-            self.session_store.append(
-                session_id,
-                {"role": "user", "content": query},
-            )
-            self.session_store.append(
-                session_id,
-                {"role": "assistant", "content": answer},
             )
 
-            return {
-                "response": answer,
-                "session_id": session_id,
-                "route_decision": route,
-                "confidence": 0.3,
-                "sources": self._format_sources(docs),
-                "provider_used": "deterministic_fallback",
-                "fallback_reason": fallback_reason,
-                "session_profile": profile,
-                "ui_hints": {
-                    "actions": self._build_actions(
-                        [
-                            "People & Workforce",
-                            "Finance & Compliance",
-                            "Technology & Growth",
-                            "Schedule a call",
-                        ]
-                    ),
-                    "highlight_consultants": bool(docs),
-                    "next_required_field": None,
-                },
-            }
-        try:
-            answer = await selection.client.agenerate(
-                system_prompt=system_prompt,
-                user_prompt=user_prompt,
-                temperature=self.settings.temperature,
-                max_tokens=self.settings.max_tokens,
-            )
-            self.llm_factory.mark_provider_result(provider, success=True)
-        except Exception as llm_exc:
-            self.llm_factory.mark_provider_result(provider, success=False)
-            provider = provider
-            fallback_reason = fallback_reason or f"llm_generation_failed:{str(llm_exc)[:120]}"
-            answer = self._deterministic_fallback_answer(
-                query=query,
-                profile=profile,
-                reason=fallback_reason,
-            )
+            try:
+                selection = await self.llm_factory.get_healthy_llm_with_metadata()
+                provider = selection.provider
+                fallback_reason = selection.fallback_reason or retrieval_warning
+            except Exception as provider_exc:
+                fallback_reason = retrieval_warning or f"provider_selection_failed:{str(provider_exc)[:120]}"
+                response_text = self._deterministic_fallback_answer(
+                    query=query,
+                    profile=profile,
+                    reason=fallback_reason,
+                )
+                response_text = self._normalize_response_text(append_cta_options(response_text))
+                sources = []
+                route_decision = "fallback"
+                provider = None
+            else:
+                try:
+                    response_text = await selection.client.agenerate(
+                        system_prompt=system_prompt,
+                        user_prompt=user_prompt,
+                        temperature=self.settings.temperature,
+                        max_tokens=self.settings.max_tokens,
+                    )
+                    self.llm_factory.mark_provider_result(provider, success=True)
+                except Exception as llm_exc:
+                    self.llm_factory.mark_provider_result(provider, success=False)
+                    fallback_reason = fallback_reason or f"llm_generation_failed:{str(llm_exc)[:120]}"
+                    response_text = self._deterministic_fallback_answer(
+                        query=query,
+                        profile=profile,
+                        reason=fallback_reason,
+                    )
+                    route_decision = "fallback"
 
-        answer = self._normalize_response_text(append_cta_options(answer))
+                response_text = self._normalize_response_text(append_cta_options(response_text))
+                sources = self._format_sources(docs)
+        
+        else:
+            # OPEN, INTAKE_FIELDS, INTAKE_SUBMITTED, CONSULTANTS_SHOWN: use state machine response as-is
+            sources = []
+            route_decision = "conversational"
+            provider = None
+            fallback_reason = None
 
-        self.session_store.append(
-            session_id,
-            {"role": "user", "content": query},
-        )
-        self.session_store.append(
-            session_id,
-            {"role": "assistant", "content": answer},
-        )
+        # 6. APPEND TO HISTORY
+        self.session_store.append(session_id, {"role": "user", "content": query})
+        self.session_store.append(session_id, {"role": "assistant", "content": response_text})
 
-        confidence = min(0.95, 0.35 + (0.1 * len(docs))) if docs else 0.25
-
+        # 7. BUILD RESPONSE
+        missing_required = missing_required_fields(profile)
+        confidence = 0.95 if next_state in [STATE_INTAKE_FIELDS, STATE_INTAKE_SUBMITTED] else 0.85
+        
         return {
-            "response": answer,
+            "response": response_text,
             "session_id": session_id,
-            "route_decision": route,
-            "confidence": round(confidence, 2),
-            "sources": self._format_sources(docs),
-            "provider_used": provider.value,
+            "state": next_state,
+            "route_decision": route_decision,
+            "confidence": confidence,
+            "sources": sources,
+            "provider_used": provider.value if provider else "state_machine",
             "fallback_reason": fallback_reason,
             "session_profile": profile,
             "ui_hints": {
-                "actions": self._build_actions(
+                "actions": actions if actions else self._build_actions(
                     [
-                            "People & Workforce",
-                            "Finance & Compliance",
-                            "Technology & Growth",
+                        "People & Workforce",
+                        "Finance & Compliance",
+                        "Technology & Growth",
                         "Schedule a call",
                     ]
                 ),
-                "highlight_consultants": bool(docs),
-                "next_required_field": None,
+                "next_required_field": missing_required[0] if missing_required else None,
             },
         }

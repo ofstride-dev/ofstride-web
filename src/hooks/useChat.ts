@@ -20,6 +20,7 @@ interface UseChatReturn {
   emitEvent: (eventType: ChatEventType, payload?: Record<string, unknown>) => Promise<void>;
   sessionId: string;
   sessionProfile: Record<string, string>;
+  chatState: string; // "OPEN" | "INTAKE_FIELDS" | "INTAKE_SUBMITTED" | "DOMAIN_SELECTED" | "CONSULTANTS_SHOWN" | "CONVERSATION"
   pendingRequiredField: "name" | "phone" | "email" | null;
   isLoading: boolean;
   error: string | null;
@@ -32,6 +33,7 @@ export function useChat(): UseChatReturn {
   const [error, setError] = useState<string | null>(null);
   const [lastUserMessage, setLastUserMessage] = useState<string | null>(null);
   const [sessionProfile, setSessionProfile] = useState<Record<string, string>>({});
+  const [chatState, setChatState] = useState<string>("OPEN");
   const [pendingRequiredField, setPendingRequiredField] = useState<"name" | "phone" | "email" | null>(null);
   const messageIdRef = useRef(0);
   const sessionId = getChatSessionId();
@@ -101,6 +103,7 @@ export function useChat(): UseChatReturn {
       );
 
       setSessionProfile(nextProfile);
+      setChatState(response.state ?? "OPEN");
       setPendingRequiredField(response.ui_hints?.next_required_field ?? null);
 
       await emitEvent("response_generated", {
@@ -177,6 +180,7 @@ export function useChat(): UseChatReturn {
     setError(null);
     setLastUserMessage(null);
     setSessionProfile({});
+    setChatState("OPEN");
     setPendingRequiredField(null);
     sessionStorage.removeItem("ofstride_session_id");
   }, [emitEvent, lastUserMessage, sessionProfile]);
@@ -189,6 +193,7 @@ export function useChat(): UseChatReturn {
     emitEvent,
     sessionId,
     sessionProfile,
+    chatState,
     pendingRequiredField,
     isLoading,
     error,
