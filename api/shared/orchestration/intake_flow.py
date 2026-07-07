@@ -129,8 +129,11 @@ def build_domain_search_query(domain: str) -> str:
 
 def build_intro_prompt() -> str:
     return (
-        "That sounds exciting. I can help you identify the right Ofstride consulting service and consultant fit.\n"
-        "To personalize recommendations quickly, may I know your name?"
+        "🤖 Hi there! I'd love to help you find the right consultant. "
+        "What kind of consulting service are you looking for today?\n\n"
+        "💼 Business Strategy\n"
+        "💻 IT & Digital\n"
+        "📊 Financial Advisory"
     )
 
 
@@ -148,56 +151,66 @@ def build_next_required_prompt(missing_fields: list[str]) -> str:
 
     next_field = missing_fields[0]
     if next_field == "name":
-        return "May I know your name so I can assist you better?"
+        return (
+            "🤖 That sounds exciting! Before I show you the best-matched consultants, "
+            "could I quickly grab a few details so I can personalize your recommendations?\n\n"
+            "👤 Your Name\n"
+            "e.g. John Smith"
+        )
 
     if next_field == "phone":
         return (
-            "Thank you. Could you share your mobile number with country code? "
-            "This helps us coordinate consultant availability quickly."
+            "📱 Phone Number\n"
+            "+1 (555) 000-0000"
         )
 
     if next_field == "email":
         return (
-            "Great. May I have your email address so we can send recommendations and next steps?"
+            "📧 Email Address\n"
+            "john@company.com"
         )
 
     return "Could you share one more detail so I can proceed accurately?"
 
 
 def build_intake_completed_message() -> str:
-    return "Thank you. I have your basic details."
+    return (
+        "✅ Thank you! I've saved your details. "
+        "Here are the top consultants who specialize in your area:"
+    )
 
 
 def build_interest_prompt(name: str | None = None) -> str:
     display_name = (name or "there").strip() or "there"
     return (
-        f"Welcome, {display_name}. I can map your requirement to Ofstride service domains and suggest consultant options. "
-        "Would you like to review services by domain first?"
+        f"🤖 What specific consulting service are you looking for?\n\n"
+        f"💼 Business Strategy\n"
+        f"💻 IT & Digital\n"
+        f"📊 Financial Advisory"
     )
 
 
 def build_services_catalog_response() -> tuple[str, list[dict]]:
     message = (
-        "Here is our services list in a structured format:\n\n"
-        "1) People & Workforce\n"
-        "- Human Resources Consulting\n"
-        "- Executive Search & Recruitment\n"
-        "- Payroll, HR & Compliance\n"
-        "- Employer of Record (EOR) & Workforce Solutions\n\n"
-        "2) Finance & Compliance\n"
-        "- Financial Consulting / Virtual CFO\n"
-        "- GST & Tax Advisory\n"
-        "- Legal & Regulatory Compliance\n\n"
-        "3) Technology & Growth\n"
-        "- IT Consulting & Digital Transformation\n"
-        "- AI & Data Science Consulting\n"
-        "- Business Strategy & Process Improvement\n\n"
-        "Citation: Ofstride website services catalog and internal service directory."
+        "🤖 Here are our service areas:\n\n"
+        "💼 People & Workforce\n"
+        "• Human Resources Consulting\n"
+        "• Executive Search & Recruitment\n"
+        "• Payroll, HR & Compliance\n"
+        "• Employer of Record (EOR) & Workforce Solutions\n\n"
+        "💻 Technology & Growth\n"
+        "• IT Consulting & Digital Transformation\n"
+        "• AI & Data Science Consulting\n"
+        "• Business Strategy & Process Improvement\n\n"
+        "📊 Finance & Compliance\n"
+        "• Financial Consulting / Virtual CFO\n"
+        "• GST & Tax Advisory\n"
+        "• Legal & Regulatory Compliance"
     )
 
     sources = [
         {
-            "content": "Ofstride services grouped by domain: People & Workforce, Finance & Compliance, Technology & Growth.",
+            "content": "Ofstride services grouped by domain: People & Workforce, Technology & Growth, Finance & Compliance.",
             "metadata": {
                 "source": "ofstride_service_catalog",
                 "source_type": "company_service_catalog",
@@ -209,8 +222,13 @@ def build_services_catalog_response() -> tuple[str, list[dict]]:
 
 def build_exit_message() -> str:
     return (
-        "No problem at all. I have saved your current discussion context. "
-        "When you return, I can continue from here and help schedule the right consultant call."
+        "👋 No problem at all! I completely understand.\n\n"
+        "I've saved everything we discussed including your details and your interest in our services. "
+        "When you're ready, just jump back in and I'll pick up right where we left off.\n\n"
+        "I've also sent a quick summary to your email with consultant profiles and booking links, "
+        "so you can review them at your convenience.\n\n"
+        "📧 You're all set\n"
+        "Check your inbox for a personalized summary with consultant profiles and direct booking links."
     )
 
 
@@ -253,17 +271,7 @@ def get_next_state(
     
     # STATE: OPEN (chat just started)
     if current_state == STATE_OPEN:
-        # Check if user has direct domain interest or consultation intent
-        domain = detect_domain_interest(query)
-        if domain or has_direct_consulting_intent(query):
-            # Skip intake, go straight to domain selection
-            return (
-                STATE_DOMAIN_SELECTED,
-                f"Great! I'm finding the best consultant match for you.",
-                [],
-            )
-        
-        # No direct intent, start intake process
+        # Always start with intake collection, regardless of domain mention
         return (
             STATE_INTAKE_FIELDS,
             build_intro_prompt(),
