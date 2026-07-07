@@ -51,6 +51,20 @@ SERVICE_KEYWORDS = {
     "eor": "EOR & Workforce",
 }
 
+# Map services to domain categories
+SERVICE_TO_DOMAIN = {
+    "Business Strategy": "Technology & Growth",
+    "HR Consulting": "People & Workforce",
+    "Executive Search": "People & Workforce",
+    "Payroll & Compliance": "People & Workforce",
+    "Virtual CFO": "Finance & Compliance",
+    "GST & Tax Advisory": "Finance & Compliance",
+    "Legal & Regulatory": "Finance & Compliance",
+    "IT & Digital Transformation": "Technology & Growth",
+    "AI & Data Science": "Technology & Growth",
+    "EOR & Workforce": "People & Workforce",
+}
+
 TIMELINE_HINTS = [
     "immediate",
     "2 weeks",
@@ -148,6 +162,10 @@ def extract_profile_updates(text: str) -> dict[str, str]:
     for token, value in SERVICE_KEYWORDS.items():
         if _contains_token(lowered, token):
             updates["service_needed"] = value
+            # Also map to domain
+            domain = SERVICE_TO_DOMAIN.get(value)
+            if domain:
+                updates["service_type"] = domain
             break
 
     for hint in TIMELINE_HINTS:

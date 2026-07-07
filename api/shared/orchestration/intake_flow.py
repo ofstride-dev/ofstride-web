@@ -244,12 +244,31 @@ def get_next_state(
     
     # STATE: OPEN (chat just started)
     if current_state == STATE_OPEN:
-        # Always start with intake collection, regardless of domain mention
-        return (
-            STATE_INTAKE_FIELDS,
-            build_intro_prompt(),
-            [],
-        )
+        # Check if user mentions domain or has consulting intent in first message
+        domain = detect_domain_interest(query)
+        
+        if domain and has_direct_consulting_intent(query):
+            # User has clear intent + domain (e.g., "I need AI consulting")
+            # Store domain in profile and skip to field collection
+            return (
+                STATE_INTAKE_FIELDS,
+                "Great! I'll help you find the right consultant. What's your name?",
+                [],
+            )
+        elif domain or has_direct_consulting_intent(query):
+            # User has intent but unclear domain, show service categories
+            return (
+                STATE_INTAKE_FIELDS,
+                build_intro_prompt(),
+                [],
+            )
+        else:
+            # Generic greeting
+            return (
+                STATE_INTAKE_FIELDS,
+                build_intro_prompt(),
+                [],
+            )
     
     # STATE: INTAKE_FIELDS (collecting name, phone, email)
     if current_state == STATE_INTAKE_FIELDS:
@@ -279,13 +298,15 @@ def get_next_state(
     
     # STATE: INTAKE_SUBMITTED (waiting for domain selection or service catalog view)
     if current_state == STATE_INTAKE_SUBMITTED:
-        domain = detect_domain_interest(query)
+        # Check if domain is already known from earlier conversation
+        stored_domain = profile.get("service_type")
+        domain = detect_domain_interest(query) or stored_domain
         
         if domain:
-            # User selected a domain
+            # User selected a domain (or it's already known)
             return (
                 STATE_DOMAIN_SELECTED,
-                f"Great! You're interested in {domain}. I'm finding the best consultant match for you.",
+                f"Perfect! I'm finding the best {domain} consultant for you.",
                 [],
             )
         elif is_affirmative_interest(query):
@@ -301,7 +322,7 @@ def get_next_state(
                 ],
             )
         else:
-            # Re-ask
+            # Re-ask for service area
             prompt = build_interest_prompt(profile.get("name"))
             return (
                 STATE_INTAKE_SUBMITTED,

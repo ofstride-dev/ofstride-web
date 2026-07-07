@@ -280,7 +280,8 @@ class RAGGraph:
         
         # 4. HANDLE DOMAIN-SELECTED STATE (retrieve consultants)
         if next_state == STATE_DOMAIN_SELECTED:
-            domain = detect_domain_interest(query)
+            # Use domain from current query OR stored domain from profile
+            domain = detect_domain_interest(query) or profile.get("service_type")
             if domain:
                 search_query = build_domain_search_query(domain)
                 docs, retrieval_warning = await self._search_consultants(search_query)
