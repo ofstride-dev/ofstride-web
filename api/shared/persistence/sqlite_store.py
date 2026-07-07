@@ -10,13 +10,22 @@ from typing import Any
 from core.settings import PROJECT_ROOT, get_settings
 
 
+import logging as _logging
+_store_logger = _logging.getLogger("ofstride.sqlite_store")
+
+
 class DurableSQLiteStore:
     def __init__(self):
         self._settings = get_settings()
         self._lock = threading.Lock()
+        self._available = False
         self._db_path = self._resolve_db_path()
-        self._db_path.parent.mkdir(parents=True, exist_ok=True)
-        self._init_db()
+        try:
+            self._db_path.parent.mkdir(parents=True, exist_ok=True)
+            self._init_db()
+            self._available = True
+        except Exception as exc:
+            _store_logger.warning("SQLite store unavailable (read-only fs?): %s", exc)
 
     def _resolve_db_path(self) -> Path:
         raw = Path(self._settings.durable_sqlite_path)
@@ -82,6 +91,8 @@ class DurableSQLiteStore:
             )
 
     def prune_sessions(self) -> None:
+        if not self._available:
+            return
         ttl_minutes = max(1, self._settings.session_ttl_minutes)
         cutoff = (datetime.now(timezone.utc) - timedelta(minutes=ttl_minutes)).isoformat()
         with self._lock:
@@ -95,6 +106,8 @@ class DurableSQLiteStore:
                 conn.execute("DELETE FROM session_profiles WHERE updated_at < ?", (cutoff,))
 
     def append_message(self, session_id: str, message: dict[str, Any]) -> None:
+        if not self._available:
+            return
         role = str(message.get("role", "user"))
         content = str(message.get("content", ""))
         now_iso = self._now_iso()
@@ -123,6 +136,8 @@ class DurableSQLiteStore:
                 )
 
     def get_messages(self, session_id: str) -> list[dict[str, str]]:
+        if not self._available:
+            return []
         with self._lock:
             with self._connect() as conn:
                 rows = conn.execute(
@@ -132,6 +147,8 @@ class DurableSQLiteStore:
         return [{"role": row["role"], "content": row["content"]} for row in rows]
 
     def get_profile(self, session_id: str) -> dict[str, str]:
+        if not self._available:
+            return {}
         with self._lock:
             with self._connect() as conn:
                 row = conn.execute(
@@ -147,6 +164,8 @@ class DurableSQLiteStore:
             return {}
 
     def upsert_profile(self, session_id: str, updates: dict[str, str]) -> dict[str, str]:
+        if not self._available:
+            return dict(updates)
         now_iso = self._now_iso()
         with self._lock:
             with self._connect() as conn:
@@ -198,6 +217,8 @@ class DurableSQLiteStore:
                 )
 
     def append_event(self, record: dict[str, Any]) -> None:
+        if not self._available:
+            return
         with self._lock:
             with self._connect() as conn:
                 conn.execute(

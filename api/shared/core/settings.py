@@ -133,6 +133,19 @@ class Settings:
     durable_sqlite_path: str
 
 
+def _runtime_base() -> Path:
+    """Returns a writable runtime directory.
+    Azure Functions (Linux) only allows writes in /tmp.
+    Detected by WEBSITE_INSTANCE_ID being set in Azure-hosted environments.
+    """
+    import os as _os
+    if _os.environ.get("WEBSITE_INSTANCE_ID") or _os.environ.get("FUNCTIONS_EXTENSION_VERSION"):
+        base = Path("/tmp/ofstride-runtime")
+    else:
+        base = API_ROOT / ".runtime"
+    return base
+
+
 def _build_settings() -> Settings:
     _load_env_files()
 
@@ -184,15 +197,15 @@ def _build_settings() -> Settings:
         chat_events_enabled=_get_bool("CHAT_EVENTS_ENABLED", True),
         chat_event_queue_file=_get_str(
             "CHAT_EVENT_QUEUE_FILE",
-            str(API_ROOT / ".runtime" / "chat_events.ndjson"),
+            str(_runtime_base() / "chat_events.ndjson"),
         )
-        or str(API_ROOT / ".runtime" / "chat_events.ndjson"),
+        or str(_runtime_base() / "chat_events.ndjson"),
         chat_event_reminder_delay_minutes=_get_int("CHAT_EVENT_REMINDER_DELAY_MINUTES", 1440),
         chat_reminder_state_file=_get_str(
             "CHAT_REMINDER_STATE_FILE",
-            str(API_ROOT / ".runtime" / "chat_reminder_state.json"),
+            str(_runtime_base() / "chat_reminder_state.json"),
         )
-        or str(API_ROOT / ".runtime" / "chat_reminder_state.json"),
+        or str(_runtime_base() / "chat_reminder_state.json"),
         chat_reminder_batch_size=_get_int("CHAT_REMINDER_BATCH_SIZE", 20),
         chat_webhook_url=_get_str("CHAT_WEBHOOK_URL"),
         contact_webhook_url=_get_str("CONTACT_WEBHOOK_URL"),
@@ -200,9 +213,9 @@ def _build_settings() -> Settings:
         durable_store_enabled=_get_bool("DURABLE_STORE_ENABLED", True),
         durable_sqlite_path=_get_str(
             "DURABLE_SQLITE_PATH",
-            str(API_ROOT / ".runtime" / "chat_state.db"),
+            str(_runtime_base() / "chat_state.db"),
         )
-        or str(API_ROOT / ".runtime" / "chat_state.db"),
+        or str(_runtime_base() / "chat_state.db"),
     )
 
 

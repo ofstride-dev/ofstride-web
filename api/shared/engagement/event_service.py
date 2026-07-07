@@ -61,9 +61,15 @@ class ChatEventService:
         return normalized
 
     def _append_to_queue(self, record: dict[str, Any]) -> None:
-        path = self._resolve_queue_path()
-        with path.open("a", encoding="utf-8") as handle:
-            handle.write(json.dumps(record, ensure_ascii=True) + "\n")
+        try:
+            path = self._resolve_queue_path()
+            with path.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(record, ensure_ascii=True) + "\n")
+        except Exception as exc:
+            import logging as _log
+            _log.getLogger("ofstride.event_service").warning(
+                "Event queue write failed (read-only fs?): %s", exc
+            )
 
     def _webhook_target(self) -> str | None:
         return (
