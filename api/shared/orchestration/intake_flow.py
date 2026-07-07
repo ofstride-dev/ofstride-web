@@ -253,6 +253,17 @@ def get_next_state(
     
     # STATE: OPEN (chat just started)
     if current_state == STATE_OPEN:
+        # Check if user has direct domain interest or consultation intent
+        domain = detect_domain_interest(query)
+        if domain or has_direct_consulting_intent(query):
+            # Skip intake, go straight to domain selection
+            return (
+                STATE_DOMAIN_SELECTED,
+                f"Great! I'm finding the best consultant match for you.",
+                [],
+            )
+        
+        # No direct intent, start intake process
         return (
             STATE_INTAKE_FIELDS,
             build_intro_prompt(),
