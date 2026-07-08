@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import re
 
+from knowledge.service_catalog import get_service_catalog
+
 # ============ STATE MACHINE CONSTANTS ============
 STATE_OPEN = "OPEN"
 STATE_INTAKE_FIELDS = "INTAKE_FIELDS"
@@ -45,6 +47,15 @@ DIRECT_INTENT_HINTS = {
 MEETING_INTENT_TOKENS = {"schedule", "book", "meeting", "calendar", "availability", "time", "slot", "appointment"}
 CALLBACK_INTENT_TOKENS = {"call me back", "callback", "ring", "phone call", "call me", "ring me", "dial"}
 MESSAGE_INTENT_TOKENS = {"message", "send", "email", "contact", "write", "send message", "reach out"}
+SERVICE_INQUIRY_TOKENS = {"services", "offerings", "service you offer", "what do you offer", "your services", "service offerings", "list services", "see services", "show services", "service catalog"}
+
+
+def has_service_inquiry_intent(text: str) -> bool:
+    """Detect if user is asking for services catalog."""
+    lowered = text.lower().strip()
+    if not lowered:
+        return False
+    return any(token in lowered for token in SERVICE_INQUIRY_TOKENS)
 
 
 def detect_action_intent(text: str) -> str | None:
@@ -203,21 +214,15 @@ def build_interest_prompt(name: str | None = None) -> str:
 
 
 def build_services_catalog_response() -> tuple[str, list[dict]]:
-    message = (
-        "Our Services:\n\n"
-        "People & Workforce:\n"
-        "HR, Recruitment, Payroll, Compliance, EOR\n\n"
-        "Finance & Compliance:\n"
-        "Financial Advisory, Tax, Legal, Regulatory\n\n"
-        "Technology & Growth:\n"
-        "IT, Digital Transformation, AI, Data Science, Strategy"
-    )
+    """Build services catalog response from CSV data."""
+    catalog = get_service_catalog()
+    message = catalog.get_services_summary()
 
     sources = [
         {
-            "content": "Ofstride service areas",
+            "content": "Ofstride service catalog",
             "metadata": {
-                "source": "ofstride_service_catalog",
+                "source": "services.csv",
                 "source_type": "company_service_catalog",
             },
         }
@@ -261,6 +266,19 @@ def get_next_state(
     
     Returns: (next_state, response_text, actions)
     """
+    
+    # Check for service inquiry at any state (highest priority)
+    if has_service_inquiry_intent(query):
+        services_msg, _ = build_services_catalog_response()
+        return (
+            STATE_INTAKE_SUBMITTED,
+            services_msg,
+            [
+                {"id": "act_1", "label": "People & Workforce", "value": "People & Workforce", "kind": "quick_reply"},
+                {"id": "act_2", "label": "Finance & Compliance", "value": "Finance & Compliance", "kind": "quick_reply"},
+                {"id": "act_3", "label": "Technology & Growth", "value": "Technology & Growth", "kind": "quick_reply"},
+            ],
+        )
     
     # Check for exit intent at any state
     if is_exit_intent(query):

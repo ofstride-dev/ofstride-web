@@ -7,6 +7,7 @@ from core.llm_factory import get_llm_factory
 from core.settings import get_settings
 from guardrails.topic_guard import TopicGuard
 from knowledge.company_profile import get_company_profile_context
+from knowledge.service_catalog import get_service_catalog
 from memory.session_store import get_session_store
 from observability.langfuse_tracer import get_tracer
 from orchestration.intake_flow import (
@@ -445,6 +446,7 @@ class RAGGraph:
                 [f"{msg.get('role', 'user')}: {msg.get('content', '')}" for msg in short_history]
             )
             profile_summary = build_profile_summary(profile)
+            service_context = get_service_catalog().get_services_text()
 
             system_prompt = build_system_prompt()
             user_prompt = build_user_prompt(
@@ -452,6 +454,7 @@ class RAGGraph:
                 profile_summary=profile_summary,
                 company_context=company_context,
                 context=context,
+                service_context=service_context,
                 query=query,
             )
 
