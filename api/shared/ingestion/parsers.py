@@ -1,12 +1,9 @@
 from __future__ import annotations
 
+import csv
 from dataclasses import dataclass
 from io import BytesIO, StringIO
 from pathlib import Path
-
-import pandas as pd
-from pypdf import PdfReader
-from pptx import Presentation
 
 from core.settings import get_settings
 
@@ -23,6 +20,10 @@ def parse_text(text: str) -> str:
 
 
 def parse_pdf(file_bytes: bytes) -> str:
+    try:
+        from pypdf import PdfReader
+    except ImportError as exc:
+        raise ValueError("PDF ingest is disabled. Install 'pypdf' to enable .pdf parsing.") from exc
     reader = PdfReader(BytesIO(file_bytes))
     pages: list[str] = []
     for page in reader.pages:
@@ -31,6 +32,10 @@ def parse_pdf(file_bytes: bytes) -> str:
 
 
 def parse_excel(file_bytes: bytes) -> str:
+    try:
+        import pandas as pd
+    except ImportError as exc:
+        raise ValueError("Excel ingest is disabled. Install 'pandas' and 'openpyxl' to enable .xlsx/.xls parsing.") from exc
     sheet_map = pd.read_excel(BytesIO(file_bytes), sheet_name=None)
     parts: list[str] = []
     for sheet_name, dataframe in sheet_map.items():
@@ -40,11 +45,20 @@ def parse_excel(file_bytes: bytes) -> str:
 
 
 def parse_csv(file_bytes: bytes) -> str:
-    dataframe = pd.read_csv(BytesIO(file_bytes))
-    return dataframe.fillna("").to_csv(index=False)
+    decoded = file_bytes.decode("utf-8", errors="ignore")
+    rows = list(csv.reader(StringIO(decoded)))
+    output = StringIO()
+    writer = csv.writer(output)
+    for row in rows:
+        writer.writerow(row)
+    return output.getvalue().strip()
 
 
 def parse_ppt(file_bytes: bytes) -> str:
+    try:
+        from pptx import Presentation
+    except ImportError as exc:
+        raise ValueError("PowerPoint ingest is disabled. Install 'python-pptx' to enable .ppt/.pptx parsing.") from exc
     presentation = Presentation(BytesIO(file_bytes))
     slides: list[str] = []
     for idx, slide in enumerate(presentation.slides, start=1):

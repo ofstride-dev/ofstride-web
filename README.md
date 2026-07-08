@@ -151,6 +151,29 @@ Use Python 3.12 for local and Azure deployment to keep binary dependencies stabl
 - Required app settings: `FUNCTIONS_WORKER_RUNTIME=python`, `FUNCTIONS_EXTENSION_VERSION=~4`.
 - Static Web Apps managed API: `staticwebapp.config.json` sets `platform.apiRuntime` to `python:3.12`.
 
+## API Dependency Policy (Function Size Safe)
+
+The Function App package has a strict size limit. Keep the Python API lean by default.
+
+- Default ingest extensions are `.txt,.md,.csv`.
+- Heavy parsers are optional and disabled unless their dependencies are installed and extension allow-list is expanded:
+  - PDF: `pypdf`
+  - Excel: `pandas` + `openpyxl`
+  - PowerPoint: `python-pptx`
+- Removed for now (not used in current flow): `httpx`, `beautifulsoup4`, `lxml`.
+
+### Recommended Local Workflow
+
+- Use a local virtual environment only (repo root `.venv/`).
+- Do not commit environment artifacts.
+- `api/.funcignore` excludes `.venv/`, `.python_packages/`, and caches to prevent deployment bloat.
+
+### Re-enabling Rich Parsers Later
+
+1. Add required package(s) back to `api/requirements.txt`.
+2. Expand `INGEST_ALLOWED_EXTENSIONS` in app settings.
+3. Redeploy so the new dependencies are installed in the deployment environment.
+
 ## License
 
 © 2026 Ofstride Services LLP. All rights reserved.

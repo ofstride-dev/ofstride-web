@@ -185,9 +185,9 @@ def _build_settings() -> Settings:
         ingest_max_file_bytes=_get_int("INGEST_MAX_FILE_BYTES", 5 * 1024 * 1024),
         ingest_allowed_extensions=_get_str(
             "INGEST_ALLOWED_EXTENSIONS",
-            ".pdf,.csv,.xlsx,.xls,.txt,.md,.ppt,.pptx",
+            ".txt,.md,.csv",
         )
-        or ".pdf,.csv,.xlsx,.xls,.txt,.md,.ppt,.pptx",
+        or ".txt,.md,.csv",
         rate_limit_enabled=_get_bool("RATE_LIMIT_ENABLED", True),
         rate_limit_window_seconds=_get_int("RATE_LIMIT_WINDOW_SECONDS", 60),
         rate_limit_requests_per_window=_get_int("RATE_LIMIT_REQUESTS_PER_WINDOW", 30),
