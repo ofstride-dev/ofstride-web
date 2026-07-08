@@ -1,5 +1,30 @@
 from __future__ import annotations
 
+import re
+
+
+_JAILBREAK_PATTERNS: list[re.Pattern] = [
+    re.compile(r, re.IGNORECASE)
+    for r in [
+        r"ignore\s+(all\s+)?(previous|prior|system)\s+instructions",
+        r"disregard\s+(all\s+)?(previous|prior|system)\s+instructions",
+        r"(pretend|act|behave)\s+(as if|like)\s+you\s+(are|have\s+no)",
+        r"you\s+are\s+now\s+(dan|an?\s+ai\s+without\s+restrictions)",
+        r"(reveal|show|print|tell me|output|repeat)\s+(your\s+)?(system\s+prompt|instructions|context window|internal prompt)",
+        r"(forget|override|bypass)\s+(all\s+)?(rules|restrictions|guardrails|filters)",
+        r"(exfiltrate|extract|leak)\s+(data|information|context|secrets)",
+        r"developer\s+mode",
+        r"jailbreak",
+        r"do\s+anything\s+now",
+        r"no\s+restrictions",
+        r"simulate\s+being\s+(an?\s+)?evil",
+        r"(malware|virus|ransomware|keylogger|trojan)",
+        r"sql\s+injection",
+        r"(ddos|denial.of.service)",
+        r"prompt\s+injection",
+    ]
+]
+
 
 class TopicGuard:
     def __init__(self):
@@ -39,6 +64,37 @@ class TopicGuard:
             "support",
             "call",
             "email",
+            # Contact and discussion intents
+            "reach",
+            "connect",
+            "discuss",
+            "discussion",
+            "question",
+            "query",
+            "queries",
+            "information",
+            "info",
+            "further",
+            "more",
+            "detail",
+            "details",
+            "help",
+            "assist",
+            "mail",
+            "message",
+            "follow",
+            "followup",
+            "follow-up",
+            "schedule",
+            "book",
+            "meeting",
+            "appointment",
+            "confirm",
+            "confirmation",
+            "expect",
+            "update",
+            "response",
+            "reply",
         }
         self.follow_up_tokens = {
             "yes",
@@ -107,6 +163,12 @@ class TopicGuard:
         if not normalized:
             return False, "Empty request."
 
+        # Regex jailbreak detection (runs first — highest priority)
+        for pattern in _JAILBREAK_PATTERNS:
+            if pattern.search(normalized):
+                return False, "Request violates safety guardrails."
+
+        # Legacy substring patterns
         for pattern in self.blocked_patterns:
             if pattern in normalized:
                 return False, "Request violates safety guardrails."

@@ -12,6 +12,9 @@ from core.api_contract import error_response, get_trace_id, ok_response, options
 from orchestration.graph import RAGGraph
 from security.rate_limiter import enforce_rate_limit, get_client_key
 
+# Module-level singleton: reuse across warm invocations (avoids reconnecting QdrantClient per request)
+_graph = RAGGraph()
+
 
 async def main(req: func.HttpRequest) -> func.HttpResponse:
     trace_id = get_trace_id(req)
@@ -54,8 +57,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
         )
 
     try:
-        graph = RAGGraph()
-        response = await graph.run(query=message, session_id=session_id)
+        response = await _graph.run(query=message, session_id=session_id)
         return ok_response(trace_id=trace_id, data=response, req=req)
     except Exception as exc:
         return error_response(

@@ -27,9 +27,10 @@ def _load_env_file(path: Path) -> None:
 
 
 def _load_env_files() -> None:
+    # api/.env is highest priority (loaded first; subsequent files skip already-set keys)
     candidates = [
-        PROJECT_ROOT / ".env",
         API_ROOT / ".env",
+        PROJECT_ROOT / ".env",
         Path.cwd() / ".env",
     ]
     for candidate in candidates:
@@ -95,6 +96,7 @@ class Settings:
     qdrant_collection: str
 
     retrieval_k: int
+    retrieval_score_threshold: float
     retrieval_max_context_chars: int
     source_snippet_chars: int
 
@@ -131,6 +133,9 @@ class Settings:
 
     durable_store_enabled: bool
     durable_sqlite_path: str
+
+    gemini_api_key: str | None
+    gemini_model: str
 
 
 def _runtime_base() -> Path:
@@ -171,6 +176,7 @@ def _build_settings() -> Settings:
         qdrant_collection=_get_str("QDRANT_COLLECTION", "ofstride_consultants")
         or "ofstride_consultants",
         retrieval_k=_get_int("RETRIEVAL_K", 6),
+        retrieval_score_threshold=_get_float("RETRIEVAL_SCORE_THRESHOLD", 0.40),
         retrieval_max_context_chars=_get_int("RETRIEVAL_MAX_CONTEXT_CHARS", 7000),
         source_snippet_chars=_get_int("SOURCE_SNIPPET_CHARS", 420),
         allowed_origins=_get_str("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:4280")
@@ -216,6 +222,8 @@ def _build_settings() -> Settings:
             str(_runtime_base() / "chat_state.db"),
         )
         or str(_runtime_base() / "chat_state.db"),
+        gemini_api_key=_get_str("GEMINI_API_KEY"),
+        gemini_model=_get_str("GEMINI_MODEL", "gemini-1.5-flash") or "gemini-1.5-flash",
     )
 
 

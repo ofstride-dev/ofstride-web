@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import logging
+import time
+
 from core.llm_factory import get_llm_factory
 from core.settings import get_settings
 from guardrails.topic_guard import TopicGuard
 from knowledge.company_profile import get_company_profile_context
 from memory.session_store import get_session_store
+from observability.langfuse_tracer import get_tracer
 from orchestration.intake_flow import (
     append_cta_options,
     build_domain_search_query,
@@ -35,6 +39,8 @@ from prompts.consultant_agent import build_system_prompt, build_user_prompt
 from retrieval.local_consultant_directory import get_local_consultant_directory
 from retrieval.qdrant_store import QdrantStore
 
+_logger = logging.getLogger("ofstride.graph")
+
 
 class RAGGraph:
     def __init__(self):
@@ -58,10 +64,47 @@ class RAGGraph:
         return names
 
     def _sanitize_llm_response(self, response: str) -> str:
-        """Warn if LLM mentions consultants not in our seed data."""
-        # For now, just validate - the updated system prompt should prevent hallucination
-        # If LLM follows the guardrails in system prompt, it should only reference provided data
+        """Strip prompt leakage and validate output safety."""
+        leakage_markers = [
+            "retrieved context:", "system prompt:", "known session profile:",
+            "conversation history:", "company support context:",
+        ]
+        lower = response.lower()
+        for marker in leakage_markers:
+            if marker in lower:
+                _logger.warning("output_leakage_detected marker=%s", marker)
+                # Strip everything from the marker onwards
+                idx = lower.find(marker)
+                response = response[:idx].strip()
+        if len(response) > 4000:
+            response = response[:4000].rstrip() + "..."
         return response
+
+    async def _rewrite_query(self, query: str, history: list[dict]) -> str:
+        """Rewrite the user query into a standalone search query using recent history."""
+        if not history or len(history) < 2:
+            return query
+        recent = history[-4:]
+        history_text = "\n".join(f"{m.get('role','user')}: {m.get('content','')}" for m in recent)
+        rewrite_prompt = (
+            f"Conversation so far:\n{history_text}\n\n"
+            f"User's latest message: {query}\n\n"
+            "Rewrite the latest message as a standalone, self-contained search query "
+            "that makes sense without the conversation context. "
+            "Reply with only the rewritten query, nothing else."
+        )
+        try:
+            selection = await self.llm_factory.get_healthy_llm_with_metadata()
+            rewritten = await selection.client.agenerate(
+                system_prompt="You are a search query rewriter. Output only the rewritten query.",
+                user_prompt=rewrite_prompt,
+                temperature=0.0,
+                max_tokens=80,
+            )
+            rewritten = rewritten.strip()
+            return rewritten if rewritten else query
+        except Exception:
+            return query
 
     @staticmethod
     def _format_sources(docs: list) -> list[dict]:
@@ -86,8 +129,34 @@ class RAGGraph:
 
         chunks: list[str] = []
         for idx, doc in enumerate(docs, start=1):
-            source_name = doc.metadata.get("source") or doc.metadata.get("consultant_name") or "unknown"
-            chunks.append(f"Source {idx} ({source_name}):\n{doc.page_content}")
+            meta = doc.metadata or {}
+            source_type = meta.get("source_type", "")
+
+            if source_type in ("consultant_profile", "consultant_cv", "consultant_data"):
+                # Make consultant identity explicit so LLM can reference the name
+                name = meta.get("consultant_name") or meta.get("source") or "Unknown"
+                role = meta.get("role") or meta.get("domain") or "Consultant"
+                location = meta.get("location") or "India"
+                domain = meta.get("domain") or ""
+                email = meta.get("email") or ""
+                body = doc.page_content.strip()
+                entry = (
+                    f"Consultant {idx}:\n"
+                    f"  Name: {name}\n"
+                    f"  Role: {role}\n"
+                    f"  Location: {location}\n"
+                )
+                if domain:
+                    entry += f"  Domain: {domain}\n"
+                if email:
+                    entry += f"  Email: {email}\n"
+                entry += f"  Profile: {body}"
+                chunks.append(entry)
+            else:
+                # Website / general content
+                source_name = meta.get("title") or meta.get("source") or "website"
+                chunks.append(f"Source {idx} [{source_name}]:\n{doc.page_content}")
+
         return "\n\n".join(chunks)
 
     @staticmethod
@@ -138,6 +207,24 @@ class RAGGraph:
         return "\n".join(normalized_lines).strip()
 
     @staticmethod
+    def _is_near_duplicate(new_text: str, history: list[dict], threshold: float = 0.80) -> bool:
+        """Return True if new_text is very similar to the last assistant message."""
+        last_assistant = next(
+            (m.get("content", "") for m in reversed(history) if m.get("role") == "assistant"),
+            None,
+        )
+        if not last_assistant or not new_text:
+            return False
+        # Token-level Jaccard similarity
+        a_tokens = set(new_text.lower().split())
+        b_tokens = set(last_assistant.lower().split())
+        if not a_tokens or not b_tokens:
+            return False
+        intersection = len(a_tokens & b_tokens)
+        union = len(a_tokens | b_tokens)
+        return (intersection / union) >= threshold
+
+    @staticmethod
     def _deterministic_fallback_answer(query: str, profile: dict[str, str], reason: str) -> str:
         name = (profile.get("name") or "there").strip() or "there"
         service_hint = profile.get("service_needed") or profile.get("area_of_interest") or "your requirement"
@@ -173,7 +260,12 @@ class RAGGraph:
                 k=self.settings.retrieval_k,
                 filters={
                     "source_type": {
-                        "$in": ["consultant_profile", "consultant_cv", "consultant_data"]
+                        "$in": [
+                            "consultant_profile",
+                            "consultant_cv",
+                            "consultant_data",
+                            "website_content",
+                        ]
                     }
                 },
             )
@@ -292,6 +384,13 @@ class RAGGraph:
         
         # 3. USE STATE MACHINE TO DETERMINE NEXT STATE AND RESPONSE
         next_state, response_text, actions = get_next_state(current_state, profile, query)
+
+        # Ensure provider/fallback always have defaults (prevents NameError in non-LLM states)
+        provider = None
+        fallback_reason: str | None = None
+        rewritten_query: str | None = None
+        sources: list = []
+        route_decision = "conversational"
         
         # Save state
         profile = self.session_store.upsert_profile(session_id, {"state": next_state})
@@ -324,12 +423,14 @@ class RAGGraph:
         
         # 5. HANDLE CONVERSATION STATE (LLM-based retrieval)
         elif next_state == STATE_CONVERSATION:
-            docs, retrieval_warning = await self._search_consultants(query)
+            # Rewrite query using recent history for better semantic search
+            rewritten_query = await self._rewrite_query(query, history)
+            docs, retrieval_warning = await self._search_consultants(rewritten_query)
             route_decision = "kb_success" if docs else "kb_no_results"
             context = self._build_context(docs)
             context = self._cap_text(context, self.settings.retrieval_max_context_chars)
             company_context = get_company_profile_context()
-            short_history = history[-6:]
+            short_history = history[-10:]  # wider window: 5 turns instead of 3
             history_block = "\n".join(
                 [f"{msg.get('role', 'user')}: {msg.get('content', '')}" for msg in short_history]
             )
@@ -343,6 +444,10 @@ class RAGGraph:
                 context=context,
                 query=query,
             )
+
+            llm_start = time.monotonic()
+            provider = None
+            fallback_reason = retrieval_warning
 
             try:
                 selection = await self.llm_factory.get_healthy_llm_with_metadata()
@@ -367,8 +472,13 @@ class RAGGraph:
                         temperature=self.settings.temperature,
                         max_tokens=self.settings.max_tokens,
                     )
-                    # GUARDRAIL: Validate LLM response doesn't contain hallucinated consultants
                     response_text = self._sanitize_llm_response(response_text)
+                    # Cross-turn deduplication: if response is too similar to last answer, ask to clarify
+                    if self._is_near_duplicate(response_text, history):
+                        response_text = (
+                            "I may have already addressed that — could you clarify what specific detail "
+                            "you would like me to expand on? I want to make sure my answer is useful."
+                        )
                     self.llm_factory.mark_provider_result(provider, success=True)
                 except Exception as llm_exc:
                     self.llm_factory.mark_provider_result(provider, success=False)
@@ -380,15 +490,41 @@ class RAGGraph:
                     )
                     route_decision = "fallback"
 
-                response_text = self._normalize_response_text(append_cta_options(response_text))
+                response_text = self._normalize_response_text(
+                    # Only append CTAs if lead profile is still incomplete (avoids CTA repetition)
+                    append_cta_options(response_text) if missing_required_fields(profile) else response_text
+                )
                 sources = self._format_sources(docs)
+
+            llm_latency_ms = (time.monotonic() - llm_start) * 1000
+
+            # Emit Langfuse trace
+            try:
+                get_tracer().trace_turn(
+                    conversation_id=session_id,
+                    trace_id=session_id,
+                    user_message=query,
+                    rewritten_query=rewritten_query if rewritten_query != query else None,
+                    retrieved_chunks=[
+                        {"content": d.page_content[:200], "score": d.score, "metadata": d.metadata}
+                        for d in docs
+                    ],
+                    model_used=provider.value if provider else "fallback",
+                    fallback_triggered=route_decision == "fallback",
+                    system_prompt=system_prompt,
+                    user_prompt=user_prompt,
+                    response=response_text,
+                    latency_ms=llm_latency_ms,
+                    input_tokens=None,
+                    output_tokens=None,
+                    route_decision=route_decision,
+                )
+            except Exception:
+                pass  # Observability must never break chat
         
         else:
             # OPEN, INTAKE_FIELDS, INTAKE_SUBMITTED, CONSULTANTS_SHOWN: use state machine response as-is
-            sources = []
-            route_decision = "conversational"
-            provider = None
-            fallback_reason = None
+            pass  # provider/fallback_reason/sources/route_decision already defaulted above
 
         # 6. APPEND TO HISTORY
         self.session_store.append(session_id, {"role": "user", "content": query})
@@ -397,7 +533,15 @@ class RAGGraph:
         # 7. BUILD RESPONSE
         missing_required = missing_required_fields(profile)
         confidence = 0.95 if next_state in [STATE_INTAKE_FIELDS, STATE_INTAKE_SUBMITTED] else 0.85
-        
+
+        _logger.info(
+            "chat_turn session=%s state=%s route=%s docs=%d provider=%s fallback=%s",
+            session_id, next_state, route_decision,
+            len(sources) if sources else 0,
+            provider.value if provider else "state_machine",
+            fallback_reason or "none",
+        )
+
         return {
             "response": response_text,
             "session_id": session_id,

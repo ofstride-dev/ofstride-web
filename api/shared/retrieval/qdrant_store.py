@@ -14,6 +14,11 @@ from qdrant_client.http.models import (
     PointStruct,
     VectorParams,
 )
+try:
+    from qdrant_client.models import PointIdsList  # noqa: F401 (version check)
+    _USE_QUERY_POINTS = True
+except ImportError:
+    _USE_QUERY_POINTS = False
 
 from core.embedding_factory import get_embedding_factory
 from core.settings import get_settings
@@ -160,6 +165,8 @@ class QdrantStore:
                 scored.append((score, item))
 
             scored.sort(key=lambda x: x[0], reverse=True)
+            threshold = self._settings.retrieval_score_threshold
+            scored = [(s, d) for s, d in scored if s >= threshold]
             top = scored[: max(1, k)]
             return [
                 RetrievedDocument(
@@ -184,16 +191,22 @@ class QdrantStore:
                 ]
             )
 
-        hits = await self.client.search(
+        hits = await self.client.query_points(
             collection_name=self._settings.qdrant_collection,
-            query_vector=query_embedding,
+            query=query_embedding,
             query_filter=qdrant_filter,
             limit=max(1, k),
             with_payload=True,
+            score_threshold=self._settings.retrieval_score_threshold,
         )
+        # query_points returns a QueryResponse with .points list
+        raw_hits = hits.points if hasattr(hits, 'points') else hits
 
+        threshold = self._settings.retrieval_score_threshold
         results: list[RetrievedDocument] = []
-        for hit in hits:
+        for hit in raw_hits:
+            if hit.score is not None and hit.score < threshold:
+                continue
             payload = hit.payload or {}
             results.append(
                 RetrievedDocument(

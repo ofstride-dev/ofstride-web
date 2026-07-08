@@ -32,6 +32,7 @@ def _is_configured_secret(value: str | None) -> bool:
 class LLMProvider(str, Enum):
     OPENAI = "openai"
     AZURE_OPENAI = "azure_openai"
+    GEMINI = "gemini"
     MOCK = "mock"
 
 
@@ -104,6 +105,42 @@ class MockLLMClient:
         )
 
 
+@dataclass
+class GeminiLLMClient:
+    model: str
+    api_key: str
+
+    async def agenerate(
+        self,
+        *,
+        system_prompt: str,
+        user_prompt: str,
+        temperature: float,
+        max_tokens: int,
+    ) -> str:
+        import google.generativeai as genai  # type: ignore[import]
+        genai.configure(api_key=self.api_key)
+        gemini = genai.GenerativeModel(
+            model_name=self.model,
+            system_instruction=system_prompt,
+        )
+        settings = get_settings()
+        resp = await asyncio.wait_for(
+            asyncio.get_event_loop().run_in_executor(
+                None,
+                lambda: gemini.generate_content(
+                    user_prompt,
+                    generation_config=genai.types.GenerationConfig(
+                        temperature=temperature,
+                        max_output_tokens=max_tokens,
+                    ),
+                ),
+            ),
+            timeout=max(3, settings.llm_timeout_seconds),
+        )
+        return (resp.text or "").strip()
+
+
 class LLMFactory:
     def __init__(self):
         self._settings = get_settings()
@@ -112,11 +149,13 @@ class LLMFactory:
         self._provider_failures: dict[LLMProvider, int] = {
             LLMProvider.OPENAI: 0,
             LLMProvider.AZURE_OPENAI: 0,
+            LLMProvider.GEMINI: 0,
             LLMProvider.MOCK: 0,
         }
         self._provider_open_until: dict[LLMProvider, float] = {
             LLMProvider.OPENAI: 0.0,
             LLMProvider.AZURE_OPENAI: 0.0,
+            LLMProvider.GEMINI: 0.0,
             LLMProvider.MOCK: 0.0,
         }
 
@@ -198,6 +237,20 @@ class LLMFactory:
                 )
 
             raise RuntimeError("Azure OpenAI is not configured.")
+
+        # ── Gemini fallback when Azure OpenAI circuit is open ──
+        gemini_key = _is_configured_secret(self._settings.gemini_api_key)
+        if provider == LLMProvider.AZURE_OPENAI.value and self._is_provider_open(LLMProvider.AZURE_OPENAI):
+            if gemini_key and not self._is_provider_open(LLMProvider.GEMINI):
+                self._record_provider_success(LLMProvider.GEMINI)
+                return LLMSelection(
+                    client=GeminiLLMClient(
+                        model=self._settings.gemini_model,
+                        api_key=self._settings.gemini_api_key,  # type: ignore[arg-type]
+                    ),
+                    provider=LLMProvider.GEMINI,
+                    fallback_reason="azure_openai_circuit_open_gemini_fallback",
+                )
 
         if self._is_provider_open(LLMProvider.OPENAI):
             if self._settings.allow_mock_provider:

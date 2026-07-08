@@ -79,6 +79,25 @@ class DurableSQLiteStore:
             )
             conn.execute(
                 """
+                CREATE TABLE IF NOT EXISTS leads (
+                    lead_id TEXT PRIMARY KEY,
+                    session_id TEXT NOT NULL,
+                    lead_type TEXT NOT NULL,
+                    name TEXT,
+                    email TEXT,
+                    phone TEXT,
+                    consultant_name TEXT,
+                    domain TEXT,
+                    business_requirement TEXT,
+                    status TEXT DEFAULT 'new',
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    notes TEXT
+                )
+                """
+            )
+            conn.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_session_messages_session_id
                 ON session_messages(session_id, id)
                 """
@@ -104,6 +123,7 @@ class DurableSQLiteStore:
                     (cutoff,),
                 )
                 conn.execute("DELETE FROM session_profiles WHERE updated_at < ?", (cutoff,))
+                conn.execute("DELETE FROM leads WHERE status = 'new' AND updated_at < ?", (cutoff,))
 
     def append_message(self, session_id: str, message: dict[str, Any]) -> None:
         if not self._available:
@@ -134,6 +154,33 @@ class DurableSQLiteStore:
                     "INSERT OR REPLACE INTO session_profiles(session_id, profile_json, updated_at) VALUES(?,?,?)",
                     (session_id, profile_json, now_iso),
                 )
+
+    def log_lead(self, session_id: str, lead_type: str, profile: dict[str, str], domain: str | None = None, consultant_name: str | None = None, business_requirement: str | None = None) -> str:
+        """Log a lead intent (meeting_request, callback_request, message_consultant, recommendation)."""
+        if not self._available:
+            return ""
+        import uuid
+        lead_id = f"lead_{uuid.uuid4().hex[:12]}"
+        now_iso = self._now_iso()
+
+        with self._lock:
+            with self._connect() as conn:
+                conn.execute(
+                    """
+                    INSERT INTO leads(
+                        lead_id, session_id, lead_type, name, email, phone,
+                        consultant_name, domain, business_requirement, status,
+                        created_at, updated_at
+                    ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (
+                        lead_id, session_id, lead_type,
+                        profile.get("name"), profile.get("email"), profile.get("phone"),
+                        consultant_name, domain, business_requirement,
+                        "new", now_iso, now_iso,
+                    ),
+                )
+        return lead_id
 
     def get_messages(self, session_id: str) -> list[dict[str, str]]:
         if not self._available:

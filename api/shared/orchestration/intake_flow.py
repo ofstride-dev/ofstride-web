@@ -41,6 +41,33 @@ DIRECT_INTENT_HINTS = {
     "compliance",
 }
 
+# ─── ACTION INTENT DETECTION ───────────────────────────────────────────────────
+MEETING_INTENT_TOKENS = {"schedule", "book", "meeting", "calendar", "availability", "time", "slot", "appointment"}
+CALLBACK_INTENT_TOKENS = {"call me back", "callback", "ring", "phone call", "call me", "ring me", "dial"}
+MESSAGE_INTENT_TOKENS = {"message", "send", "email", "contact", "write", "send message", "reach out"}
+
+
+def detect_action_intent(text: str) -> str | None:
+    """Detect if user wants: meeting_request, callback_request, or message_consultant."""
+    lowered = text.lower().strip()
+    if not lowered:
+        return None
+
+    # Check for exact phrases first
+    for token in CALLBACK_INTENT_TOKENS:
+        if token in lowered:
+            return "callback_request"
+
+    for token in MESSAGE_INTENT_TOKENS:
+        if token in lowered:
+            return "message_consultant"
+
+    for token in MEETING_INTENT_TOKENS:
+        if token in lowered:
+            return "meeting_request"
+
+    return None
+
 DOMAIN_INTENT_MAP = {
     "People & Workforce": {
         "people",

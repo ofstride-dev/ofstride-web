@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import re
 from pathlib import Path
 
 from core.settings import PROJECT_ROOT
@@ -61,9 +62,10 @@ class LocalConsultantDirectory:
         return f"{role} based in {location}, supporting {focus}."
 
     @classmethod
-    def _score_row(query: str, row: dict[str, str]) -> float:
+    def _score_row(cls, query: str, row: dict[str, str]) -> float:
         lowered_query = query.lower()
-        tokens = [token for token in lowered_query.replace(",", " ").split() if token]
+        # Filter single-char tokens to avoid false substring matches (e.g. "a" in "bangalore")
+        tokens = [t for t in lowered_query.replace(",", " ").split() if len(t) >= 2]
         domain = cls._infer_domain(row)
         summary = cls._infer_brief_summary(row)
         haystack = " ".join(
@@ -79,7 +81,8 @@ class LocalConsultantDirectory:
 
         score = 0.0
         for token in tokens:
-            if token in haystack:
+            # Use word-boundary match to avoid "is" matching inside "business"
+            if re.search(rf"\b{re.escape(token)}\b", haystack):
                 score += 1.0
 
         if row.get("role") and row.get("role", "").lower() in lowered_query:
@@ -100,7 +103,8 @@ class LocalConsultantDirectory:
                 scored.append((score, row))
 
         if not scored:
-            scored = [(0.1, row) for row in self._rows[: max(1, min(k, 3))]]
+            # No keyword matches — return empty rather than unrelated rows
+            return []
 
         scored.sort(key=lambda item: item[0], reverse=True)
         top = scored[: max(1, k)]
