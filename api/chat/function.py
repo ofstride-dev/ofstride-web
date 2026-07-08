@@ -47,6 +47,15 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
 
     message = str(body.get("message", "")).strip() if isinstance(body, dict) else ""
     session_id = str(body.get("session_id", "")).strip() if isinstance(body, dict) else ""
+    client_profile = body.get("session_profile") if isinstance(body, dict) else None
+    if client_profile is not None and not isinstance(client_profile, dict):
+        return error_response(
+            error_type="validation",
+            message="'session_profile' must be an object when provided.",
+            trace_id=trace_id,
+            req=req,
+            status_code=400,
+        )
     if not message or not session_id:
         return error_response(
             error_type="validation",
@@ -57,7 +66,11 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
         )
 
     try:
-        response = await _graph.run(query=message, session_id=session_id)
+        response = await _graph.run(
+            query=message,
+            session_id=session_id,
+            client_profile=client_profile if isinstance(client_profile, dict) else None,
+        )
         return ok_response(trace_id=trace_id, data=response, req=req)
     except Exception as exc:
         return error_response(

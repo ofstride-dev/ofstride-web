@@ -84,7 +84,7 @@ export function useChat(): UseChatReturn {
     await emitEvent("intent_selected", { query: text.trim() });
 
     try {
-      const response = await sendChatMessage(text.trim());
+      const response = await sendChatMessage(text.trim(), sessionProfile);
       const nextProfile = response.session_profile ?? {};
       const becameComplete = hasCompleteLead(nextProfile) && !hasCompleteLead(sessionProfile);
 

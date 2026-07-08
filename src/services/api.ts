@@ -18,6 +18,7 @@ const API_BASE = "/api";
 interface ChatRequest {
   message: string;
   session_id: string;
+  session_profile?: Record<string, string>;
 }
 
 export class ApiClientError extends Error {
@@ -104,10 +105,14 @@ async function parseEnvelope<T>(response: Response): Promise<T> {
   return rawBody.data;
 }
 
-export async function sendChatMessage(message: string): Promise<ChatResponse> {
+export async function sendChatMessage(
+  message: string,
+  sessionProfile?: Record<string, string>
+): Promise<ChatResponse> {
   const payload: ChatRequest = {
     message,
     session_id: getOrCreateSessionId(),
+    session_profile: sessionProfile,
   };
 
   const response = await fetch(`${API_BASE}/chat`, {

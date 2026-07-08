@@ -337,7 +337,17 @@ class RAGGraph:
 
         return "\n".join(lines)
 
-    async def run(self, *, query: str, session_id: str) -> dict:
+    async def run(
+        self,
+        *,
+        query: str,
+        session_id: str,
+        client_profile: dict[str, str] | None = None,
+    ) -> dict:
+        # Hydrate profile from client to survive cross-instance execution in cloud hosting.
+        if client_profile:
+            self.session_store.upsert_profile(session_id, client_profile)
+
         # Get session data first to check current state
         history = self.session_store.get(session_id)
         profile = self.session_store.get_profile(session_id)
@@ -474,7 +484,14 @@ class RAGGraph:
                     )
                     response_text = self._sanitize_llm_response(response_text)
                     # Cross-turn deduplication: if response is too similar to last answer, ask to clarify
-                    if self._is_near_duplicate(response_text, history):
+                    domain_in_query = detect_domain_interest(query)
+                    has_consulting_intent = has_direct_consulting_intent(query)
+                    if (
+                        self._is_near_duplicate(response_text, history)
+                        and not domain_in_query
+                        and not has_consulting_intent
+                        and len(query.strip().split()) >= 5
+                    ):
                         response_text = (
                             "I may have already addressed that — could you clarify what specific detail "
                             "you would like me to expand on? I want to make sure my answer is useful."

@@ -269,33 +269,61 @@ def get_next_state(
             {"id": "act_2", "label": "Schedule a call", "value": "Schedule a call", "kind": "quick_reply"},
         ]
     
-    # STATE: OPEN (chat just started)
+    # STATE: OPEN (chat just started or state recovered after TTL/instance changes)
     if current_state == STATE_OPEN:
-        # Check if user mentions domain or has consulting intent in first message
+        missing = missing_required_fields(profile)
         domain = detect_domain_interest(query)
-        
-        if domain and has_direct_consulting_intent(query):
-            # User has clear intent + domain (e.g., "I need AI consulting")
-            # Store domain in profile and skip to field collection
+
+        # If user selects a domain and profile is complete, route directly to consultant retrieval.
+        if domain and not missing:
             return (
-                STATE_INTAKE_FIELDS,
-                "Great! I'll help you find the right consultant. What's your name?",
+                STATE_DOMAIN_SELECTED,
+                f"Perfect! I'm finding the best {domain} consultant for you.",
                 [],
             )
-        elif domain or has_direct_consulting_intent(query):
-            # User has intent but unclear domain, show service categories
+
+        # If user has domain/consulting intent but required intake fields are missing,
+        # continue the intake journey from the next missing field.
+        if domain or has_direct_consulting_intent(query):
+            if missing:
+                return (
+                    STATE_INTAKE_FIELDS,
+                    build_next_required_prompt(missing),
+                    [],
+                )
             return (
-                STATE_INTAKE_FIELDS,
-                build_intro_prompt(),
-                [],
+                STATE_INTAKE_SUBMITTED,
+                build_interest_prompt(profile.get("name")),
+                [
+                    {"id": "act_1", "label": "Yes, show services", "value": "Yes, show services", "kind": "quick_reply"},
+                    {"id": "act_2", "label": "Schedule a call", "value": "Schedule a call", "kind": "quick_reply"},
+                ],
             )
-        else:
-            # Generic greeting
+
+        # "Yes, show services" should never reset to the generic welcome.
+        if is_affirmative_interest(query):
+            if missing:
+                return (
+                    STATE_INTAKE_FIELDS,
+                    build_next_required_prompt(missing),
+                    [],
+                )
             return (
-                STATE_INTAKE_FIELDS,
-                build_intro_prompt(),
-                [],
+                STATE_INTAKE_SUBMITTED,
+                build_interest_prompt(profile.get("name")),
+                [
+                    {"id": "act_1", "label": "People & Workforce", "value": "People & Workforce", "kind": "quick_reply"},
+                    {"id": "act_2", "label": "Finance & Compliance", "value": "Finance & Compliance", "kind": "quick_reply"},
+                    {"id": "act_3", "label": "Technology & Growth", "value": "Technology & Growth", "kind": "quick_reply"},
+                ],
             )
+
+        # Generic greeting.
+        return (
+            STATE_INTAKE_FIELDS,
+            build_intro_prompt(),
+            [],
+        )
     
     # STATE: INTAKE_FIELDS (collecting name, phone, email)
     if current_state == STATE_INTAKE_FIELDS:
@@ -311,6 +339,14 @@ def get_next_state(
             )
         else:
             # All fields collected, move to next state
+            known_domain = profile.get("service_type") or detect_domain_interest(query)
+            if known_domain:
+                return (
+                    STATE_DOMAIN_SELECTED,
+                    f"Thank you. Now let me find the right {known_domain} consultant for you.",
+                    [],
+                )
+
             intake_complete = build_intake_completed_message()
             interest_prompt = build_interest_prompt(profile.get("name"))
             combined_response = f"{intake_complete}\n\n{interest_prompt}"
@@ -372,6 +408,26 @@ def get_next_state(
     
     # STATE: CONSULTANTS_SHOWN (showing consultants, open for Q&A)
     if current_state == STATE_CONSULTANTS_SHOWN:
+        domain = detect_domain_interest(query)
+        if domain:
+            return (
+                STATE_DOMAIN_SELECTED,
+                f"Perfect! I'm finding the best {domain} consultant for you.",
+                [],
+            )
+
+        if is_affirmative_interest(query):
+            services_msg, _ = build_services_catalog_response()
+            return (
+                STATE_DOMAIN_SELECTED,
+                services_msg,
+                [
+                    {"id": "act_1", "label": "People & Workforce", "value": "People & Workforce", "kind": "quick_reply"},
+                    {"id": "act_2", "label": "Finance & Compliance", "value": "Finance & Compliance", "kind": "quick_reply"},
+                    {"id": "act_3", "label": "Technology & Growth", "value": "Technology & Growth", "kind": "quick_reply"},
+                ],
+            )
+
         # User can ask follow-up questions, view more consultants, etc.
         # Stay in conversation mode
         return (
@@ -382,6 +438,26 @@ def get_next_state(
     
     # STATE: CONVERSATION (ongoing Q&A)
     if current_state == STATE_CONVERSATION:
+        domain = detect_domain_interest(query)
+        if domain:
+            return (
+                STATE_DOMAIN_SELECTED,
+                f"Perfect! I'm finding the best {domain} consultant for you.",
+                [],
+            )
+
+        if is_affirmative_interest(query):
+            services_msg, _ = build_services_catalog_response()
+            return (
+                STATE_DOMAIN_SELECTED,
+                services_msg,
+                [
+                    {"id": "act_1", "label": "People & Workforce", "value": "People & Workforce", "kind": "quick_reply"},
+                    {"id": "act_2", "label": "Finance & Compliance", "value": "Finance & Compliance", "kind": "quick_reply"},
+                    {"id": "act_3", "label": "Technology & Growth", "value": "Technology & Growth", "kind": "quick_reply"},
+                ],
+            )
+
         # Continue in conversation
         return (
             STATE_CONVERSATION,

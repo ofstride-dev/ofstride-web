@@ -46,6 +46,7 @@ export interface ChatUiHints {
 export interface ChatResponse {
   response: string;
   session_id: string;
+  state?: string;
   route_decision: "kb_success" | "kb_no_results" | "conversational" | "blocked";
   confidence: number;
   sources: ConsultantSource[];
