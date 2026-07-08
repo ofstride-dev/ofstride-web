@@ -4,7 +4,7 @@ import csv
 import re
 from pathlib import Path
 
-from core.settings import PROJECT_ROOT
+from core.settings import DATA_ROOT
 from retrieval.qdrant_store import RetrievedDocument
 
 
@@ -17,7 +17,7 @@ class LocalConsultantDirectory:
         if self._loaded:
             return
 
-        seed_path = Path(PROJECT_ROOT) / "data" / "consultants_seed.csv"
+        seed_path = DATA_ROOT / "consultants_seed.csv"
         self._loaded = True
         if not seed_path.exists():
             return

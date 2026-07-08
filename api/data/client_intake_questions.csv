@@ -1,0 +1,27 @@
+section,field_key,question_text,input_type,required,options,validation,notes,example
+lead_identity,full_name,What is your full name?,text,no,,2-80 chars,Primary point of contact,Anita Sharma
+lead_identity,work_email,What is your work email so we can share your consultant shortlist and next steps?,email,yes,,valid email domain,Prefer official business email,anita@acme.com
+lead_identity,phone_number,What is your phone number so we can confirm the best-fit consultant quickly?,tel,yes,,E.164 preferred,Use for urgent clarifications,+91-9876543210
+lead_identity,designation,What is your role/designation?,text,no,,2-80 chars,Decision maker context,Head of Operations
+company_context,company_name,What is your company name?,text,no,,2-120 chars,,Acme Manufacturing Pvt Ltd
+company_context,company_website,What is your company website?,url,no,,valid URL,Used for company background,https://acme.in
+company_context,industry,Which industry are you in?,select,no,"Manufacturing|IT Services|Healthcare|Retail|FinTech|EdTech|Logistics|Real Estate|Other",single select,Align consultants by domain,Manufacturing
+company_context,company_size,What is your company size?,select,no,"1-10|11-50|51-200|201-1000|1000+",single select,Useful for engagement sizing,51-200
+engagement_scope,service_needed,Which service should we prioritize for you first?,select,no,"HR Consulting|Executive Search|Payroll & Compliance|Virtual CFO|GST & Tax Advisory|Legal & Regulatory|IT & Digital Transformation|AI & Data Science|Business Strategy|EOR & Workforce",single select,Primary routing field,AI & Data Science
+engagement_scope,area_of_interest,Which area are you most focused on right now?,select,no,"HR|Finance|Legal|IT|AI & Data|Strategy|Payroll|Executive Hiring|EOR|Other",single select,Small-company routing helper,AI & Data
+engagement_scope,problem_statement,What is the biggest challenge slowing your team today?,textarea,no,,30-2000 chars,Collect current pain points,Need to reduce hiring turnaround time by 30%
+engagement_scope,business_outcome,What result would make this engagement a success for you?,textarea,no,,20-1200 chars,Outcome-oriented framing,Build a high-quality analytics team
+engagement_scope,required_skills,Which skills are mandatory in the consultant profile?,textarea,no,,comma separated,Used for consultant matching,Python; Azure; HR analytics
+engagement_scope,preferred_location,Preferred consultant location or timezone?,text,no,,2-120 chars,For collaboration fit,Bangalore or IST timezone
+engagement_scope,engagement_model,What engagement model do you prefer?,select,no,"Part-time Advisor|Project-based|Retainer|On-site|Remote|Hybrid",single select,,Project-based
+budget_timeline,budget_range,What is your expected budget range?,select,no,"Below INR 1L|INR 1L-5L|INR 5L-15L|INR 15L+|Not decided",single select,Optional but improves fit,INR 5L-15L
+budget_timeline,start_timeline,When do you want to start?,select,no,"Immediate|Within 2 weeks|Within 1 month|Within 3 months",single select,,Within 2 weeks
+budget_timeline,urgency_level,How urgent is this requirement?,select,no,"Low|Medium|High|Critical",single select,,High
+compliance,nda_required,Do you need an NDA before detailed discussions?,select,no,"Yes|No",single select,,Yes
+compliance,data_sensitivity,Will this engagement involve sensitive data or compliance constraints?,textarea,no,,0-1000 chars,PII/regulatory context included,Contains employee salary and performance data
+qualification,decision_authority,Are you the final decision maker for this engagement?,select,no,"Yes|No|Partially",single select,Helps sales follow-up path,Partially
+qualification,stakeholders,Who else should be part of the discovery call?,textarea,no,,0-500 chars,,CTO and Head HR
+follow_up,contact_mode,How should we contact you with your best-fit consultant options?,select,no,"Call me|Email me|WhatsApp me",single select,Supports quick small-team follow-up,Call me
+follow_up,meeting_preference,Preferred mode for next discussion?,select,no,"15-min discovery call|30-min solution call|Email first",single select,Can map to booking flow,30-min solution call
+follow_up,available_slots,Share 2-3 preferred time slots for discussion,textarea,no,,0-500 chars,Include timezone,Tue 3 PM IST; Wed 11 AM IST
+consent,privacy_consent,Do you consent to data processing for this inquiry?,checkbox,no,"Yes",must be yes,Required for compliance,Yes

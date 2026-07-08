@@ -9,6 +9,9 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 API_ROOT = Path(__file__).resolve().parents[2]
 
+# Data folder location (moved under api/ for Azure Functions deployment)
+DATA_ROOT = API_ROOT / "data"
+
 
 def _load_env_file(path: Path) -> None:
     if not path.exists() or not path.is_file():
