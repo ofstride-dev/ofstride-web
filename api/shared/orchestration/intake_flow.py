@@ -457,6 +457,14 @@ def get_next_state(
     
     # STATE: INTAKE_SUBMITTED (waiting for domain selection or service catalog view)
     if current_state == STATE_INTAKE_SUBMITTED:
+        missing = missing_required_fields(profile)
+        if missing:
+            return (
+                STATE_INTAKE_FIELDS,
+                build_next_required_prompt(missing),
+                [],
+            )
+
         action_intent = detect_action_intent(query)
         if action_intent:
             return (

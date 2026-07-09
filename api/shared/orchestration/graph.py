@@ -401,7 +401,7 @@ class RAGGraph:
         # 2. EXTRACT PROFILE FIELDS
         missing_before = missing_required_fields(profile)
         allow_plain_name_capture = (
-            current_state in [STATE_OPEN, STATE_INTAKE_FIELDS]
+            current_state in [STATE_OPEN, STATE_INTAKE_FIELDS, STATE_INTAKE_SUBMITTED]
             and bool(missing_before)
             and missing_before[0] == "name"
         )
