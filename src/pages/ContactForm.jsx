@@ -48,56 +48,62 @@ function ContactForm() {
     setLoading(true)
     setSubmitError('')
 
-    const endpoint = import.meta.env.VITE_CONTACT_WEBHOOK_URL || import.meta.env.VITE_ZAPIER_WEBHOOK_URL
+    const endpoint = import.meta.env.VITE_FORMS_WEBHOOK_URL || import.meta.env.VITE_ZAPIER_WEBHOOK_URL || import.meta.env.VITE_CONTACT_WEBHOOK_URL
     const accessKey = import.meta.env.VITE_WEB3FORMS_KEY
     const payload = {
       type: 'contact_request',
       source: 'ofstride-website',
+      submitted_at: new Date().toISOString(),
+      notify_support_email: 'support@ofstrideservices.com',
+      notify_requester_email: formData.email,
       ...formData,
     }
 
     try {
       let submitted = false
 
-      if (accessKey) {
+      if (endpoint) {
         try {
-          const response = await fetch('https://api.web3forms.com/submit', {
+          const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               Accept: 'application/json',
             },
-            body: JSON.stringify({
-              access_key: accessKey,
-              subject: `Contact Request - ${formData.name}`,
-              from_name: 'Ofstride Website',
-              replyto: formData.email,
-              ...payload,
-            }),
+            body: JSON.stringify(payload),
           })
 
-          const result = await response.json().catch(() => ({}))
-          if (response.ok && result.success) {
+          if (response.ok) {
             submitted = true
           }
         } catch {
-          // Fall through to webhook fallback.
+          // Fall through to Web3Forms fallback.
         }
       }
 
       if (!submitted) {
-        if (!endpoint) {
-          throw new Error('No submission endpoint configured')
+        if (!accessKey) {
+          throw new Error('No submission provider configured')
         }
 
-        const response = await fetch(endpoint, {
+        const response = await fetch('https://api.web3forms.com/submit', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            access_key: accessKey,
+            subject: `Contact Request - ${formData.name}`,
+            from_name: 'Ofstride Website',
+            replyto: formData.email,
+            ...payload,
+          }),
         })
 
-        if (!response.ok) {
-          throw new Error('Webhook submission failed')
+        const result = await response.json().catch(() => ({}))
+        if (!response.ok || !result.success) {
+          throw new Error('Web3Forms submission failed')
         }
 
         submitted = true

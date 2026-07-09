@@ -278,8 +278,6 @@ function About() {
                   Schedule a free 30-minute consultation with our team.
                 </p>
                 <Link to="/book-call"
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 bg-secondary text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
                 >
                   <Calendar className="w-4 h-4" />

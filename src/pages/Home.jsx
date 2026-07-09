@@ -183,8 +183,6 @@ function Home() {
 
               <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
                 <Link to="/book-call"
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="btn-primary inline-flex items-center justify-center sm:justify-start gap-2 bg-primary text-white px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl font-semibold text-sm sm:text-base"
                 >
                   <Calendar className="w-4 h-4" />
