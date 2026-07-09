@@ -416,6 +416,10 @@ class RAGGraph:
         fallback_reason: str | None = None
         rewritten_query: str | None = None
         sources: list = []
+        trace_chunks: list[dict] = []
+        llm_latency_ms = 0.0
+        observability_system_prompt = ""
+        observability_user_prompt = ""
         route_decision = "conversational"
         
         # Save state
@@ -442,6 +446,10 @@ class RAGGraph:
                 profile = self.session_store.upsert_profile(session_id, {"state": next_state})
                 
                 sources = self._format_sources(docs)
+                trace_chunks = [
+                    {"content": d.page_content[:200], "score": d.score, "metadata": d.metadata}
+                    for d in docs
+                ]
                 route_decision = "kb_success" if docs else "kb_no_results"
             else:
                 sources = []
@@ -476,6 +484,8 @@ class RAGGraph:
                     service_context=service_context,
                     query=query,
                 )
+                observability_system_prompt = system_prompt
+                observability_user_prompt = user_prompt
 
                 llm_start = time.monotonic()
                 provider = None
@@ -534,36 +544,43 @@ class RAGGraph:
                         append_cta_options(response_text) if missing_required_fields(profile) else response_text
                     )
                     sources = self._format_sources(docs)
+                    trace_chunks = [
+                        {"content": d.page_content[:200], "score": d.score, "metadata": d.metadata}
+                        for d in docs
+                    ]
 
                 llm_latency_ms = (time.monotonic() - llm_start) * 1000
-
-                # Emit Langfuse trace
-                try:
-                    get_tracer().trace_turn(
-                        conversation_id=session_id,
-                        trace_id=trace_id or session_id,
-                        user_message=query,
-                        rewritten_query=rewritten_query if rewritten_query != query else None,
-                        retrieved_chunks=[
-                            {"content": d.page_content[:200], "score": d.score, "metadata": d.metadata}
-                            for d in docs
-                        ],
-                        model_used=provider.value if provider else "fallback",
-                        fallback_triggered=route_decision == "fallback",
-                        system_prompt=system_prompt,
-                        user_prompt=user_prompt,
-                        response=response_text,
-                        latency_ms=llm_latency_ms,
-                        input_tokens=None,
-                        output_tokens=None,
-                        route_decision=route_decision,
-                    )
-                except Exception:
-                    pass  # Observability must never break chat
         
         else:
             # OPEN, INTAKE_FIELDS, INTAKE_SUBMITTED, CONSULTANTS_SHOWN: use state machine response as-is
             pass  # provider/fallback_reason/sources/route_decision already defaulted above
+
+        # Emit Langfuse trace for every completed turn (state-machine and LLM routes).
+        try:
+            get_tracer().trace_turn(
+                conversation_id=session_id,
+                trace_id=trace_id or session_id,
+                user_message=query,
+                rewritten_query=rewritten_query if rewritten_query != query else None,
+                retrieved_chunks=trace_chunks,
+                model_used=provider.value if provider else "state_machine",
+                fallback_triggered=route_decision == "fallback",
+                system_prompt=observability_system_prompt,
+                user_prompt=observability_user_prompt,
+                response=response_text,
+                latency_ms=llm_latency_ms,
+                input_tokens=None,
+                output_tokens=None,
+                route_decision=route_decision,
+            )
+        except Exception as trace_exc:
+            _logger.warning(
+                "langfuse_emit_failed session=%s trace=%s route=%s reason=%s",
+                session_id,
+                trace_id or session_id,
+                route_decision,
+                str(trace_exc)[:180],
+            )
 
         # 6. APPEND TO HISTORY
         self.session_store.append(session_id, {"role": "user", "content": query})

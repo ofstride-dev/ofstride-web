@@ -111,31 +111,50 @@ class LangfuseTracer:
                 input={"user_message": user_message},
                 output={"response": response},
             )
-            trace.span(
-                name="retrieval",
-                input={"query": rewritten_query or user_message},
-                output={
-                    "chunks": [
-                        {"score": c.get("score"), "metadata": c.get("metadata", {})}
-                        for c in retrieved_chunks
-                    ]
-                },
-                metadata={"chunk_count": len(retrieved_chunks)},
-            )
-            trace.generation(
-                name="llm_generation",
-                model=model_used,
-                prompt=[
+
+            try:
+                trace.span(
+                    name="retrieval",
+                    input={"query": rewritten_query or user_message},
+                    output={
+                        "chunks": [
+                            {"score": c.get("score"), "metadata": c.get("metadata", {})}
+                            for c in retrieved_chunks
+                        ]
+                    },
+                    metadata={"chunk_count": len(retrieved_chunks)},
+                )
+            except Exception as exc:
+                _logger.debug("Langfuse retrieval span failed: %s", exc)
+
+            usage: dict[str, int] = {}
+            if isinstance(input_tokens, int):
+                usage["input"] = input_tokens
+            if isinstance(output_tokens, int):
+                usage["output"] = output_tokens
+
+            generation_payload: dict[str, Any] = {
+                "name": "llm_generation",
+                "model": model_used,
+                "completion": response,
+                "latency": max(0.0, latency_ms / 1000),
+            }
+            if system_prompt or user_prompt:
+                generation_payload["prompt"] = [
                     {"role": "system", "content": system_prompt[:500]},
                     {"role": "user", "content": user_prompt[:500]},
-                ],
-                completion=response,
-                usage={"input": input_tokens, "output": output_tokens},
-                latency=latency_ms / 1000,
-            )
+                ]
+            if usage:
+                generation_payload["usage"] = usage
+
+            try:
+                trace.generation(**generation_payload)
+            except Exception as exc:
+                _logger.debug("Langfuse generation span failed: %s", exc)
+
             self._client.flush()
         except Exception as exc:
-            _logger.debug("Langfuse trace_turn failed: %s", exc)
+            _logger.warning("Langfuse trace_turn failed: %s", exc)
 
 
 _tracer = LangfuseTracer()
