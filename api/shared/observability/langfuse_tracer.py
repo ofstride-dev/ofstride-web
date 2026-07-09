@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import logging
-import os
 from typing import Any
+
+from core.settings import get_settings
 
 _logger = logging.getLogger("ofstride.langfuse")
 
@@ -12,32 +13,67 @@ class LangfuseTracer:
         self.enabled = False
         self._client: Any = None
         self._initialized = False
+        self._configured = False
+        self._host = "https://cloud.langfuse.com"
+        self._reason = "not_initialized"
+
+    @staticmethod
+    def _is_configured_secret(value: str | None) -> bool:
+        if not value:
+            return False
+        normalized = value.strip().lower()
+        if not normalized:
+            return False
+        placeholder_markers = (
+            "pk-lf-your",
+            "sk-lf-your",
+            "your-",
+            "replace-",
+            "example",
+            "placeholder",
+            "changeme",
+        )
+        return not any(marker in normalized for marker in placeholder_markers)
 
     def _ensure_init(self) -> None:
         if self._initialized:
             return
         self._initialized = True
-        # Trigger .env loading via settings before reading env vars
+        settings = get_settings()
+        self._host = (settings.langfuse_host or "https://cloud.langfuse.com").strip()
+
+        if not settings.langfuse_enabled:
+            self._reason = "disabled_via_env"
+            return
+
+        pk = settings.langfuse_public_key
+        sk = settings.langfuse_secret_key
+        if not self._is_configured_secret(pk) or not self._is_configured_secret(sk):
+            self._reason = "missing_or_placeholder_keys"
+            return
+
+        self._configured = True
         try:
-            from core.settings import get_settings  # noqa: F401
-            get_settings()
-        except Exception:
-            pass
+            from langfuse import Langfuse  # type: ignore[import]
+            self._client = Langfuse(public_key=pk, secret_key=sk, host=self._host)
+            self.enabled = True
+            self._reason = "enabled"
+            _logger.info("Langfuse tracing enabled host=%s", self._host)
+        except ImportError:
+            self._reason = "langfuse_package_missing"
+            _logger.warning("langfuse package not installed; tracing disabled")
+        except Exception as exc:
+            self._reason = f"init_failed:{str(exc)[:160]}"
+            _logger.warning("Langfuse init failed: %s", exc)
 
-        pk = os.getenv("LANGFUSE_PUBLIC_KEY", "").strip()
-        sk = os.getenv("LANGFUSE_SECRET_KEY", "").strip()
-        host = os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com").strip()
-
-        if pk and sk and not pk.startswith("pk-lf-your") and not sk.startswith("sk-lf-your"):
-            try:
-                from langfuse import Langfuse  # type: ignore[import]
-                self._client = Langfuse(public_key=pk, secret_key=sk, host=host)
-                self.enabled = True
-                _logger.info("Langfuse tracing enabled host=%s", host)
-            except ImportError:
-                _logger.warning("langfuse package not installed; tracing disabled")
-            except Exception as exc:
-                _logger.warning("Langfuse init failed: %s", exc)
+    def status(self) -> dict[str, Any]:
+        self._ensure_init()
+        return {
+            "enabled": self.enabled,
+            "configured": self._configured,
+            "host": self._host,
+            "reason": self._reason,
+        }
 
     def trace_turn(
         self,

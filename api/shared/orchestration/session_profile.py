@@ -88,6 +88,16 @@ NON_NAME_SINGLE_WORDS = {
     "services",
     "consultant",
     "help",
+    "send",
+    "message",
+    "schedule",
+    "book",
+    "call",
+    "what",
+    "where",
+    "when",
+    "why",
+    "how",
 }
 
 
@@ -109,7 +119,7 @@ def _normalize_phone(candidate: str) -> str | None:
     return digits
 
 
-def extract_profile_updates(text: str) -> dict[str, str]:
+def extract_profile_updates(text: str, *, allow_plain_name: bool = False) -> dict[str, str]:
     lowered = text.lower()
     updates: dict[str, str] = {}
 
@@ -135,7 +145,7 @@ def extract_profile_updates(text: str) -> dict[str, str]:
                 updates["name"] = candidate
                 break
 
-    if "name" not in updates:
+    if "name" not in updates and allow_plain_name:
         plain = text.strip()
         plain_words = plain.split()
         lower_plain = plain.lower().strip()
@@ -146,6 +156,8 @@ def extract_profile_updates(text: str) -> dict[str, str]:
             and 1 <= len(plain_words) <= 4
             and re.fullmatch(r"[A-Za-z\s.'-]+", plain)
             and lower_plain not in NON_NAME_SINGLE_WORDS
+            and not lower_plain.endswith("?")
+            and not lower_plain.startswith(("what ", "where ", "when ", "why ", "how ", "can ", "do ", "is ", "are "))
         ):
             updates["name"] = " ".join(plain_words)
 

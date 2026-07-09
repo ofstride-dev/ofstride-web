@@ -6,6 +6,7 @@ import time
 from core.llm_factory import get_llm_factory
 from core.settings import get_settings
 from guardrails.topic_guard import TopicGuard
+from ingestion.codebase_kb_pipeline import ensure_codebase_kb_seeded
 from knowledge.company_profile import get_company_profile_context
 from knowledge.service_catalog import get_service_catalog
 from memory.session_store import get_session_store
@@ -51,6 +52,7 @@ class RAGGraph:
         self.store = QdrantStore()
         self.local_directory = get_local_consultant_directory()
         self.llm_factory = get_llm_factory()
+        self._kb_seeded = False
         # Cache valid consultant names from seed for validation
         self._valid_consultant_names = self._load_valid_consultant_names()
 
@@ -343,8 +345,19 @@ class RAGGraph:
         *,
         query: str,
         session_id: str,
+        trace_id: str | None = None,
         client_profile: dict[str, str] | None = None,
     ) -> dict:
+        if not self._kb_seeded:
+            try:
+                seed_result = await ensure_codebase_kb_seeded(self.store)
+                validation = seed_result.get("validation", {}) if isinstance(seed_result, dict) else {}
+                passed = bool(validation.get("passed", False)) if isinstance(validation, dict) else False
+                if seed_result.get("seeded") or passed:
+                    self._kb_seeded = True
+            except Exception as seed_exc:
+                _logger.warning("codebase_kb_seed_failed session=%s reason=%s", session_id, str(seed_exc)[:160])
+
         # Hydrate profile from client to survive cross-instance execution in cloud hosting.
         if client_profile:
             self.session_store.upsert_profile(session_id, client_profile)
@@ -353,10 +366,6 @@ class RAGGraph:
         history = self.session_store.get(session_id)
         profile = self.session_store.get_profile(session_id)
         current_state = profile.get("state", STATE_OPEN)
-        
-        # DEBUG: Log session state
-        history_len = len(history) if history else 0
-        profile_keys = list(profile.keys()) if profile else []
         
         # 1. TOPIC GUARD CHECK (skip during intake to allow single-word inputs like names)
         if current_state not in [STATE_INTAKE_FIELDS, STATE_INTAKE_SUBMITTED]:
@@ -390,7 +399,13 @@ class RAGGraph:
                 }
         
         # 2. EXTRACT PROFILE FIELDS
-        profile_updates = extract_profile_updates(query)
+        missing_before = missing_required_fields(profile)
+        allow_plain_name_capture = (
+            current_state in [STATE_OPEN, STATE_INTAKE_FIELDS]
+            and bool(missing_before)
+            and missing_before[0] == "name"
+        )
+        profile_updates = extract_profile_updates(query, allow_plain_name=allow_plain_name_capture)
         profile = self.session_store.upsert_profile(session_id, profile_updates)
         
         # 3. USE STATE MACHINE TO DETERMINE NEXT STATE AND RESPONSE
@@ -434,113 +449,117 @@ class RAGGraph:
         
         # 5. HANDLE CONVERSATION STATE (LLM-based retrieval)
         elif next_state == STATE_CONVERSATION:
-            # Rewrite query using recent history for better semantic search
-            rewritten_query = await self._rewrite_query(query, history)
-            docs, retrieval_warning = await self._search_consultants(rewritten_query)
-            route_decision = "kb_success" if docs else "kb_no_results"
-            context = self._build_context(docs)
-            context = self._cap_text(context, self.settings.retrieval_max_context_chars)
-            company_context = get_company_profile_context()
-            short_history = history[-10:]  # wider window: 5 turns instead of 3
-            history_block = "\n".join(
-                [f"{msg.get('role', 'user')}: {msg.get('content', '')}" for msg in short_history]
-            )
-            profile_summary = build_profile_summary(profile)
-            service_context = get_service_catalog().get_services_text()
-
-            system_prompt = build_system_prompt()
-            user_prompt = build_user_prompt(
-                history_block=history_block,
-                profile_summary=profile_summary,
-                company_context=company_context,
-                context=context,
-                service_context=service_context,
-                query=query,
-            )
-
-            llm_start = time.monotonic()
-            provider = None
-            fallback_reason = retrieval_warning
-
-            try:
-                selection = await self.llm_factory.get_healthy_llm_with_metadata()
-                provider = selection.provider
-                fallback_reason = selection.fallback_reason or retrieval_warning
-            except Exception as provider_exc:
-                fallback_reason = retrieval_warning or f"provider_selection_failed:{str(provider_exc)[:120]}"
-                response_text = self._deterministic_fallback_answer(
-                    query=query,
-                    profile=profile,
-                    reason=fallback_reason,
-                )
-                response_text = self._normalize_response_text(append_cta_options(response_text))
-                sources = []
-                route_decision = "fallback"
-                provider = None
+            if response_text.strip():
+                response_text = self._normalize_response_text(response_text)
+                route_decision = "conversational_action"
             else:
+            # Rewrite query using recent history for better semantic search
+                rewritten_query = await self._rewrite_query(query, history)
+                docs, retrieval_warning = await self._search_consultants(rewritten_query)
+                route_decision = "kb_success" if docs else "kb_no_results"
+                context = self._build_context(docs)
+                context = self._cap_text(context, self.settings.retrieval_max_context_chars)
+                company_context = get_company_profile_context()
+                short_history = history[-10:]  # wider window: 5 turns instead of 3
+                history_block = "\n".join(
+                    [f"{msg.get('role', 'user')}: {msg.get('content', '')}" for msg in short_history]
+                )
+                profile_summary = build_profile_summary(profile)
+                service_context = get_service_catalog().get_services_text()
+
+                system_prompt = build_system_prompt()
+                user_prompt = build_user_prompt(
+                    history_block=history_block,
+                    profile_summary=profile_summary,
+                    company_context=company_context,
+                    context=context,
+                    service_context=service_context,
+                    query=query,
+                )
+
+                llm_start = time.monotonic()
+                provider = None
+                fallback_reason = retrieval_warning
+
                 try:
-                    response_text = await selection.client.agenerate(
-                        system_prompt=system_prompt,
-                        user_prompt=user_prompt,
-                        temperature=self.settings.temperature,
-                        max_tokens=self.settings.max_tokens,
-                    )
-                    response_text = self._sanitize_llm_response(response_text)
-                    # Cross-turn deduplication: if response is too similar to last answer, ask to clarify
-                    domain_in_query = detect_domain_interest(query)
-                    has_consulting_intent = has_direct_consulting_intent(query)
-                    if (
-                        self._is_near_duplicate(response_text, history)
-                        and not domain_in_query
-                        and not has_consulting_intent
-                        and len(query.strip().split()) >= 5
-                    ):
-                        response_text = (
-                            "I may have already addressed that — could you clarify what specific detail "
-                            "you would like me to expand on? I want to make sure my answer is useful."
-                        )
-                    self.llm_factory.mark_provider_result(provider, success=True)
-                except Exception as llm_exc:
-                    self.llm_factory.mark_provider_result(provider, success=False)
-                    fallback_reason = fallback_reason or f"llm_generation_failed:{str(llm_exc)[:120]}"
+                    selection = await self.llm_factory.get_healthy_llm_with_metadata()
+                    provider = selection.provider
+                    fallback_reason = selection.fallback_reason or retrieval_warning
+                except Exception as provider_exc:
+                    fallback_reason = retrieval_warning or f"provider_selection_failed:{str(provider_exc)[:120]}"
                     response_text = self._deterministic_fallback_answer(
                         query=query,
                         profile=profile,
                         reason=fallback_reason,
                     )
+                    response_text = self._normalize_response_text(append_cta_options(response_text))
+                    sources = []
                     route_decision = "fallback"
+                    provider = None
+                else:
+                    try:
+                        response_text = await selection.client.agenerate(
+                            system_prompt=system_prompt,
+                            user_prompt=user_prompt,
+                            temperature=self.settings.temperature,
+                            max_tokens=self.settings.max_tokens,
+                        )
+                        response_text = self._sanitize_llm_response(response_text)
+                        # Cross-turn deduplication: if response is too similar to last answer, ask to clarify
+                        domain_in_query = detect_domain_interest(query)
+                        has_consulting_intent = has_direct_consulting_intent(query)
+                        if (
+                            self._is_near_duplicate(response_text, history)
+                            and not domain_in_query
+                            and not has_consulting_intent
+                            and len(query.strip().split()) >= 5
+                        ):
+                            response_text = (
+                                "I may have already addressed that — could you clarify what specific detail "
+                                "you would like me to expand on? I want to make sure my answer is useful."
+                            )
+                        self.llm_factory.mark_provider_result(provider, success=True)
+                    except Exception as llm_exc:
+                        self.llm_factory.mark_provider_result(provider, success=False)
+                        fallback_reason = fallback_reason or f"llm_generation_failed:{str(llm_exc)[:120]}"
+                        response_text = self._deterministic_fallback_answer(
+                            query=query,
+                            profile=profile,
+                            reason=fallback_reason,
+                        )
+                        route_decision = "fallback"
 
-                response_text = self._normalize_response_text(
-                    # Only append CTAs if lead profile is still incomplete (avoids CTA repetition)
-                    append_cta_options(response_text) if missing_required_fields(profile) else response_text
-                )
-                sources = self._format_sources(docs)
+                    response_text = self._normalize_response_text(
+                        # Only append CTAs if lead profile is still incomplete (avoids CTA repetition)
+                        append_cta_options(response_text) if missing_required_fields(profile) else response_text
+                    )
+                    sources = self._format_sources(docs)
 
-            llm_latency_ms = (time.monotonic() - llm_start) * 1000
+                llm_latency_ms = (time.monotonic() - llm_start) * 1000
 
-            # Emit Langfuse trace
-            try:
-                get_tracer().trace_turn(
-                    conversation_id=session_id,
-                    trace_id=session_id,
-                    user_message=query,
-                    rewritten_query=rewritten_query if rewritten_query != query else None,
-                    retrieved_chunks=[
-                        {"content": d.page_content[:200], "score": d.score, "metadata": d.metadata}
-                        for d in docs
-                    ],
-                    model_used=provider.value if provider else "fallback",
-                    fallback_triggered=route_decision == "fallback",
-                    system_prompt=system_prompt,
-                    user_prompt=user_prompt,
-                    response=response_text,
-                    latency_ms=llm_latency_ms,
-                    input_tokens=None,
-                    output_tokens=None,
-                    route_decision=route_decision,
-                )
-            except Exception:
-                pass  # Observability must never break chat
+                # Emit Langfuse trace
+                try:
+                    get_tracer().trace_turn(
+                        conversation_id=session_id,
+                        trace_id=trace_id or session_id,
+                        user_message=query,
+                        rewritten_query=rewritten_query if rewritten_query != query else None,
+                        retrieved_chunks=[
+                            {"content": d.page_content[:200], "score": d.score, "metadata": d.metadata}
+                            for d in docs
+                        ],
+                        model_used=provider.value if provider else "fallback",
+                        fallback_triggered=route_decision == "fallback",
+                        system_prompt=system_prompt,
+                        user_prompt=user_prompt,
+                        response=response_text,
+                        latency_ms=llm_latency_ms,
+                        input_tokens=None,
+                        output_tokens=None,
+                        route_decision=route_decision,
+                    )
+                except Exception:
+                    pass  # Observability must never break chat
         
         else:
             # OPEN, INTAKE_FIELDS, INTAKE_SUBMITTED, CONSULTANTS_SHOWN: use state machine response as-is

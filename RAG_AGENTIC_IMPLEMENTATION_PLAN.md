@@ -56,8 +56,8 @@ Build a production-ready, end-to-end Agentic RAG consulting assistant on Azure S
   - [x] Session store behavior for short-lived conversational memory.
 - [x] Implement real chat orchestration flow:
   - [x] topic guard -> intake-first routing -> retrieve -> answer generation -> source payload.
-  - [ ] query rewrite (optional).
-  - [ ] rerank/light filter.
+  - [x] query rewrite (optional).
+  - [x] rerank/light filter.
   - [ ] citation formatting in final answer text.
 - [x] Ensure all existing functions call only implemented methods.
 
@@ -132,8 +132,8 @@ Build a production-ready, end-to-end Agentic RAG consulting assistant on Azure S
 
 ### Tasks
 - [ ] Add structured logs with correlation IDs.
-- [ ] Add optional tracing (Langfuse or equivalent) with environment toggles.
-- [ ] Add synthetic health checks and readiness probes.
+- [x] Add optional tracing (Langfuse or equivalent) with environment toggles.
+- [x] Add synthetic health checks and readiness probes.
 - [ ] Add quality counters (hit-rate, no-result-rate, fallback-rate).
 
 ### Test Gate
@@ -193,7 +193,7 @@ To proceed efficiently, please provide:
 - [x] Local consultant directory fallback when vector retrieval has low/no coverage.
 
 ## Missed Patterns / Additional Tasks (To Implement)
-- [ ] Add explicit confidence threshold + fallback branch when retrieved results are weak/noisy.
+- [x] Add explicit confidence threshold + fallback branch when retrieved results are weak/noisy.
 - [ ] Add deterministic response templates for high-frequency intents (company intro, pricing approach, booking flow).
 - [ ] Add analytics events for intake completion funnel (`email_captured`, `phone_captured`, `cta_selected`).
 - [ ] Add human handoff command (for example `talk to human`) with contact escalation path.

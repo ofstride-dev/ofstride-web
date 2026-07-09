@@ -69,6 +69,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
         response = await _graph.run(
             query=message,
             session_id=session_id,
+            trace_id=trace_id,
             client_profile=client_profile if isinstance(client_profile, dict) else None,
         )
         return ok_response(trace_id=trace_id, data=response, req=req)

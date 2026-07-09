@@ -13,8 +13,10 @@ import azure.functions as func
 
 from core.api_contract import error_response, get_trace_id, ok_response, options_response
 from core.settings import get_settings
+from ingestion.codebase_kb_pipeline import get_codebase_kb_status
 from core.llm_factory import get_llm_factory
 from core.embedding_factory import get_embedding_factory
+from observability.langfuse_tracer import get_tracer
 from retrieval.qdrant_store import QdrantStore
 
 
@@ -54,6 +56,35 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
     except Exception as e:
         checks["qdrant"] = {"status": "error", "detail": str(e)}
         status_code = 503
+
+    # Check optional Langfuse observability (non-blocking)
+    try:
+        lf_status = get_tracer().status()
+        checks["langfuse"] = {
+            "status": "ok" if lf_status.get("enabled") else "disabled",
+            "enabled": bool(lf_status.get("enabled")),
+            "configured": bool(lf_status.get("configured")),
+            "host": lf_status.get("host"),
+            "reason": lf_status.get("reason"),
+        }
+    except Exception as e:
+        checks["langfuse"] = {"status": "error", "detail": str(e)}
+
+    # Check generated codebase KB pipeline status (non-blocking)
+    try:
+        kb_status = get_codebase_kb_status()
+        state = kb_status.get("state", {}) if isinstance(kb_status, dict) else {}
+        validation = state.get("validation", {}) if isinstance(state, dict) else {}
+        checks["codebase_kb"] = {
+            "status": "ok" if bool(state.get("indexed")) else "pending",
+            "indexed": bool(state.get("indexed")),
+            "markdown_exists": bool(kb_status.get("markdown_exists")),
+            "markdown_file": kb_status.get("markdown_file"),
+            "content_hash": state.get("content_hash"),
+            "validation": validation,
+        }
+    except Exception as e:
+        checks["codebase_kb"] = {"status": "error", "detail": str(e)}
     
     data = {
         "status": "ready" if status_code == 200 else "not_ready",

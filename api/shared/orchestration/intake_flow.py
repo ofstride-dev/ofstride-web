@@ -48,6 +48,19 @@ MEETING_INTENT_TOKENS = {"schedule", "book", "meeting", "calendar", "availabilit
 CALLBACK_INTENT_TOKENS = {"call me back", "callback", "ring", "phone call", "call me", "ring me", "dial"}
 MESSAGE_INTENT_TOKENS = {"message", "send", "email", "contact", "write", "send message", "reach out"}
 SERVICE_INQUIRY_TOKENS = {"services", "offerings", "service you offer", "what do you offer", "your services", "service offerings", "list services", "see services", "show services", "service catalog"}
+QUESTION_PREFIXES = ("what", "where", "when", "why", "how", "can", "could", "do", "does", "is", "are")
+DOMAIN_SELECTION_HINTS = {
+    "consultant",
+    "consulting",
+    "need",
+    "looking for",
+    "recommend",
+    "connect",
+    "book",
+    "schedule",
+    "hire",
+    "recruit",
+}
 
 
 def has_service_inquiry_intent(text: str) -> bool:
@@ -78,6 +91,63 @@ def detect_action_intent(text: str) -> str | None:
             return "meeting_request"
 
     return None
+
+
+def _is_question_like(text: str) -> bool:
+    normalized = text.lower().strip()
+    if not normalized:
+        return False
+    if normalized.endswith("?"):
+        return True
+    return any(normalized.startswith(f"{prefix} ") for prefix in QUESTION_PREFIXES)
+
+
+def is_domain_selection_intent(text: str) -> bool:
+    normalized = text.lower().strip()
+    domain = detect_domain_interest(normalized)
+    if not domain:
+        return False
+
+    if normalized in {
+        "people & workforce",
+        "finance & compliance",
+        "technology & growth",
+    }:
+        return True
+
+    if _is_question_like(normalized):
+        return False
+
+    return any(_contains_token(normalized, token) for token in DOMAIN_SELECTION_HINTS)
+
+
+def build_action_followup_response(action_intent: str, profile: dict[str, str]) -> str:
+    name = (profile.get("name") or "there").strip() or "there"
+    phone = profile.get("phone")
+    email = profile.get("email")
+    contact_line = []
+    if email:
+        contact_line.append(email)
+    if phone:
+        contact_line.append(phone)
+    contact_hint = f" using {', '.join(contact_line)}" if contact_line else ""
+
+    if action_intent == "meeting_request":
+        return (
+            f"Certainly, {name}. I can help schedule a discovery call{contact_hint}. "
+            "Please share your preferred date and time slot, and I will proceed with the coordination."
+        )
+
+    if action_intent == "callback_request":
+        return (
+            f"Certainly, {name}. I can arrange a callback{contact_hint}. "
+            "Please share your preferred callback window and topic so we can connect you to the right consultant."
+        )
+
+    return (
+        f"Certainly, {name}. I can help send your request to the consultant team{contact_hint}. "
+        "Please share a brief message with your requirement and timeline."
+    )
 
 DOMAIN_INTENT_MAP = {
     "People & Workforce": {
@@ -293,7 +363,7 @@ def get_next_state(
         domain = detect_domain_interest(query)
 
         # If user selects a domain and profile is complete, route directly to consultant retrieval.
-        if domain and not missing:
+        if domain and not missing and is_domain_selection_intent(query):
             return (
                 STATE_DOMAIN_SELECTED,
                 f"Perfect! I'm finding the best {domain} consultant for you.",
@@ -302,7 +372,7 @@ def get_next_state(
 
         # If user has domain/consulting intent but required intake fields are missing,
         # continue the intake journey from the next missing field.
-        if domain or has_direct_consulting_intent(query):
+        if (domain and is_domain_selection_intent(query)) or has_direct_consulting_intent(query):
             if missing:
                 return (
                     STATE_INTAKE_FIELDS,
@@ -316,6 +386,14 @@ def get_next_state(
                     {"id": "act_1", "label": "Yes, show services", "value": "Yes, show services", "kind": "quick_reply"},
                     {"id": "act_2", "label": "Schedule a call", "value": "Schedule a call", "kind": "quick_reply"},
                 ],
+            )
+
+        # For informational questions (website/company/services flow), use conversation mode.
+        if _is_question_like(query) or len(query.strip().split()) >= 5:
+            return (
+                STATE_CONVERSATION,
+                "",
+                [],
             )
 
         # "Yes, show services" should never reset to the generic welcome.
@@ -379,11 +457,22 @@ def get_next_state(
     
     # STATE: INTAKE_SUBMITTED (waiting for domain selection or service catalog view)
     if current_state == STATE_INTAKE_SUBMITTED:
+        action_intent = detect_action_intent(query)
+        if action_intent:
+            return (
+                STATE_CONVERSATION,
+                build_action_followup_response(action_intent, profile),
+                [
+                    {"id": "act_1", "label": "Share preferred date/time", "value": "Share preferred date/time", "kind": "quick_reply"},
+                    {"id": "act_2", "label": "Send a message", "value": "Send a message", "kind": "quick_reply"},
+                ],
+            )
+
         # Check if domain is already known from earlier conversation
         stored_domain = profile.get("service_type")
         domain = detect_domain_interest(query) or stored_domain
         
-        if domain:
+        if domain and is_domain_selection_intent(query):
             # User selected a domain (or it's already known)
             return (
                 STATE_DOMAIN_SELECTED,
@@ -403,6 +492,8 @@ def get_next_state(
                 ],
             )
         else:
+            if _is_question_like(query):
+                return (STATE_CONVERSATION, "", [])
             # Re-ask for service area
             prompt = build_interest_prompt(profile.get("name"))
             return (
@@ -426,8 +517,19 @@ def get_next_state(
     
     # STATE: CONSULTANTS_SHOWN (showing consultants, open for Q&A)
     if current_state == STATE_CONSULTANTS_SHOWN:
+        action_intent = detect_action_intent(query)
+        if action_intent:
+            return (
+                STATE_CONVERSATION,
+                build_action_followup_response(action_intent, profile),
+                [
+                    {"id": "act_1", "label": "Share preferred date/time", "value": "Share preferred date/time", "kind": "quick_reply"},
+                    {"id": "act_2", "label": "Connect me now", "value": "Connect me now", "kind": "quick_reply"},
+                ],
+            )
+
         domain = detect_domain_interest(query)
-        if domain:
+        if domain and is_domain_selection_intent(query):
             return (
                 STATE_DOMAIN_SELECTED,
                 f"Perfect! I'm finding the best {domain} consultant for you.",
@@ -456,8 +558,19 @@ def get_next_state(
     
     # STATE: CONVERSATION (ongoing Q&A)
     if current_state == STATE_CONVERSATION:
+        action_intent = detect_action_intent(query)
+        if action_intent:
+            return (
+                STATE_CONVERSATION,
+                build_action_followup_response(action_intent, profile),
+                [
+                    {"id": "act_1", "label": "Share preferred date/time", "value": "Share preferred date/time", "kind": "quick_reply"},
+                    {"id": "act_2", "label": "Send a message", "value": "Send a message", "kind": "quick_reply"},
+                ],
+            )
+
         domain = detect_domain_interest(query)
-        if domain:
+        if domain and is_domain_selection_intent(query):
             return (
                 STATE_DOMAIN_SELECTED,
                 f"Perfect! I'm finding the best {domain} consultant for you.",

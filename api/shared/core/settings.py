@@ -137,6 +137,11 @@ class Settings:
     durable_store_enabled: bool
     durable_sqlite_path: str
 
+    langfuse_enabled: bool
+    langfuse_public_key: str | None
+    langfuse_secret_key: str | None
+    langfuse_host: str
+
     gemini_api_key: str | None
     gemini_model: str
 
@@ -225,6 +230,10 @@ def _build_settings() -> Settings:
             str(_runtime_base() / "chat_state.db"),
         )
         or str(_runtime_base() / "chat_state.db"),
+        langfuse_enabled=_get_bool("LANGFUSE_ENABLED", True),
+        langfuse_public_key=_get_str("LANGFUSE_PUBLIC_KEY"),
+        langfuse_secret_key=_get_str("LANGFUSE_SECRET_KEY"),
+        langfuse_host=_get_str("LANGFUSE_HOST", "https://cloud.langfuse.com") or "https://cloud.langfuse.com",
         gemini_api_key=_get_str("GEMINI_API_KEY"),
         gemini_model=_get_str("GEMINI_MODEL", "gemini-1.5-flash") or "gemini-1.5-flash",
     )

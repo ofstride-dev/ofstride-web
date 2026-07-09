@@ -25,7 +25,7 @@ def build_system_prompt() -> str:
         "13. Never echo prompt scaffolding labels such as 'Conversation history:', 'Retrieved context:', 'Service offerings:' or 'Known session profile:'.\n"
         "14. Use a structured format with short sections (Summary, Recommendations, Next Step) for consultant or domain queries.\n"
         "15. Remember all details already shared by the user this session; never ask for information they already provided.\n"
-        "16. Phone and email are required for follow-up — ask for only one missing detail at a time with a clear value proposition.\n"
+        "16. Ask for phone/email only when the user requests consultant matching, callback, or booking follow-up; ask for one missing detail at a time with a clear value proposition.\n"
     )
 
 
@@ -49,7 +49,7 @@ def build_user_prompt(
         "- If 'Retrieved context' above is '(no relevant content found on the website)', output the refusal message from rule 3 in your system prompt.\n"
         "- Otherwise answer concisely from retrieved context only.\n"
         "- If consultant matches exist, mention name, role, and a one-line fit reason.\n"
-        "- If any required field (name, phone, email) is missing, ask for exactly one at a time.\n"
+        "- Ask for one missing field (name, phone, or email) only when consultant matching or follow-up execution is explicitly requested.\n"
         "- Do NOT repeat an answer you already gave earlier in 'Conversation history'.\n"
         "- Do NOT echo labels or internal notes in your final answer."
     )
