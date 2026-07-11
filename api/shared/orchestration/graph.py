@@ -33,6 +33,7 @@ from orchestration.intake_flow import (
     STATE_CONSULTANTS_SHOWN,
     STATE_CONVERSATION,
 )
+from orchestration.assessment_flow import handle_assessment_turn, get_active_assessment_prompt
 from orchestration.session_profile import (
     build_profile_summary,
     extract_profile_updates,
@@ -268,6 +269,7 @@ class RAGGraph:
                             "consultant_cv",
                             "consultant_data",
                             "website_content",
+                            "website_structured",
                         ]
                     }
                 },
@@ -366,6 +368,51 @@ class RAGGraph:
         history = self.session_store.get(session_id)
         profile = self.session_store.get_profile(session_id)
         current_state = profile.get("state", STATE_OPEN)
+
+        # Deterministic assessment flow (questionnaire-first) runs before topic guard.
+        assessment = handle_assessment_turn(current_state=current_state, profile=profile, query=query)
+        if assessment.handled:
+            updates = assessment.profile_updates or {}
+            if assessment.next_state:
+                updates["state"] = assessment.next_state
+            if updates:
+                profile = self.session_store.upsert_profile(session_id, updates)
+
+            response_text = self._normalize_response_text(assessment.response_text)
+
+            self.session_store.append(session_id, {"role": "user", "content": query})
+            self.session_store.append(session_id, {"role": "assistant", "content": response_text})
+
+            missing_required = missing_required_fields(profile)
+
+            return {
+                "response": response_text,
+                "session_id": session_id,
+                "state": profile.get("state", STATE_OPEN),
+                "route_decision": "conversational_action",
+                "confidence": 0.95,
+                "sources": [
+                    {
+                        "content": "Assessment response grounded from approved questionnaire configuration.",
+                        "metadata": {
+                            "source": "assessment_questionnaire.json",
+                            "source_type": "approved_assessment_config",
+                        },
+                    }
+                ],
+                "provider_used": "state_machine",
+                "fallback_reason": None,
+                "session_profile": profile,
+                "ui_hints": {
+                    "actions": assessment.actions or [],
+                    "next_required_field": missing_required[0] if missing_required else None,
+                },
+                "debug": {
+                    "history_length": len(history) if history else 0,
+                    "profile_fields": list(profile.keys()) if profile else [],
+                    "missing_required_fields": missing_required,
+                },
+            }
         
         # 1. TOPIC GUARD CHECK (skip during intake to allow single-word inputs like names)
         if current_state not in [STATE_INTAKE_FIELDS, STATE_INTAKE_SUBMITTED]:
@@ -465,91 +512,115 @@ class RAGGraph:
                 rewritten_query = await self._rewrite_query(query, history)
                 docs, retrieval_warning = await self._search_consultants(rewritten_query)
                 route_decision = "kb_success" if docs else "kb_no_results"
-                context = self._build_context(docs)
-                context = self._cap_text(context, self.settings.retrieval_max_context_chars)
-                company_context = get_company_profile_context()
-                short_history = history[-10:]  # wider window: 5 turns instead of 3
-                history_block = "\n".join(
-                    [f"{msg.get('role', 'user')}: {msg.get('content', '')}" for msg in short_history]
-                )
-                profile_summary = build_profile_summary(profile)
-                service_context = get_service_catalog().get_services_text()
 
-                system_prompt = build_system_prompt()
-                user_prompt = build_user_prompt(
-                    history_block=history_block,
-                    profile_summary=profile_summary,
-                    company_context=company_context,
-                    context=context,
-                    service_context=service_context,
-                    query=query,
-                )
-                observability_system_prompt = system_prompt
-                observability_user_prompt = user_prompt
-
-                llm_start = time.monotonic()
-                provider = None
-                fallback_reason = retrieval_warning
-
-                try:
-                    selection = await self.llm_factory.get_healthy_llm_with_metadata()
-                    provider = selection.provider
-                    fallback_reason = selection.fallback_reason or retrieval_warning
-                except Exception as provider_exc:
-                    fallback_reason = retrieval_warning or f"provider_selection_failed:{str(provider_exc)[:120]}"
-                    response_text = self._deterministic_fallback_answer(
-                        query=query,
-                        profile=profile,
-                        reason=fallback_reason,
+                active_assessment_prompt = get_active_assessment_prompt(profile)
+                if not docs and active_assessment_prompt is not None:
+                    next_question, next_actions = active_assessment_prompt
+                    response_text = self._normalize_response_text(
+                        "I can only respond from approved Ofstride material. "
+                        "Please continue the configured assessment so I can stay grounded.\n\n"
+                        f"{next_question}"
                     )
-                    response_text = self._normalize_response_text(append_cta_options(response_text))
-                    sources = []
-                    route_decision = "fallback"
+                    actions = next_actions
+                    sources = [
+                        {
+                            "content": "Assessment prompt sourced from approved configuration.",
+                            "metadata": {
+                                "source": "assessment_questionnaire.json",
+                                "source_type": "approved_assessment_config",
+                            },
+                        }
+                    ]
+                    trace_chunks = []
                     provider = None
+                    fallback_reason = retrieval_warning
+                    route_decision = "conversational_action"
                 else:
+                    context = self._build_context(docs)
+                    context = self._cap_text(context, self.settings.retrieval_max_context_chars)
+                    company_context = get_company_profile_context()
+                    short_history = history[-10:]  # wider window: 5 turns instead of 3
+                    history_block = "\n".join(
+                        [f"{msg.get('role', 'user')}: {msg.get('content', '')}" for msg in short_history]
+                    )
+                    profile_summary = build_profile_summary(profile)
+                    service_context = get_service_catalog().get_services_text()
+
+                    system_prompt = build_system_prompt()
+                    user_prompt = build_user_prompt(
+                        history_block=history_block,
+                        profile_summary=profile_summary,
+                        company_context=company_context,
+                        context=context,
+                        service_context=service_context,
+                        query=query,
+                    )
+                    observability_system_prompt = system_prompt
+                    observability_user_prompt = user_prompt
+
+                    llm_start = time.monotonic()
+                    provider = None
+                    fallback_reason = retrieval_warning
+
                     try:
-                        response_text = await selection.client.agenerate(
-                            system_prompt=system_prompt,
-                            user_prompt=user_prompt,
-                            temperature=self.settings.temperature,
-                            max_tokens=self.settings.max_tokens,
-                        )
-                        response_text = self._sanitize_llm_response(response_text)
-                        # Cross-turn deduplication: if response is too similar to last answer, ask to clarify
-                        domain_in_query = detect_domain_interest(query)
-                        has_consulting_intent = has_direct_consulting_intent(query)
-                        if (
-                            self._is_near_duplicate(response_text, history)
-                            and not domain_in_query
-                            and not has_consulting_intent
-                            and len(query.strip().split()) >= 5
-                        ):
-                            response_text = (
-                                "I may have already addressed that — could you clarify what specific detail "
-                                "you would like me to expand on? I want to make sure my answer is useful."
-                            )
-                        self.llm_factory.mark_provider_result(provider, success=True)
-                    except Exception as llm_exc:
-                        self.llm_factory.mark_provider_result(provider, success=False)
-                        fallback_reason = fallback_reason or f"llm_generation_failed:{str(llm_exc)[:120]}"
+                        selection = await self.llm_factory.get_healthy_llm_with_metadata()
+                        provider = selection.provider
+                        fallback_reason = selection.fallback_reason or retrieval_warning
+                    except Exception as provider_exc:
+                        fallback_reason = retrieval_warning or f"provider_selection_failed:{str(provider_exc)[:120]}"
                         response_text = self._deterministic_fallback_answer(
                             query=query,
                             profile=profile,
                             reason=fallback_reason,
                         )
+                        response_text = self._normalize_response_text(append_cta_options(response_text))
+                        sources = []
                         route_decision = "fallback"
+                        provider = None
+                    else:
+                        try:
+                            response_text = await selection.client.agenerate(
+                                system_prompt=system_prompt,
+                                user_prompt=user_prompt,
+                                temperature=self.settings.temperature,
+                                max_tokens=self.settings.max_tokens,
+                            )
+                            response_text = self._sanitize_llm_response(response_text)
+                            # Cross-turn deduplication: if response is too similar to last answer, ask to clarify
+                            domain_in_query = detect_domain_interest(query)
+                            has_consulting_intent = has_direct_consulting_intent(query)
+                            if (
+                                self._is_near_duplicate(response_text, history)
+                                and not domain_in_query
+                                and not has_consulting_intent
+                                and len(query.strip().split()) >= 5
+                            ):
+                                response_text = (
+                                    "I may have already addressed that — could you clarify what specific detail "
+                                    "you would like me to expand on? I want to make sure my answer is useful."
+                                )
+                            self.llm_factory.mark_provider_result(provider, success=True)
+                        except Exception as llm_exc:
+                            self.llm_factory.mark_provider_result(provider, success=False)
+                            fallback_reason = fallback_reason or f"llm_generation_failed:{str(llm_exc)[:120]}"
+                            response_text = self._deterministic_fallback_answer(
+                                query=query,
+                                profile=profile,
+                                reason=fallback_reason,
+                            )
+                            route_decision = "fallback"
 
-                    response_text = self._normalize_response_text(
-                        # Only append CTAs if lead profile is still incomplete (avoids CTA repetition)
-                        append_cta_options(response_text) if missing_required_fields(profile) else response_text
-                    )
-                    sources = self._format_sources(docs)
-                    trace_chunks = [
-                        {"content": d.page_content[:200], "score": d.score, "metadata": d.metadata}
-                        for d in docs
-                    ]
+                        response_text = self._normalize_response_text(
+                            # Only append CTAs if lead profile is still incomplete (avoids CTA repetition)
+                            append_cta_options(response_text) if missing_required_fields(profile) else response_text
+                        )
+                        sources = self._format_sources(docs)
+                        trace_chunks = [
+                            {"content": d.page_content[:200], "score": d.score, "metadata": d.metadata}
+                            for d in docs
+                        ]
 
-                llm_latency_ms = (time.monotonic() - llm_start) * 1000
+                    llm_latency_ms = (time.monotonic() - llm_start) * 1000
         
         else:
             # OPEN, INTAKE_FIELDS, INTAKE_SUBMITTED, CONSULTANTS_SHOWN: use state machine response as-is

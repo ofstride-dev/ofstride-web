@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from core.settings import API_ROOT, get_settings
+from ingestion.parsers import _chunk_text
 from ingestion.parsers import parse_file
 from ingestion.static_content import get_all_documents
 from knowledge.company_profile import get_company_profile_context
@@ -32,6 +33,10 @@ def _state_file() -> Path:
 
 def _markdown_file() -> Path:
     return API_ROOT / "data" / "generated_website_kb.md"
+
+
+def _jsonl_file() -> Path:
+    return API_ROOT / "data" / "generated_website_kb.jsonl"
 
 
 def _build_markdown() -> str:
@@ -67,6 +72,56 @@ def _build_markdown() -> str:
     return "\n".join(lines).strip() + "\n"
 
 
+def _infer_page_type(section: str) -> str:
+    normalized = (section or "").strip().lower()
+    if normalized in {"services", "service"}:
+        return "service"
+    if normalized in {"team", "consultants"}:
+        return "profile"
+    if normalized in {"faq", "faqs"}:
+        return "faq"
+    if normalized in {"contact", "book-call"}:
+        return "cta"
+    return "page"
+
+
+def _build_structured_records() -> list[dict[str, Any]]:
+    now = datetime.now(timezone.utc).isoformat()
+    records: list[dict[str, Any]] = []
+
+    for doc in get_all_documents():
+        base_meta = {
+            "url": doc.url,
+            "section_heading": doc.section,
+            "page_type": _infer_page_type(doc.section),
+            "source_system": "ofstride_static_content",
+            "publish_date": now,
+            "updated_at": now,
+            "source_priority": 2,
+        }
+        if isinstance(doc.metadata, dict):
+            base_meta.update(doc.metadata)
+
+        records.append(
+            {
+                "title": doc.title,
+                "content": doc.content.strip(),
+                "metadata": base_meta,
+            }
+        )
+
+    return records
+
+
+def _write_jsonl(records: list[dict[str, Any]]) -> Path:
+    path = _jsonl_file()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as handle:
+        for row in records:
+            handle.write(json.dumps(row, ensure_ascii=True) + "\n")
+    return path
+
+
 def _compute_hash(content: str) -> str:
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
@@ -90,10 +145,13 @@ def _save_state(state: dict[str, Any]) -> None:
 def get_codebase_kb_status() -> dict[str, Any]:
     state = _load_state()
     md_path = _markdown_file()
+    jsonl_path = _jsonl_file()
     return {
         "state": state,
         "markdown_exists": md_path.exists(),
         "markdown_file": str(md_path),
+        "jsonl_exists": jsonl_path.exists(),
+        "jsonl_file": str(jsonl_path),
     }
 
 
@@ -131,7 +189,12 @@ async def ensure_codebase_kb_seeded(store) -> dict[str, Any]:
         md_path.write_text(markdown, encoding="utf-8")
 
         parsed_docs = list(parse_file(markdown.encode("utf-8"), md_path.name))
+        structured_records = _build_structured_records()
+        jsonl_path = _write_jsonl(structured_records)
+
         docs_to_store: list[dict[str, Any]] = []
+
+        # Markdown chunks for long-form semantic retrieval.
         for parsed in parsed_docs:
             docs_to_store.append(
                 {
@@ -141,11 +204,44 @@ async def ensure_codebase_kb_seeded(store) -> dict[str, Any]:
                         "source": md_path.name,
                         "source_type": "website_content",
                         "section": "generated_kb",
+                        "page_type": "markdown_kb",
+                        "source_system": "codebase_static_content",
+                        "updated_at": datetime.now(timezone.utc).isoformat(),
                         "content_hash": content_hash,
                         "ingested_at": datetime.now(timezone.utc).isoformat(),
                     },
                 }
             )
+
+        # Structured section records (JSONL) for metadata-filtered retrieval.
+        for record in structured_records:
+            metadata = dict(record.get("metadata", {}) or {})
+            text = str(record.get("content", "")).strip()
+            title = str(record.get("title", "")).strip()
+            if title:
+                text = f"{title}\n\n{text}" if text else title
+
+            chunks = _chunk_text(
+                text=text,
+                chunk_size=get_settings().ingest_chunk_size,
+                overlap=get_settings().ingest_chunk_overlap,
+            )
+            for idx, chunk in enumerate(chunks):
+                docs_to_store.append(
+                    {
+                        "content": chunk,
+                        "metadata": {
+                            "source": jsonl_path.name,
+                            "source_type": "website_structured",
+                            "title": title,
+                            "chunk_index": idx,
+                            "chunk_count": len(chunks),
+                            "content_hash": content_hash,
+                            "ingested_at": datetime.now(timezone.utc).isoformat(),
+                            **metadata,
+                        },
+                    }
+                )
 
         await store.ensure_collection()
         added = await store.add_documents(docs_to_store)
@@ -179,6 +275,7 @@ async def ensure_codebase_kb_seeded(store) -> dict[str, Any]:
                 "query_hits": validation,
             },
             "markdown_file": str(md_path),
+            "jsonl_file": str(jsonl_path),
         }
         _save_state(state)
         _LAST_HASH = content_hash
@@ -196,4 +293,5 @@ async def ensure_codebase_kb_seeded(store) -> dict[str, Any]:
             "documents_added": added,
             "validation": state["validation"],
             "markdown_file": str(md_path),
+            "jsonl_file": str(jsonl_path),
         }

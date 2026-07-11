@@ -11,6 +11,7 @@ from qdrant_client.http.models import (
     FieldCondition,
     Filter,
     MatchAny,
+    MatchValue,
     PointStruct,
     VectorParams,
 )
@@ -137,10 +138,17 @@ class QdrantStore:
         if not filters:
             return True
 
-        source_type_filter = filters.get("source_type") if isinstance(filters, dict) else None
-        if isinstance(source_type_filter, dict) and "$in" in source_type_filter:
-            allowed = source_type_filter["$in"]
-            return metadata.get("source_type") in allowed
+        if not isinstance(filters, dict):
+            return True
+
+        for key, value in filters.items():
+            actual = metadata.get(key)
+            if isinstance(value, dict) and "$in" in value:
+                if actual not in value["$in"]:
+                    return False
+            else:
+                if actual != value:
+                    return False
 
         return True
 
@@ -180,16 +188,26 @@ class QdrantStore:
         assert self.client is not None
 
         qdrant_filter = None
-        source_type_filter = filters.get("source_type") if isinstance(filters, dict) else None
-        if isinstance(source_type_filter, dict) and "$in" in source_type_filter:
-            qdrant_filter = Filter(
-                must=[
-                    FieldCondition(
-                        key="metadata.source_type",
-                        match=MatchAny(any=source_type_filter["$in"]),
+        if isinstance(filters, dict) and filters:
+            must_conditions: list[FieldCondition] = []
+            for key, value in filters.items():
+                metadata_key = f"metadata.{key}"
+                if isinstance(value, dict) and "$in" in value:
+                    must_conditions.append(
+                        FieldCondition(
+                            key=metadata_key,
+                            match=MatchAny(any=value["$in"]),
+                        )
                     )
-                ]
-            )
+                else:
+                    must_conditions.append(
+                        FieldCondition(
+                            key=metadata_key,
+                            match=MatchValue(value=value),
+                        )
+                    )
+            if must_conditions:
+                qdrant_filter = Filter(must=must_conditions)
 
         hits = await self.client.query_points(
             collection_name=self._settings.qdrant_collection,

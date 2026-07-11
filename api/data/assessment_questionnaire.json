@@ -1,0 +1,111 @@
+{
+  "welcome_message": "Welcome to Ofstride Services LLP. Every business faces challenges. Let's identify yours and suggest a practical way forward. It takes less than 2 minutes.",
+  "question_1": {
+    "id": "q1_challenge",
+    "question": "Which of these best describes your biggest business challenge today?",
+    "options": [
+      "Growing the business",
+      "Reducing costs",
+      "People & HR challenges",
+      "Compliance & Legal",
+      "AI & Automation",
+      "Operational inefficiencies",
+      "Decision making & reporting",
+      "Not sure"
+    ]
+  },
+  "branches": {
+    "Growing the business": {
+      "question": "What's holding back your growth?",
+      "options": [
+        "Finding customers",
+        "Scaling operations",
+        "Hiring the right people",
+        "Cash flow",
+        "Technology",
+        "Market competition"
+      ],
+      "response": "Many growing businesses face this challenge. A combination of process improvement, leadership alignment, and AI-enabled workflows often creates the capacity needed for sustainable growth.",
+      "priority": "Growth Enablement"
+    },
+    "Operational inefficiencies": {
+      "question": "Which area consumes the most time?",
+      "options": [
+        "Manual work",
+        "Multiple spreadsheets",
+        "Poor coordination",
+        "Lack of SOPs",
+        "Vendor management",
+        "Reporting"
+      ],
+      "response": "This usually indicates opportunities for process redesign and automation. Many organizations reduce delays by standardizing workflows and introducing AI-assisted processes.",
+      "priority": "Operational Transformation"
+    },
+    "People & HR challenges": {
+      "question": "Which challenge best describes your situation?",
+      "options": [
+        "Hiring",
+        "Employee retention",
+        "Performance management",
+        "HR compliance",
+        "Leadership capability"
+      ],
+      "response": "Strengthening people processes and leadership often improves productivity, retention, and business performance.",
+      "priority": "People Performance"
+    },
+    "AI & Automation": {
+      "question": "What are you hoping AI will do?",
+      "options": [
+        "Save time",
+        "Improve customer service",
+        "Generate reports",
+        "Build an AI assistant",
+        "Automate repetitive work",
+        "I don't know where to start"
+      ],
+      "response": "AI delivers the greatest value when aligned with business processes rather than implemented as a standalone technology. A phased approach usually produces faster and more sustainable results.",
+      "priority": "AI Enablement"
+    },
+    "Compliance & Legal": {
+      "question": "What's your priority?",
+      "options": [
+        "Compliance",
+        "Due diligence",
+        "Contracts",
+        "Tax",
+        "Internal controls",
+        "Risk management"
+      ],
+      "response": "Addressing compliance and governance early reduces business risk and creates a stronger foundation for growth.",
+      "priority": "Governance & Risk"
+    },
+    "Reducing costs": {
+      "response": "Cost pressure usually improves when operations are simplified and decision cycles are shortened with better process visibility.",
+      "priority": "Cost Optimization"
+    },
+    "Decision making & reporting": {
+      "response": "Decision speed usually improves with cleaner operating data, standardized reporting, and focused business intelligence workflows.",
+      "priority": "Decision Intelligence"
+    },
+    "Not sure": {
+      "response": "That's completely fine. We can still identify a practical direction through a structured discovery discussion.",
+      "priority": "Discovery"
+    }
+  },
+  "final_diagnosis": {
+    "headline": "Based on what you've shared, we believe your business would benefit most from:",
+    "label": "Operational Excellence + AI Enablement",
+    "focus_areas": [
+      "Process Optimization",
+      "Leadership Alignment",
+      "AI Workflow Automation"
+    ],
+    "typical_outcomes": [
+      "15-30% reduction in manual effort",
+      "Faster decision-making through better business intelligence",
+      "Improved compliance and governance",
+      "Stronger operational scalability"
+    ],
+    "cta": "Would you like one of our consultants to review your situation? A complimentary 20-minute strategy discussion can help identify practical next steps."
+  }
+}

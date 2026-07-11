@@ -12,10 +12,10 @@ type ChatWidgetProps = {
 };
 
 const defaultPrompts = [
-  "I need Business Strategy consulting",
-  "Show HR, Payroll, and Compliance services",
-  "I want AI and Data Science consulting",
-  "Schedule a discovery call",
+  "Start Assessment",
+  "AI & Automation",
+  "Operational inefficiencies",
+  "People & HR challenges",
 ];
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
@@ -24,7 +24,6 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
     messages,
     sendMessage,
     sendQuickReply,
-    retryLastMessage,
     emitEvent,
     sessionProfile,
     pendingRequiredField,
@@ -110,14 +109,6 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
         <div className="chat-header-actions">
           <button
             type="button"
-            onClick={retryLastMessage}
-            disabled={isLoading}
-            className="chat-header-link"
-          >
-            Retry
-          </button>
-          <button
-            type="button"
             onClick={clearChat}
             className="chat-header-link"
           >
@@ -138,14 +129,14 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
 
       <div className="chat-welcome-banner" role="status">
         <MessageCircleMore className="w-4 h-4" />
-        <p>Tell us your requirement and we will align the right Ofstride service domain and consultant options.</p>
+        <p>Take a quick guided assessment and get a practical diagnosis with next steps.</p>
       </div>
 
       <div className="chat-scroll flex-1 overflow-y-auto p-4 space-y-4" aria-live="polite" aria-relevant="additions text">
         {messages.length === 0 && (
           <div className="chat-empty py-6">
             <h3>Great to connect with you.</h3>
-            <p>Start with your business challenge. I will map it to Ofstride services and consultant fit.</p>
+            <p>Start Assessment to answer a few guided questions.</p>
             <QuickReplyChips
               actions={defaultPrompts.map((value, index) => ({
                 id: `default_${index}`,

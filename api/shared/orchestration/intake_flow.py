@@ -68,7 +68,25 @@ def has_service_inquiry_intent(text: str) -> bool:
     lowered = text.lower().strip()
     if not lowered:
         return False
-    return any(token in lowered for token in SERVICE_INQUIRY_TOKENS)
+    if any(token in lowered for token in SERVICE_INQUIRY_TOKENS):
+        return True
+
+    # Handle specific service queries like "What is Virtual CFO service?"
+    service_name_hints = {
+        "virtual cfo",
+        "gst",
+        "tax",
+        "legal",
+        "payroll",
+        "executive search",
+        "hr consulting",
+        "ai",
+        "data science",
+        "digital transformation",
+        "business strategy",
+        "eor",
+    }
+    return "service" in lowered and any(hint in lowered for hint in service_name_hints)
 
 
 def detect_action_intent(text: str) -> str | None:
@@ -362,6 +380,14 @@ def get_next_state(
         missing = missing_required_fields(profile)
         domain = detect_domain_interest(query)
 
+        # For informational questions (website/company/services flow), use conversation mode first.
+        if _is_question_like(query) or len(query.strip().split()) >= 5:
+            return (
+                STATE_CONVERSATION,
+                "",
+                [],
+            )
+
         # If user selects a domain and profile is complete, route directly to consultant retrieval.
         if domain and not missing and is_domain_selection_intent(query):
             return (
@@ -386,14 +412,6 @@ def get_next_state(
                     {"id": "act_1", "label": "Yes, show services", "value": "Yes, show services", "kind": "quick_reply"},
                     {"id": "act_2", "label": "Schedule a call", "value": "Schedule a call", "kind": "quick_reply"},
                 ],
-            )
-
-        # For informational questions (website/company/services flow), use conversation mode.
-        if _is_question_like(query) or len(query.strip().split()) >= 5:
-            return (
-                STATE_CONVERSATION,
-                "",
-                [],
             )
 
         # "Yes, show services" should never reset to the generic welcome.
