@@ -10,11 +10,13 @@ export interface ChatMessage {
   sources?: ConsultantSource[];
   actions?: ChatAction[];
   isLoading?: boolean;
+  assessmentFocus?: AssessmentFocusReport | null;
 }
 
 interface UseChatReturn {
   messages: ChatMessage[];
-  sendMessage: (text: string) => Promise<void>;
+  sendMessage: (text: string, options?: { silent?: boolean }) => Promise<void>;
+  sendSilentMessage: (text: string) => Promise<void>;
   sendQuickReply: (value: string) => Promise<void>;
   retryLastMessage: () => Promise<void>;
   emitEvent: (eventType: ChatEventType, payload?: Record<string, unknown>) => Promise<void>;
@@ -59,7 +61,7 @@ export function useChat(): UseChatReturn {
 
   const generateId = () => `msg_${++messageIdRef.current}_${Date.now()}`;
 
-  const sendMessage = useCallback(async (text: string) => {
+  const sendMessage = useCallback(async (text: string, options: { silent?: boolean } = {}) => {
     if (!text.trim() || isLoading) return;
 
     const userMessage: ChatMessage = {
@@ -77,7 +79,7 @@ export function useChat(): UseChatReturn {
       isLoading: true,
     };
 
-    setMessages((prev) => [...prev, userMessage, loadingMessage]);
+    setMessages((prev) => (options.silent ? [...prev, loadingMessage] : [...prev, userMessage, loadingMessage]));
     setIsLoading(true);
     setError(null);
     setLastUserMessage(text.trim());
@@ -97,6 +99,7 @@ export function useChat(): UseChatReturn {
                 isLoading: false,
                 sources: response.sources,
                 actions: response.ui_hints?.actions,
+                assessmentFocus: response.ui_hints?.assessment_focus ?? null,
               }
             : msg
         )
@@ -160,6 +163,10 @@ export function useChat(): UseChatReturn {
     }
   }, [emitEvent, hasCompleteLead, isLoading, sessionProfile]);
 
+  const sendSilentMessage = useCallback(async (text: string) => {
+    await sendMessage(text, { silent: true });
+  }, [sendMessage]);
+
   const sendQuickReply = useCallback(async (value: string) => {
     await emitEvent("cta_selected", { value });
     await sendMessage(value);
@@ -188,6 +195,7 @@ export function useChat(): UseChatReturn {
   return {
     messages,
     sendMessage,
+    sendSilentMessage,
     sendQuickReply,
     retryLastMessage,
     emitEvent,

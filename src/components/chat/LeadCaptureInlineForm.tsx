@@ -7,15 +7,15 @@ type LeadCaptureInlineFormProps = {
 };
 
 const labels: Record<string, string> = {
-  name: "Share your name",
-  phone: "Share your mobile with country code",
-  email: "Share your business email",
+  name: "To customise your roadmap, what should we call you?",
+  phone: "What is your best mobile number?",
+  email: "Where should we email your detailed, step-by-step action plan?",
 };
 
 const placeholders: Record<string, string> = {
-  name: "John Smith",
-  phone: "+91 98765 43210",
-  email: "john@company.com",
+  name: "Your first name...",
+  phone: "Your mobile number...",
+  email: "Your business email...",
 };
 
 export const LeadCaptureInlineForm: React.FC<LeadCaptureInlineFormProps> = ({
@@ -99,7 +99,7 @@ export const LeadCaptureInlineForm: React.FC<LeadCaptureInlineFormProps> = ({
           className="chat-inline-form-input"
         />
       </div>
-      <p className="text-xs text-slate-500">We will capture this automatically once it is complete.</p>
+      <p className="text-xs text-slate-500">Share this so we can personalise your roadmap and next-step plan.</p>
       {validationError && <p className="text-xs text-red-600">{validationError}</p>}
     </form>
   );

@@ -1,22 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, MessageCircleMore, Send, X } from "lucide-react";
+import { Calendar, Send, X } from "lucide-react";
 import { useChat } from "../../hooks/useChat";
 import { ConsultantCards } from "./ConsultantCards";
 import { LeadCaptureInlineForm } from "./LeadCaptureInlineForm";
+import { AssessmentFocusReport } from "./AssessmentFocusReport";
 import { QuickReplyChips } from "./QuickReplyChips";
 import { TypingIndicator } from "./TypingIndicator";
 
 type ChatWidgetProps = {
   onClose?: () => void;
 };
-
-const defaultPrompts = [
-  "Start Assessment",
-  "AI & Automation",
-  "Operational inefficiencies",
-  "People & HR challenges",
-];
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
   const navigate = useNavigate();
@@ -33,6 +27,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
   } = useChat();
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const defaultPrompts = ["Start Assessment"];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +52,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
   const visibleActions = latestAssistant?.actions ?? [];
 
   const handleBookCallRedirect = async (trigger: string) => {
-    await emitEvent("booking_initiated", {
+    void emitEvent("booking_initiated", {
       trigger,
       source: "chat_widget",
       profile: sessionProfile,
@@ -127,16 +123,10 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
         </div>
       </div>
 
-      <div className="chat-welcome-banner" role="status">
-        <MessageCircleMore className="w-4 h-4" />
-        <p>Take a quick guided assessment and get a practical diagnosis with next steps.</p>
-      </div>
-
       <div className="chat-scroll flex-1 overflow-y-auto p-4 space-y-4" aria-live="polite" aria-relevant="additions text">
         {messages.length === 0 && (
           <div className="chat-empty py-6">
-            <h3>Great to connect with you.</h3>
-            <p>Start Assessment to answer a few guided questions.</p>
+            <h3>Welcome to Ofstride Services LLP. 👋 I&apos;m your virtual assistant. Every business faces challenges. Let&apos;s identify yours and suggest a practical way forward. It takes less than 2 minutes.</h3>
             <QuickReplyChips
               actions={defaultPrompts.map((value, index) => ({
                 id: `default_${index}`,
@@ -155,6 +145,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
             <div className="chat-message-bubble">
               {msg.isLoading ? (
                 <TypingIndicator />
+              ) : msg.assessmentFocus ? (
+                <AssessmentFocusReport
+                  report={msg.assessmentFocus}
+                  onBookCall={handleBookCallRedirect}
+                />
               ) : (
                 <div className="chat-message-content">
                   <div className="whitespace-pre-wrap">{msg.content}</div>
@@ -198,7 +193,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
         />
         <button
           type="submit"
-          disabled={isLoading || !input.trim()}
+          disabled={isLoading}
           className="chat-send-btn"
           aria-label="Send message"
         >
@@ -207,7 +202,6 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
         </button>
         <button
           type="button"
-          disabled={isLoading}
           onClick={() => handleBookCallRedirect("footer_call_button")}
           className="chat-call-btn"
         >

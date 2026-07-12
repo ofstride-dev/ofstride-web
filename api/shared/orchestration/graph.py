@@ -370,7 +370,7 @@ class RAGGraph:
         current_state = profile.get("state", STATE_OPEN)
 
         # Deterministic assessment flow (questionnaire-first) runs before topic guard.
-        assessment = handle_assessment_turn(current_state=current_state, profile=profile, query=query)
+        assessment = await handle_assessment_turn(current_state=current_state, profile=profile, query=query, session_id=session_id)
         if assessment.handled:
             updates = assessment.profile_updates or {}
             if assessment.next_state:
@@ -391,21 +391,14 @@ class RAGGraph:
                 "state": profile.get("state", STATE_OPEN),
                 "route_decision": "conversational_action",
                 "confidence": 0.95,
-                "sources": [
-                    {
-                        "content": "Assessment response grounded from approved questionnaire configuration.",
-                        "metadata": {
-                            "source": "assessment_questionnaire.json",
-                            "source_type": "approved_assessment_config",
-                        },
-                    }
-                ],
+                "sources": [],
                 "provider_used": "state_machine",
                 "fallback_reason": None,
                 "session_profile": profile,
                 "ui_hints": {
                     "actions": assessment.actions or [],
-                    "next_required_field": missing_required[0] if missing_required else None,
+                    "next_required_field": assessment.lead_step,
+                    "assessment_focus": assessment.focus_report,
                 },
                 "debug": {
                     "history_length": len(history) if history else 0,
@@ -522,15 +515,7 @@ class RAGGraph:
                         f"{next_question}"
                     )
                     actions = next_actions
-                    sources = [
-                        {
-                            "content": "Assessment prompt sourced from approved configuration.",
-                            "metadata": {
-                                "source": "assessment_questionnaire.json",
-                                "source_type": "approved_assessment_config",
-                            },
-                        }
-                    ]
+                    sources = []
                     trace_chunks = []
                     provider = None
                     fallback_reason = retrieval_warning

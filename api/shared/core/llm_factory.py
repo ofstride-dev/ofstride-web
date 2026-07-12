@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import time
+import json
 from dataclasses import dataclass
 from enum import Enum
 from typing import Protocol
@@ -84,6 +85,30 @@ class OpenAILLMClient:
 
         return (completion.choices[0].message.content or "").strip()
 
+    async def agenerate_json(
+        self,
+        *,
+        system_prompt: str,
+        user_prompt: str,
+        temperature: float,
+        max_tokens: int,
+    ) -> str:
+        settings = get_settings()
+        completion = await asyncio.wait_for(
+            self.client.chat.completions.create(
+                model=self.model,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                response_format={"type": "json_object"},
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+            ),
+            timeout=max(3, settings.llm_timeout_seconds),
+        )
+        return (completion.choices[0].message.content or "").strip()
+
 
 class MockLLMClient:
     async def agenerate(
@@ -103,6 +128,36 @@ class MockLLMClient:
             "Based on your request, I suggest we shortlist candidates by domain, skills, "
             f"and availability.\n\nRequest summary: {prompt}"
         )
+
+
+    async def agenerate_json(
+        self,
+        *,
+        system_prompt: str,
+        user_prompt: str,
+        temperature: float,
+        max_tokens: int,
+    ) -> str:
+        del system_prompt, temperature, max_tokens
+        prompt = user_prompt.strip()
+        primary = "your selected business challenge"
+        sub = "your selected sub-hurdle"
+        if "Primary Challenge:" in prompt:
+            primary = prompt.split("Primary Challenge:", 1)[1].split("\n", 1)[0].strip() or primary
+        if "Sub-Hurdle:" in prompt:
+            sub = prompt.split("Sub-Hurdle:", 1)[1].split("\n", 1)[0].strip() or sub
+        return json.dumps({
+            "focus_title": f"Strategic Agenda: {primary}",
+            "validation_summary": (
+                f"Your focus on {sub} reflects a typical bottleneck where daily "
+                f"constraints outpace the current operating model. The root organisational "
+                f"bottleneck is the absence of a single accountable process owner across {primary}."
+            ),
+            "recommended_agenda_items": [
+                f"Strategic discovery: align leadership on the macro implications of {primary}.",
+                f"Tactical discovery: remove the immediate constraints driving {sub}.",
+            ],
+        })
 
 
 @dataclass
@@ -133,6 +188,36 @@ class GeminiLLMClient:
                     generation_config=genai.types.GenerationConfig(
                         temperature=temperature,
                         max_output_tokens=max_tokens,
+                    ),
+                ),
+            ),
+            timeout=max(3, settings.llm_timeout_seconds),
+        )
+        return (resp.text or "").strip()
+    async def agenerate_json(
+        self,
+        *,
+        system_prompt: str,
+        user_prompt: str,
+        temperature: float,
+        max_tokens: int,
+    ) -> str:
+        import google.generativeai as genai
+        genai.configure(api_key=self.api_key)
+        gemini = genai.GenerativeModel(
+            model_name=self.model,
+            system_instruction=system_prompt,
+        )
+        settings = get_settings()
+        resp = await asyncio.wait_for(
+            asyncio.get_event_loop().run_in_executor(
+                None,
+                lambda: gemini.generate_content(
+                    user_prompt,
+                    generation_config=genai.types.GenerationConfig(
+                        temperature=temperature,
+                        max_output_tokens=max_tokens,
+                        response_mime_type="application/json",
                     ),
                 ),
             ),
