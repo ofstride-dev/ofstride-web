@@ -48,11 +48,13 @@ function ContactForm() {
     setLoading(true)
     setSubmitError('')
 
-    const endpoint = import.meta.env.VITE_FORMS_WEBHOOK_URL || import.meta.env.VITE_ZAPIER_WEBHOOK_URL || import.meta.env.VITE_CONTACT_WEBHOOK_URL
+    const endpoint = import.meta.env.VITE_MAKE_WEBHOOK_CHAT_URL || import.meta.env.VITE_FORMS_WEBHOOK_URL || import.meta.env.VITE_ZAPIER_WEBHOOK_URL || import.meta.env.VITE_CONTACT_WEBHOOK_URL
     const accessKey = import.meta.env.VITE_WEB3FORMS_KEY
     const payload = {
       type: 'contact_request',
       source: 'ofstride-website',
+      channel: 'contact_form',
+      notify_via: 'make_com_chat_pipeline',
       submitted_at: new Date().toISOString(),
       notify_support_email: 'support@ofstrideservices.com',
       notify_requester_email: formData.email,

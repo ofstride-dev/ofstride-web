@@ -2,7 +2,7 @@ import { Outlet, Link, NavLink, useLocation } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import { 
   Menu, X, ChevronDown, Phone, Mail, MapPin, Calendar, Home, 
-  Briefcase, Users, Globe, Info, MessageCircle 
+  Briefcase, Users, Globe, Info, MessageCircle, FileText
 } from 'lucide-react'
 import { ChatWidget } from './chat/ChatWidget'
 
@@ -38,6 +38,7 @@ function Layout() {
     setIsMenuOpen(false)
     setIsServicesOpen(false)
     window.scrollTo(0, 0)
+    setIsChatOpen(false)
   }, [location])
 
   useEffect(() => {
@@ -174,13 +175,17 @@ function Layout() {
                 )}
               </div>
 
-              <NavLink to="/about" className={navLinkClass}>
-                <Info className="w-4 h-4" />
-                About
-              </NavLink>
               <NavLink to="/industries" className={navLinkClass}>
                 <Globe className="w-4 h-4" />
                 Industries
+              </NavLink>
+              <NavLink to="/careers" className={navLinkClass}>
+                <FileText className="w-4 h-4" />
+                Careers
+              </NavLink>
+              <NavLink to="/about" className={navLinkClass}>
+                <Info className="w-4 h-4" />
+                About
               </NavLink>
               <NavLink to="/contact" className={navLinkClass}>
                 <Mail className="w-4 h-4" />
@@ -254,18 +259,25 @@ function Layout() {
               </div>
 
               <NavLink
-                to="/about"
-                onClick={closeAllMenus}
-                className={({ isActive }) => `flex items-center gap-2 py-3 px-3 rounded-lg transition-colors font-medium ${isActive ? 'text-secondary bg-surface' : 'text-text hover:text-secondary hover:bg-surface'}`}
-              >
-                <Info className="w-5 h-5" /> About
-              </NavLink>
-              <NavLink
                 to="/industries"
                 onClick={closeAllMenus}
                 className={({ isActive }) => `flex items-center gap-2 py-3 px-3 rounded-lg transition-colors font-medium ${isActive ? 'text-secondary bg-surface' : 'text-text hover:text-secondary hover:bg-surface'}`}
               >
                 <Globe className="w-5 h-5" /> Industries
+              </NavLink>
+              <NavLink
+                to="/careers"
+                onClick={closeAllMenus}
+                className={({ isActive }) => `flex items-center gap-2 py-3 px-3 rounded-lg transition-colors font-medium ${isActive ? 'text-secondary bg-surface' : 'text-text hover:text-secondary hover:bg-surface'}`}
+              >
+                <FileText className="w-5 h-5" /> Careers
+              </NavLink>
+              <NavLink
+                to="/about"
+                onClick={closeAllMenus}
+                className={({ isActive }) => `flex items-center gap-2 py-3 px-3 rounded-lg transition-colors font-medium ${isActive ? 'text-secondary bg-surface' : 'text-text hover:text-secondary hover:bg-surface'}`}
+              >
+                <Info className="w-5 h-5" /> About
               </NavLink>
               <NavLink
                 to="/contact"
@@ -373,6 +385,13 @@ function Layout() {
                 >
                   <Calendar className="w-4 h-4" />
                   Book a Free Call
+                </Link>
+                <Link
+                  to="/admin/careers"
+                  className="inline-flex items-center gap-2 border border-slate-500 text-slate-300 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-white/10 transition-colors"
+                >
+                  <Users className="w-4 h-4" />
+                  Admin Careers
                 </Link>
                 <Link 
                   to="/contact-form"

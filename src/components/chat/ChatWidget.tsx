@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calendar, Send, X } from "lucide-react";
 import { useChat } from "../../hooks/useChat";
+import { getChatSessionId, notifyChatEnded } from "../../services/api";
 import { ConsultantCards } from "./ConsultantCards";
 import { LeadCaptureInlineForm } from "./LeadCaptureInlineForm";
 import { AssessmentFocusReport } from "./AssessmentFocusReport";
@@ -51,6 +52,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
   const latestAssistant = [...messages].reverse().find((msg) => msg.role === "assistant" && !msg.isLoading);
   const visibleActions = latestAssistant?.actions ?? [];
 
+  // The most recent assistant reply that carries real text (the "summarize"
+  // response). Used to prefill the booking "Additional Notes" field.
+  const lastAssistantText =
+    [...messages].reverse().find((msg) => msg.role === "assistant" && msg.content?.trim())?.content ?? "";
+
   const handleBookCallRedirect = async (trigger: string) => {
     void emitEvent("booking_initiated", {
       trigger,
@@ -67,7 +73,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
           email: sessionProfile.email ?? "",
           phone: sessionProfile.phone ?? "",
           service: sessionProfile.service_needed ?? sessionProfile.area_of_interest ?? "",
-          message: latestAssistant?.content ?? "",
+          message: lastAssistantText,
         },
       },
     });
@@ -89,6 +95,16 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
       profile: sessionProfile,
       last_assistant_message: latestAssistant?.content,
     });
+    // Notify Make.com so the requestor receives a WhatsApp / email summary.
+    void notifyChatEnded({
+      session_id: getChatSessionId(),
+      profile: sessionProfile,
+      summary: lastAssistantText,
+      messages: messages
+        .filter((m) => m.content?.trim())
+        .map((m) => ({ role: m.role, content: m.content })),
+    });
+
     onClose?.();
   };
 

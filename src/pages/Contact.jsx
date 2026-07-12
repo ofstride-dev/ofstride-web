@@ -74,16 +74,18 @@ function Contact() {
 
                 {/* Phone */}
                 <a 
-                  href="tel:+918951606862"
+                  href="https://wa.me/918951606862?text=Hi%20Ofstride%2C%20I%27d%20like%20to%20discuss%20your%20services."
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-start gap-4 bg-surface rounded-2xl p-5 sm:p-6 card-hover group"
                 >
                   <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
                     <Phone className="w-6 h-6 text-secondary group-hover:text-white transition-colors" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-bold text-primary mb-1">Call Us</h3>
+                    <h3 className="font-bold text-primary mb-1">WhatsApp Us</h3>
                     <p className="text-sm text-text mb-2">
-                      Speak directly with our team during business hours.
+                      Tap to message us on WhatsApp and we will reply during business hours.
                     </p>
                     <span className="inline-flex items-center gap-1 text-secondary text-sm font-medium">
                       +91 89516 06862
