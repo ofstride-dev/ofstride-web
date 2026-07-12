@@ -9,6 +9,10 @@ import Industries from './pages/Industries.jsx'
 import Contact from './pages/Contact.jsx'
 import BookCall from './pages/BookCall.jsx'
 import ContactForm from './pages/ContactForm.jsx'
+import Careers from './pages/Careers.jsx'
+import AdminCareers from './pages/AdminCareers.jsx'
+import CareersAccess from './pages/CareersAccess.jsx'
+import EmployerCareers from './pages/EmployerCareers.jsx'
 
 function App() {
   const location = useLocation()
@@ -22,6 +26,10 @@ function App() {
       '/contact': 'Contact | Ofstride Services LLP',
       '/book-call': 'Book a Call | Ofstride Services LLP',
       '/contact-form': 'Contact Form | Ofstride Services LLP',
+      '/careers': 'Careers | Ofstride Services LLP',
+      '/careers/jobs': 'Jobseeker Careers | Ofstride Services LLP',
+      '/employer': 'Employer Careers | Ofstride Services LLP',
+      '/admin/careers': 'Admin Careers | Ofstride Services LLP',
     }
 
     if (location.pathname.startsWith('/services/')) {
@@ -41,6 +49,10 @@ function App() {
         <Route path="about" element={<About />} />
         <Route path="industries" element={<Industries />} />
         <Route path="contact" element={<Contact />} />
+        <Route path="careers" element={<CareersAccess />} />
+        <Route path="careers/jobs" element={<Careers />} />
+        <Route path="employer" element={<EmployerCareers />} />
+        <Route path="admin/careers" element={<AdminCareers />} />
         <Route path="book-call" element={<BookCall />} />
         <Route path="contact-form" element={<ContactForm />} />
       </Route>
