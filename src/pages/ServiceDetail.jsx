@@ -360,41 +360,25 @@ function ServiceDetail() {
         </div>
       </section>
 
-      {/* Related Services - rendered as in-place collapsible briefs so nothing
-          navigates to a missing /services/:slug page ("Service Not Found"). */}
+      {/* Related Services — Industry-style clickable pills linking to each service detail */}
       <section className="py-12 sm:py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-primary mb-8">
             Related Services
           </h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="flex flex-wrap gap-3">
             {relatedServices.map((related) => (
-              <details
+              <Link
                 key={related.slug}
-                className="bg-white border border-slate-100 rounded-xl p-6 group"
+                to={`/services/${related.slug}`}
+                className="flex w-full sm:w-72 flex-col gap-2 rounded-xl border border-slate-100 p-4 hover:border-secondary hover:shadow-sm transition-all"
               >
-                <summary className="flex items-center justify-between cursor-pointer list-none">
-                  <span className="flex items-center gap-3">
-                    <span className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center shrink-0 group-open:bg-primary transition-colors">
-                      <related.icon className="w-5 h-5 text-secondary group-open:text-white transition-colors" />
-                    </span>
-                    <span className="font-bold text-primary">{related.title}</span>
-                  </span>
-                  <span className="text-secondary text-xl leading-none">+</span>
-                </summary>
-                <div className="mt-4">
-                  <p className="text-sm font-semibold text-secondary mb-2">{related.tagline}</p>
-                  <p className="text-sm text-text mb-3">{related.heroDesc}</p>
-                  <ul className="space-y-1.5">
-                    {related.whatYouGet.slice(0, 3).map((item, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-text">
-                        <span className="w-1.5 h-1.5 bg-accent rounded-full mt-2 shrink-0" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </details>
+                <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-surface px-2.5 py-1 text-xs font-medium text-text">
+                  <related.icon className="w-3.5 h-3.5 text-secondary" />
+                  {related.title}
+                </span>
+                <span className="text-xs text-text">{related.tagline}</span>
+              </Link>
             ))}
           </div>
         </div>

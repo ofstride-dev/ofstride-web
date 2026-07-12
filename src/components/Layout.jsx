@@ -75,18 +75,39 @@ function Layout() {
     }
   }, [])
 
-  const services = [
-    { name: 'Human Resources', slug: 'human-resource-consulting' },
-    { name: 'Executive Search', slug: 'executive-search-recruitment' },
-    { name: 'Payroll & Compliance', slug: 'payroll-hr-compliance' },
-    { name: 'Virtual CFO', slug: 'financial-consulting-virtual-cfo' },
-    { name: 'GST & Tax', slug: 'gst-tax-advisory' },
-    { name: 'Legal Advisory', slug: 'legal-regulatory-compliance' },
-    { name: 'IT & Digital', slug: 'it-consulting-digital-transformation' },
-    { name: 'AI & Data Science', slug: 'ai-data-science-consulting' },
-    { name: 'Business Strategy', slug: 'business-strategy-process-improvement' },
-    { name: 'EOR & Workforce', slug: 'employer-of-record-workforce' },
+  const serviceGroups = [
+    {
+      category: 'People & Workforce',
+      services: [
+        { name: 'Human Resource Consulting', slug: 'human-resource-consulting' },
+        { name: 'Executive Search & Recruitment', slug: 'executive-search-recruitment' },
+        { name: 'Payroll & HR Compliance', slug: 'payroll-hr-compliance' },
+        { name: 'Employer of Record & Workforce', slug: 'employer-of-record-workforce' },
+      ],
+    },
+    {
+      category: 'Finance & Compliance',
+      services: [
+        { name: 'Financial Consulting & Virtual CFO', slug: 'financial-consulting-virtual-cfo' },
+        { name: 'GST & Tax Advisory', slug: 'gst-tax-advisory' },
+        { name: 'Legal & Regulatory Compliance', slug: 'legal-regulatory-compliance' },
+      ],
+    },
+    {
+      category: 'Technology & Growth',
+      services: [
+        { name: 'IT Consulting & Digital Transformation', slug: 'it-consulting-digital-transformation' },
+        { name: 'AI & Data Science Consulting', slug: 'ai-data-science-consulting' },
+      ],
+    },
+    {
+      category: 'Strategy',
+      services: [
+        { name: 'Business Strategy & Process Improvement', slug: 'business-strategy-process-improvement' },
+      ],
+    },
   ]
+  const services = serviceGroups.flatMap((g) => g.services)
 
   const openServices = () => {
     if (closeTimerRef.current) {
@@ -154,22 +175,29 @@ function Layout() {
                 </button>
 
                 {isServicesOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 p-2 z-50"
+                  <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-slate-100 p-2 z-50"
                     role="menu"
                     onMouseEnter={openServices}
                     onMouseLeave={closeServices}
-                    style={{ maxHeight: '320px', overflowY: 'auto' }}
+                    style={{ maxHeight: '460px', overflowY: 'auto' }}
                   >
-                    {services.map((s) => (
-                      <Link
-                        key={s.slug}
-                        to={`/services/${s.slug}`}
-                        role="menuitem"
-                        className="block px-4 py-2.5 text-sm text-text hover:bg-surface hover:text-secondary rounded-lg transition-colors"
-                        onClick={() => setIsServicesOpen(false)}
-                      >
-                        {s.name}
-                      </Link>
+                    {serviceGroups.map((group) => (
+                      <div key={group.category} className="px-3 pt-2 pb-1 first:pt-1">
+                        <p className="px-1 mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">{group.category}</p>
+                        <div className="space-y-0.5">
+                          {group.services.map((s) => (
+                            <Link
+                              key={s.slug}
+                              to={`/services/${s.slug}`}
+                              role="menuitem"
+                              className="block px-4 py-2 text-sm text-text hover:bg-surface hover:text-secondary rounded-lg transition-colors"
+                              onClick={() => setIsServicesOpen(false)}
+                            >
+                              {s.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -243,16 +271,21 @@ function Layout() {
                 </button>
 
                 {isServicesOpen && (
-                  <div className="pl-8 space-y-1 mt-1" style={{ maxHeight: '240px', overflowY: 'auto' }}>
-                    {services.map((s) => (
-                      <Link
-                        key={s.slug}
-                        to={`/services/${s.slug}`}
-                        className="block py-2 text-sm text-text hover:text-secondary transition-colors"
-                        onClick={closeAllMenus}
-                      >
-                        {s.name}
-                      </Link>
+                  <div className="pl-8 space-y-1 mt-1" style={{ maxHeight: '360px', overflowY: 'auto' }}>
+                    {serviceGroups.map((group) => (
+                      <div key={group.category} className="space-y-0.5">
+                        <p className="px-1 mt-2 mb-0.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">{group.category}</p>
+                        {group.services.map((s) => (
+                          <Link
+                            key={s.slug}
+                            to={`/services/${s.slug}`}
+                            className="block py-2 text-sm text-text hover:text-secondary transition-colors"
+                            onClick={closeAllMenus}
+                          >
+                            {s.name}
+                          </Link>
+                        ))}
+                      </div>
                     ))}
                   </div>
                 )}

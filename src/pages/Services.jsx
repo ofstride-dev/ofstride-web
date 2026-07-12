@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, Users, Search, FileCheck, Landmark, Receipt, Gavel, Monitor, Cpu, Target, Globe, Calendar, Mail, ChevronDown } from 'lucide-react'
+import { ArrowRight, Users, Search, FileCheck, Landmark, Receipt, Gavel, Monitor, Cpu, Target, Globe, Calendar, Mail } from 'lucide-react'
 
 function Services() {
   const groups = [
@@ -128,48 +128,30 @@ function Services() {
           </div>
         </section>
 
-        {/* Grouped Services */}
+        {/* Grouped Services — category cards with Industry-style clickable pills */}
         <section className="py-14 sm:py-20 lg:py-28">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="space-y-6 sm:space-y-8">
               {groups.map((group) => (
-                <details key={group.category} open className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
-                  <summary className="flex items-center justify-between cursor-pointer list-none p-5 sm:p-8">
-                    <div>
-                      <h2 className="text-xl sm:text-2xl font-bold text-primary">{group.category}</h2>
-                      <p className="text-sm text-text mt-1 max-w-2xl">{group.blurb}</p>
-                    </div>
-                    <ChevronDown className="w-5 h-5 text-secondary transition-transform duration-200 group-open:rotate-180 shrink-0" />
-                  </summary>
-                  <div className="px-5 sm:px-8 pb-6 sm:pb-8 grid sm:grid-cols-2 gap-4 sm:gap-6">
+                <div key={group.category} className="bg-white rounded-2xl border border-slate-100 p-5 sm:p-8">
+                  <h2 className="text-xl sm:text-2xl font-bold text-primary">{group.category}</h2>
+                  <p className="text-sm text-text mt-1 max-w-2xl mb-5">{group.blurb}</p>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     {group.services.map((service) => (
-                      <div key={service.slug} className="border border-slate-100 rounded-xl p-5">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
-                            <service.icon className="w-5 h-5 text-secondary" />
-                          </div>
-                          <h3 className="font-bold text-primary">{service.title}</h3>
-                        </div>
-                        <p className="text-secondary font-semibold text-base mb-2">{service.tagline}</p>
-                        <p className="text-text text-sm leading-relaxed mb-3">{service.desc}</p>
-                        <ul className="space-y-1.5 mb-4">
-                          {service.features.map((feature, i) => (
-                            <li key={i} className="flex items-start gap-2 text-sm text-text">
-                              <span className="w-1.5 h-1.5 bg-accent rounded-full mt-2 shrink-0"></span>
-                              {feature}
-                            </li>
-                          ))}
-                        </ul>
-                        <Link
-                          to={`/services/${service.slug}`}
-                          className="inline-flex items-center gap-2 text-secondary font-semibold hover:gap-3 transition-all"
-                        >
-                          Explore Service <ArrowRight className="w-4 h-4" />
-                        </Link>
-                      </div>
+                      <Link
+                        key={service.slug}
+                        to={`/services/${service.slug}`}
+                        className="flex flex-col gap-2 rounded-xl border border-slate-100 p-4 hover:border-secondary hover:shadow-sm transition-all"
+                      >
+                        <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-surface px-2.5 py-1 text-xs font-medium text-text">
+                          <service.icon className="w-3.5 h-3.5 text-secondary" />
+                          {service.title}
+                        </span>
+                        <span className="text-xs text-text">{service.tagline}</span>
+                      </Link>
                     ))}
                   </div>
-                </details>
+                </div>
               ))}
             </div>
           </div>
