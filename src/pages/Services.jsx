@@ -133,13 +133,18 @@ function Services() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="space-y-6 sm:space-y-8">
               {groups.map((group) => (
-                <details key={group.category} open className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+                <details key={group.category} className="group bg-white rounded-2xl border border-slate-100 overflow-hidden">
                   <summary className="flex items-center justify-between cursor-pointer list-none p-5 sm:p-8">
                     <div>
                       <h2 className="text-xl sm:text-2xl font-bold text-primary">{group.category}</h2>
                       <p className="text-sm text-text mt-1 max-w-2xl">{group.blurb}</p>
                     </div>
-                    <ChevronDown className="w-5 h-5 text-secondary transition-transform duration-200 group-open:rotate-180 shrink-0" />
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="hidden sm:inline-block text-xs font-medium text-secondary bg-surface px-2.5 py-1 rounded-full">
+                        {group.services.length} services
+                      </span>
+                      <ChevronDown className="w-5 h-5 text-secondary transition-transform duration-200 group-open:rotate-180" />
+                    </div>
                   </summary>
                   <div className="px-5 sm:px-8 pb-6 sm:pb-8 grid sm:grid-cols-2 gap-4 sm:gap-6">
                     {group.services.map((service) => (
