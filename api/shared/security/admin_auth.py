@@ -203,7 +203,13 @@ def require_admin(req: func.HttpRequest) -> dict[str, Any]:
       1. Supabase Authorization: Bearer <jwt> token.
       2. Dev-only x-admin-key header compared with server-side ADMIN_API_KEY.
     """
-    # 1. Supabase JWT
+    # 1. Quick bypass for validation (set ADMIN_AUTH_DISABLED=true in Function App Settings)
+    bypass = _env("ADMIN_AUTH_DISABLED", "false")
+    if bypass.lower() in {"1", "true", "yes", "on"}:
+        _logger.warning("Admin auth bypass enabled (ADMIN_AUTH_DISABLED=true). Do not use in production.")
+        return {"user_id": "admin-bypass", "user_name": "Admin (No Auth)"}
+
+    # 2. Supabase JWT
     token = _extract_bearer_token(req)
     if token:
         return _verify_supabase_jwt(token)

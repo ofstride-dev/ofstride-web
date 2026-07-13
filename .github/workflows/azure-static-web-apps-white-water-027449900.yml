@@ -45,12 +45,16 @@ jobs:
           VITE_ZAPIER_WEBHOOK_URL: ${{ secrets.VITE_ZAPIER_WEBHOOK_URL || vars.VITE_ZAPIER_WEBHOOK_URL }}
           VITE_BOOK_CALL_WEBHOOK_URL: ${{ secrets.VITE_BOOK_CALL_WEBHOOK_URL || vars.VITE_BOOK_CALL_WEBHOOK_URL }}
           VITE_CONTACT_WEBHOOK_URL: ${{ secrets.VITE_CONTACT_WEBHOOK_URL || vars.VITE_CONTACT_WEBHOOK_URL }}
+          VITE_MAKE_WEBHOOK_CHAT_URL: ${{ secrets.VITE_MAKE_WEBHOOK_CHAT_URL || vars.VITE_MAKE_WEBHOOK_CHAT_URL }}
+          VITE_MAKE_WEBHOOK_CALENDAR_URL: ${{ secrets.VITE_MAKE_WEBHOOK_CALENDAR_URL || vars.VITE_MAKE_WEBHOOK_CALENDAR_URL }}
           VITE_EMAILJS_SERVICE_ID: ${{ secrets.VITE_EMAILJS_SERVICE_ID || vars.VITE_EMAILJS_SERVICE_ID }}
           VITE_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_EMAILJS_PUBLIC_KEY || vars.VITE_EMAILJS_PUBLIC_KEY }}
           VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID || vars.VITE_EMAILJS_TEMPLATE_ID }}
           VITE_EMAILJS_BOOKING_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_BOOKING_TEMPLATE_ID || vars.VITE_EMAILJS_BOOKING_TEMPLATE_ID }}
           VITE_EMAILJS_CONTACT_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_CONTACT_TEMPLATE_ID || vars.VITE_EMAILJS_CONTACT_TEMPLATE_ID }}
           VITE_CAL_COM_LINK: ${{ secrets.VITE_CAL_COM_LINK || vars.VITE_CAL_COM_LINK }}
+
+          VITE_ADMIN_API_KEY: ${{ secrets.VITE_ADMIN_API_KEY || vars.VITE_ADMIN_API_KEY }}
 
       - name: Include Static Web App config in artifact
         shell: bash
@@ -62,7 +66,9 @@ jobs:
           if [ -z "${{ secrets.VITE_WEB3FORMS_KEY || vars.VITE_WEB3FORMS_KEY }}" ] && \
              [ -z "${{ secrets.VITE_ZAPIER_WEBHOOK_URL || vars.VITE_ZAPIER_WEBHOOK_URL }}" ] && \
              [ -z "${{ secrets.VITE_BOOK_CALL_WEBHOOK_URL || vars.VITE_BOOK_CALL_WEBHOOK_URL }}" ] && \
-             [ -z "${{ secrets.VITE_CONTACT_WEBHOOK_URL || vars.VITE_CONTACT_WEBHOOK_URL }}" ]; then
+             [ -z "${{ secrets.VITE_CONTACT_WEBHOOK_URL || vars.VITE_CONTACT_WEBHOOK_URL }}" ] && \
+             [ -z "${{ secrets.VITE_MAKE_WEBHOOK_CHAT_URL || vars.VITE_MAKE_WEBHOOK_CHAT_URL }}" ] && \
+             [ -z "${{ secrets.VITE_MAKE_WEBHOOK_CALENDAR_URL || vars.VITE_MAKE_WEBHOOK_CALENDAR_URL }}" ]; then
             echo "No form provider env is configured. Set at least one VITE_* provider value." >&2
             exit 1
           fi
