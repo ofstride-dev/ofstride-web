@@ -132,10 +132,12 @@ class Settings:
     chat_reminder_batch_size: int
     chat_webhook_url: str | None
     contact_webhook_url: str | None
-    zapier_webhook_url: str | None
+    make_webhook_chat_url: str | None
+    make_webhook_calendar_url: str | None
 
     durable_store_enabled: bool
     durable_sqlite_path: str
+    durable_careers_sqlite_path: str
 
     langfuse_enabled: bool
     langfuse_public_key: str | None
@@ -223,13 +225,19 @@ def _build_settings() -> Settings:
         chat_reminder_batch_size=_get_int("CHAT_REMINDER_BATCH_SIZE", 20),
         chat_webhook_url=_get_str("CHAT_WEBHOOK_URL"),
         contact_webhook_url=_get_str("CONTACT_WEBHOOK_URL"),
-        zapier_webhook_url=_get_str("ZAPIER_WEBHOOK_URL"),
+        make_webhook_chat_url=_get_str("MAKE_WEBHOOK_CHAT_URL"),
+        make_webhook_calendar_url=_get_str("MAKE_WEBHOOK_CALENDAR_URL"),
         durable_store_enabled=_get_bool("DURABLE_STORE_ENABLED", True),
         durable_sqlite_path=_get_str(
             "DURABLE_SQLITE_PATH",
             str(_runtime_base() / "chat_state.db"),
         )
         or str(_runtime_base() / "chat_state.db"),
+        durable_careers_sqlite_path=_get_str(
+            "DURABLE_CAREERS_SQLITE_PATH",
+            str(_runtime_base() / "careers_state.db"),
+        )
+        or str(_runtime_base() / "careers_state.db"),
         langfuse_enabled=_get_bool("LANGFUSE_ENABLED", True),
         langfuse_public_key=_get_str("LANGFUSE_PUBLIC_KEY"),
         langfuse_secret_key=_get_str("LANGFUSE_SECRET_KEY"),

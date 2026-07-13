@@ -58,7 +58,7 @@ def build_headers(trace_id: str, req: func.HttpRequest | None = None) -> dict[st
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": _resolve_origin(req),
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Trace-Id, X-Ingest-Token",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Trace-Id, X-Ingest-Token, X-MS-CLIENT-PRINCIPAL, X-ADMIN-KEY",
         "X-Trace-Id": trace_id,
         "Vary": "Origin",
     }
