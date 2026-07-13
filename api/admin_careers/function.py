@@ -17,7 +17,6 @@ if shared_path not in sys.path:
 
 from core.api_contract import error_response, get_trace_id, ok_response, options_response
 from persistence.careers_store import get_careers_store
-from security.admin_auth import AdminAuthError, require_admin
 
 # ── Constants ──────────────────────────────────────────────────────────────
 
@@ -401,6 +400,8 @@ async def _handle_publish_from_upload(req: func.HttpRequest, trace_id: str, admi
 
 
 async def main(req: func.HttpRequest) -> func.HttpResponse:
+    from security.admin_auth import AdminAuthError, require_admin  # deferred import to avoid cold-start crash
+
     trace_id = get_trace_id(req)
     if req.method == "OPTIONS":
         return options_response(trace_id=trace_id, req=req)
