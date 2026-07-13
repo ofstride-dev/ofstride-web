@@ -1,23 +1,18 @@
 """Admin authentication for Azure Functions careers endpoints.
 
-Phase 0 implementation (unblock):
-- Recreates the missing ``require_admin`` / ``AdminAuthError`` contract so the
-  eight admin_careers_* functions can import and load.
-- Supports Supabase JWT verification when SUPABASE_URL (and optionally
-  SUPABASE_JWT_SECRET) are configured.
-- Falls back to a server-side x-admin-key comparison using ADMIN_API_KEY in
-  dev/test environments only. This is intentionally temporary and will be
-  removed once Supabase Auth is fully wired on the frontend.
+Phase 1: Supabase Auth integration with multi-role support.
+- Supports Supabase JWT verification via SUPABASE_URL and SUPABASE_JWT_SECRET.
+- Returns role-based context: admin, employer, or jobseeker.
+- Falls back to x-admin-key for local dev (Phase 0 compatibility).
 
-Expected shape of the returned admin context::
+Expected shape of the returned auth context::
 
     {
-        "user_id": str,      # matches the JWT 'sub' claim or local id
-        "user_name": str,    # email, name, or local label
+        "user_id": str,       # matches the JWT 'sub' claim
+        "user_name": str,     # email or display name
+        "role": str,          # "admin" | "employer" | "jobseeker"
+        "company_id": str | None,  # UUID if role is employer
     }
-
-The existing store.log_admin_action(admin_user_id=..., ...) calls keep working
-because both keys are always present.
 """
 
 from __future__ import annotations
@@ -95,7 +90,7 @@ def _extract_admin_key(req: func.HttpRequest) -> str | None:
 
 
 def _verify_supabase_jwt(token: str) -> dict[str, Any]:
-    """Verify a Supabase Auth access token and confirm admin privileges."""
+    """Verify a Supabase Auth access token and determine the user's role."""
     supabase_url = _env("SUPABASE_URL")
     if not supabase_url:
         raise AdminAuthError("Supabase authentication is not configured.")
@@ -127,12 +122,12 @@ def _verify_supabase_jwt(token: str) -> dict[str, Any]:
                 issuer=issuer,
             )
     except jwt.ExpiredSignatureError as exc:
-        raise AdminAuthError("Admin token has expired.") from exc
+        raise AdminAuthError("Token has expired.") from exc
     except jwt.InvalidTokenError as exc:
-        raise AdminAuthError("Invalid admin token.") from exc
+        raise AdminAuthError("Invalid authentication token.") from exc
 
     # ------------------------------------------------------------------
-    # Authorize: require an explicit admin role or an allow-listed email.
+    # Extract user identity
     # ------------------------------------------------------------------
     app_metadata = payload.get("app_metadata") or {}
     user_metadata = payload.get("user_metadata") or {}
@@ -143,22 +138,6 @@ def _verify_supabase_jwt(token: str) -> dict[str, Any]:
         or ""
     ).strip()
 
-    roles: set[str] = set()
-    if isinstance(payload.get("role"), str):
-        roles.add(payload["role"].lower())
-    if isinstance(app_metadata.get("role"), str):
-        roles.add(app_metadata["role"].lower())
-    if isinstance(app_metadata.get("roles"), list):
-        roles.update(str(r).lower() for r in app_metadata["roles"] if r)
-
-    allowed_roles = _get_allowed_admin_roles()
-    allowed_emails = _get_allowed_admin_emails()
-    is_admin_by_role = bool(roles & allowed_roles)
-    is_admin_by_email = bool(email) and email.lower() in allowed_emails
-
-    if not is_admin_by_role and not is_admin_by_email:
-        raise AdminAuthError("Admin privileges required.")
-
     user_id = str(payload.get("sub") or payload.get("user_id") or "unknown")
     user_name = (
         user_metadata.get("name")
@@ -168,7 +147,51 @@ def _verify_supabase_jwt(token: str) -> dict[str, Any]:
         or user_id
     )
 
-    return {"user_id": user_id, "user_name": str(user_name)}
+    # ------------------------------------------------------------------
+    # Determine role from JWT claims
+    # ------------------------------------------------------------------
+    roles: set[str] = set()
+    if isinstance(payload.get("role"), str):
+        roles.add(payload["role"].lower())
+    if isinstance(app_metadata.get("role"), str):
+        roles.add(app_metadata["role"].lower())
+    if isinstance(app_metadata.get("roles"), list):
+        roles.update(str(r).lower() for r in app_metadata["roles"] if r)
+    if isinstance(user_metadata.get("role"), str):
+        roles.add(user_metadata["role"].lower())
+
+    # Determine primary role (priority: admin > employer > jobseeker)
+    primary_role = "jobseeker"
+    if "admin" in roles:
+        primary_role = "admin"
+    elif "employer" in roles:
+        primary_role = "employer"
+
+    # Extract company_id for employers
+    company_id = (
+        app_metadata.get("company_id")
+        or user_metadata.get("company_id")
+        or None
+    )
+
+    # ------------------------------------------------------------------
+    # Authorize: require explicit role or allow-listed email for admin
+    # ------------------------------------------------------------------
+    allowed_roles = _get_allowed_admin_roles()
+    allowed_emails = _get_allowed_admin_emails()
+
+    if primary_role == "admin":
+        is_admin_by_role = bool(roles & allowed_roles)
+        is_admin_by_email = bool(email) and email.lower() in allowed_emails
+        if not is_admin_by_role and not is_admin_by_email:
+            raise AdminAuthError("Admin privileges required.")
+
+    return {
+        "user_id": user_id,
+        "user_name": str(user_name),
+        "role": primary_role,
+        "company_id": str(company_id) if company_id else None,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -186,7 +209,12 @@ def _verify_local_admin_key(req: func.HttpRequest) -> dict[str, Any] | None:
         return None
 
     if hmac.compare_digest(provided.strip(), admin_key.strip()):
-        return {"user_id": "admin-local", "user_name": "Local Admin"}
+        return {
+            "user_id": "admin-local",
+            "user_name": "Local Admin",
+            "role": "admin",
+            "company_id": None,
+        }
 
     return None
 
@@ -197,24 +225,24 @@ def _verify_local_admin_key(req: func.HttpRequest) -> dict[str, Any] | None:
 
 
 def require_admin(req: func.HttpRequest) -> dict[str, Any]:
-    """Authenticate an admin request and return a stable admin context.
+    """Authenticate a request and return auth context.
 
     Order of checks:
       1. Supabase Authorization: Bearer <jwt> token.
       2. Dev-only x-admin-key header compared with server-side ADMIN_API_KEY.
     """
-    # 1. Quick bypass for validation (set ADMIN_AUTH_DISABLED=true in Function App Settings)
+    # 1. Quick bypass for validation
     bypass = _env("ADMIN_AUTH_DISABLED", "false")
     if bypass.lower() in {"1", "true", "yes", "on"}:
         _logger.warning("Admin auth bypass enabled (ADMIN_AUTH_DISABLED=true). Do not use in production.")
-        return {"user_id": "admin-bypass", "user_name": "Admin (No Auth)"}
+        return {"user_id": "admin-bypass", "user_name": "Admin (No Auth)", "role": "admin", "company_id": None}
 
     # 2. Supabase JWT
     token = _extract_bearer_token(req)
     if token:
         return _verify_supabase_jwt(token)
 
-    # 2. Local key fallback (dev/test only)
+    # 3. Local key fallback (dev/test only)
     if _is_local_key_allowed():
         fallback = _verify_local_admin_key(req)
         if fallback:
@@ -225,5 +253,15 @@ def require_admin(req: func.HttpRequest) -> dict[str, Any]:
             )
             return fallback
 
-    raise AdminAuthError("Admin authentication required.")
+    raise AdminAuthError("Authentication required.")
 
+
+def require_role(req: func.HttpRequest, allowed_roles: list[str]) -> dict[str, Any]:
+    """Authenticate and verify the user has one of the allowed roles."""
+    auth = require_admin(req)
+    if auth["role"] not in allowed_roles:
+        raise AdminAuthError(
+            f"Access denied. Required role(s): {', '.join(allowed_roles)}. "
+            f"Your role: {auth['role']}"
+        )
+    return auth

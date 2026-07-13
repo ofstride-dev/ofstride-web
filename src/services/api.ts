@@ -1,6 +1,7 @@
 /**
  * OfStride Agent API Client
  * Communicates with Azure Functions backend at /api/*
+ * Phase 1: Supabase Auth integration with Bearer JWT tokens
  */
 
 import type {
@@ -18,6 +19,7 @@ import type {
   AdminCareersListResponse,
   AdminCareersDetail,
 } from "../types/chat";
+import { getAccessToken } from "./supabase";
 
 const API_BASE = "/api";
 
@@ -29,11 +31,37 @@ export interface AuthUser {
   roles: string[];
 }
 
-function adminHeaders(): HeadersInit {
+/**
+ * Build headers with Supabase Bearer token (primary) or x-admin-key (fallback)
+ */
+async function authHeaders(): Promise<HeadersInit> {
+  // Try Supabase JWT first
+  const token = await getAccessToken();
+  if (token) {
+    return {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    };
+  }
+
+  // Fallback to x-admin-key for local dev
   const apiKey = (import.meta.env.VITE_ADMIN_API_KEY || "").trim();
-  return apiKey
-    ? { "Content-Type": "application/json", "x-admin-key": apiKey }
-    : { "Content-Type": "application/json" };
+  if (apiKey) {
+    return {
+      "Content-Type": "application/json",
+      "x-admin-key": apiKey,
+    };
+  }
+
+  return { "Content-Type": "application/json" };
+}
+
+/**
+ * Build headers with just the API key (no Bearer token) for backward compat
+ */
+function apiKeyHeaderMaybe(): HeadersInit {
+  const apiKey = (import.meta.env.VITE_ADMIN_API_KEY || "").trim();
+  return apiKey ? { "x-admin-key": apiKey } : {};
 }
 
 interface ChatRequest {
@@ -61,25 +89,16 @@ function generateSessionId(): string {
 }
 
 function getOrCreateSessionId(): string {
-  // Try localStorage first (persistent across page reloads)
   let id = localStorage.getItem("ofstride_session_id");
   if (id) {
     return id;
   }
-
-  // Generate new session ID if none exists
   id = generateSessionId();
-  
-  // Store in both localStorage (persistence) and sessionStorage (security boundary)
   localStorage.setItem("ofstride_session_id", id);
   sessionStorage.setItem("ofstride_session_id", id);
-  
   return id;
 }
 
-/**
- * Clear session ID (call on logout or explicit session end)
- */
 export function clearSessionId(): void {
   localStorage.removeItem("ofstride_session_id");
   sessionStorage.removeItem("ofstride_session_id");
@@ -89,7 +108,6 @@ function isEnvelope<T>(value: unknown): value is ApiEnvelope<T> {
   if (!value || typeof value !== "object") {
     return false;
   }
-
   const candidate = value as Partial<ApiEnvelope<T>>;
   return typeof candidate.ok === "boolean" && typeof candidate.trace_id === "string";
 }
@@ -171,11 +189,6 @@ export async function postChatEvent(payload: ChatEventRequest): Promise<ChatEven
   return parseEnvelope<ChatEventResponse>(response);
 }
 
-/**
- * Fire-and-forget POST to a generic webhook (Make.com, Zapier, etc.).
- * Returns true on a successful (2xx) response. Network errors are swallowed
- * so that notification side-effects never break the primary user flow.
- */
 export async function postMakeWebhook(
   url: string | undefined,
   payload: Record<string, unknown>
@@ -193,11 +206,6 @@ export async function postMakeWebhook(
   }
 }
 
-/**
- * Notify the Make.com "Chat Intake" pipeline when a chat session ends so the
- * requestor receives a WhatsApp message / email summary from support.
- * Reads its own webhook URL from the environment.
- */
 export async function notifyChatEnded(payload: {
   session_id: string;
   profile: Record<string, string>;
@@ -216,7 +224,6 @@ export async function notifyChatEnded(payload: {
     ended_at: new Date().toISOString(),
   });
 }
-
 
 export async function listCareersJobs(): Promise<CareersJobsResponse> {
   const response = await fetch(`${API_BASE}/jobs`);
@@ -243,6 +250,8 @@ export async function completeCareersUpload(applicationId: string): Promise<Care
   return parseEnvelope<CareersCompleteResponse>(response);
 }
 
+// ── Admin Career API (with Supabase Auth) ──────────────────────────────
+
 export async function adminListApplications(params?: {
   status?: string;
   job_id?: string;
@@ -257,19 +266,14 @@ export async function adminListApplications(params?: {
 
   const suffix = query.toString() ? `?${query.toString()}` : "";
   const response = await fetch(`${API_BASE}/admin-careers/applications${suffix}`, {
-    headers: apiKeyHeaderMaybe(),
+    headers: await authHeaders(),
   });
   return parseEnvelope<AdminCareersListResponse>(response);
 }
 
-function apiKeyHeaderMaybe(): HeadersInit {
-  const apiKey = (import.meta.env.VITE_ADMIN_API_KEY || "").trim();
-  return apiKey ? { "x-admin-key": apiKey } : {};
-}
-
 export async function adminGetApplication(applicationId: string): Promise<AdminCareersDetail> {
   const response = await fetch(`${API_BASE}/admin-careers/applications/${encodeURIComponent(applicationId)}`, {
-    headers: apiKeyHeaderMaybe(),
+    headers: await authHeaders(),
   });
   return parseEnvelope<AdminCareersDetail>(response);
 }
@@ -280,7 +284,7 @@ export async function adminUpdateApplicationStatus(
 ): Promise<{ application_id: string; status: string }> {
   const response = await fetch(`${API_BASE}/admin-careers/applications/${encodeURIComponent(applicationId)}/status`, {
     method: "POST",
-    headers: adminHeaders(),
+    headers: await authHeaders(),
     body: JSON.stringify({ status }),
   });
   return parseEnvelope<{ application_id: string; status: string }>(response);
@@ -300,7 +304,7 @@ export async function adminRunApplicationAnalysis(
 }> {
   const response = await fetch(`${API_BASE}/admin-careers/applications/${encodeURIComponent(applicationId)}/analysis`, {
     method: "POST",
-    headers: adminHeaders(),
+    headers: await authHeaders(),
   });
   return parseEnvelope<{
     application_id: string;
@@ -316,7 +320,7 @@ export async function adminRunApplicationAnalysis(
 
 export async function adminListJobs(): Promise<{ items: Array<Record<string, unknown>>; count: number }> {
   const response = await fetch(`${API_BASE}/admin-careers/jobs`, {
-    headers: apiKeyHeaderMaybe(),
+    headers: await authHeaders(),
   });
   return parseEnvelope<{ items: Array<Record<string, unknown>>; count: number }>(response);
 }
@@ -333,7 +337,7 @@ export async function adminSaveJob(payload: {
 }): Promise<Record<string, unknown>> {
   const response = await fetch(`${API_BASE}/admin-careers/jobs`, {
     method: "POST",
-    headers: adminHeaders(),
+    headers: await authHeaders(),
     body: JSON.stringify(payload),
   });
   return parseEnvelope<Record<string, unknown>>(response);
@@ -342,7 +346,7 @@ export async function adminSaveJob(payload: {
 export async function adminCleanupStaleDrafts(olderThanHours = 24): Promise<{ updated: number; older_than_hours: number }> {
   const response = await fetch(`${API_BASE}/admin-careers/cleanup`, {
     method: "POST",
-    headers: adminHeaders(),
+    headers: await authHeaders(),
     body: JSON.stringify({ older_than_hours: olderThanHours }),
   });
   return parseEnvelope<{ updated: number; older_than_hours: number }>(response);
@@ -358,7 +362,7 @@ export async function adminInitJdUpload(payload: {
 }> {
   const response = await fetch(`${API_BASE}/admin-careers/jd-upload/init`, {
     method: "POST",
-    headers: adminHeaders(),
+    headers: await authHeaders(),
     body: JSON.stringify(payload),
   });
   return parseEnvelope<{
@@ -379,7 +383,7 @@ export async function adminPublishJobFromUpload(payload: {
 }): Promise<Record<string, unknown>> {
   const response = await fetch(`${API_BASE}/admin-careers/jobs/from-upload`, {
     method: "POST",
-    headers: adminHeaders(),
+    headers: await authHeaders(),
     body: JSON.stringify(payload),
   });
   return parseEnvelope<Record<string, unknown>>(response);
@@ -390,7 +394,7 @@ export async function adminSendFurtherDiscussionMail(
 ): Promise<{ application_id: string; sent: boolean; error?: string | null }> {
   const response = await fetch(`${API_BASE}/admin-careers/applications/${encodeURIComponent(applicationId)}/notify`, {
     method: "POST",
-    headers: adminHeaders(),
+    headers: await authHeaders(),
   });
   return parseEnvelope<{ application_id: string; sent: boolean; error?: string | null }>(response);
 }

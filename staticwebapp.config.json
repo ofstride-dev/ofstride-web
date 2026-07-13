@@ -5,11 +5,12 @@
   "routes": [
     {
       "route": "/api/*",
-      "methods": ["GET", "POST", "OPTIONS"],
+      "methods": ["GET", "POST", "OPTIONS", "PUT", "DELETE"],
       "headers": {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization"
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, DELETE",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, x-admin-key, x-ms-blob-type",
+        "Access-Control-Expose-Headers": "x-ms-request-id"
       }
     },
     {
