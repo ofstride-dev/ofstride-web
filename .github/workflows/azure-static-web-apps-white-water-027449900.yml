@@ -56,6 +56,9 @@ jobs:
 
           VITE_ADMIN_API_KEY: ${{ secrets.VITE_ADMIN_API_KEY || vars.VITE_ADMIN_API_KEY }}
 
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL || 'https://jxocmzvsspdnooganlps.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || vars.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4b2NtenZzc3Bkbm9vZ2FubHBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5MjM0MzksImV4cCI6MjA5OTQ5OTQzOX0.73Z_CEYshcU-sGEPs9pOD6Im8exNDzAqrLqywT4anBc' }}
+
       - name: Include Static Web App config in artifact
         shell: bash
         run: cp staticwebapp.config.json dist/staticwebapp.config.json
