@@ -9,7 +9,6 @@ from urllib import error as url_error
 from urllib import request as url_request
 
 import azure.functions as func
-from azure.storage.blob import BlobSasPermissions, BlobServiceClient, generate_blob_sas
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 shared_path = os.path.join(script_dir, "..", "shared")
@@ -313,6 +312,8 @@ async def _handle_save_job(req: func.HttpRequest, trace_id: str, admin: dict) ->
 
 
 async def _handle_init_jd_upload(req: func.HttpRequest, trace_id: str) -> func.HttpResponse:
+    from azure.storage.blob import BlobSasPermissions, generate_blob_sas  # deferred import
+
     try:
         body = req.get_json()
     except ValueError:
@@ -351,6 +352,8 @@ async def _handle_init_jd_upload(req: func.HttpRequest, trace_id: str) -> func.H
 
 
 async def _handle_publish_from_upload(req: func.HttpRequest, trace_id: str, admin: dict) -> func.HttpResponse:
+    from azure.storage.blob import BlobServiceClient  # deferred import
+
     try:
         body = req.get_json()
     except ValueError:
