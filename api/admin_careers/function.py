@@ -48,6 +48,8 @@ def _parse_connection_string(raw: str) -> dict[str, str]:
 
 
 def _blob_config(container_key: str) -> tuple | None:
+    from azure.storage.blob import BlobServiceClient  # deferred import
+
     connection_string = (os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip()
     container_name = (os.getenv(container_key) or "").strip()
     if not connection_string or not container_name:
@@ -61,7 +63,9 @@ def _blob_config(container_key: str) -> tuple | None:
     return BlobServiceClient.from_connection_string(connection_string), container_name, account_name, account_key, shared_sas
 
 
-def _blob_service() -> BlobServiceClient | None:
+def _blob_service():
+    from azure.storage.blob import BlobServiceClient  # deferred import
+
     conn = (os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip()
     if not conn:
         return None
