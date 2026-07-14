@@ -5,7 +5,6 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import azure.functions as func
-from azure.storage.blob import BlobSasPermissions, BlobServiceClient, generate_blob_sas
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 shared_path = os.path.join(script_dir, "..", "shared")
@@ -34,7 +33,8 @@ def _parse_connection_string(raw: str) -> dict[str, str]:
     return parts
 
 
-def _get_blob_config() -> tuple[BlobServiceClient, str, str, str | None, str | None] | None:
+def _get_blob_config() -> tuple | None:
+    from azure.storage.blob import BlobServiceClient  # lazy import
     connection_string = (os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip()
     container_name = (os.getenv("CAREERS_BLOB_CONTAINER") or "resumes").strip()
     if not connection_string:
@@ -246,6 +246,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
         pass
 
     if account_key:
+        from azure.storage.blob import BlobSasPermissions, generate_blob_sas  # lazy import
         expires_at = datetime.now(timezone.utc) + timedelta(minutes=10)
         sas_token = generate_blob_sas(
             account_name=account_name,

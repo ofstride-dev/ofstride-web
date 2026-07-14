@@ -5,7 +5,6 @@ from urllib import error as url_error
 from urllib import request as url_request
 
 import azure.functions as func
-from azure.storage.blob import BlobServiceClient
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 shared_path = os.path.join(script_dir, "..", "shared")
@@ -53,6 +52,7 @@ def _send_hr_notification(payload: dict[str, object]) -> tuple[bool, str | None]
 
 
 def _get_blob_client(blob_path: str):
+    from azure.storage.blob import BlobServiceClient  # lazy import
     connection_string = (os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip()
     container_name = (os.getenv("CAREERS_BLOB_CONTAINER") or "resumes").strip()
     if not connection_string:

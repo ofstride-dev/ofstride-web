@@ -23,7 +23,6 @@ import os
 from typing import Any
 
 import azure.functions as func
-import jwt
 
 _logger = logging.getLogger("ofstride.admin_auth")
 
@@ -98,6 +97,12 @@ def _verify_supabase_jwt(token: str) -> dict[str, Any]:
     issuer = supabase_url.rstrip("/") + "/auth/v1"
     audience = _env("SUPABASE_AUTH_AUDIENCE", "authenticated")
     jwt_secret = _env("SUPABASE_JWT_SECRET")
+
+    # Lazy import: PyJWT may not be installed in all environments
+    try:
+        import jwt
+    except ImportError as exc:
+        raise AdminAuthError("JWT verification library (pyjwt) is not installed.") from exc
 
     try:
         if jwt_secret:
