@@ -24,6 +24,7 @@ from typing import Any
 
 import azure.functions as func
 
+# Force pipeline trigger — lazy imports fix deployed
 _logger = logging.getLogger("ofstride.admin_auth")
 
 
