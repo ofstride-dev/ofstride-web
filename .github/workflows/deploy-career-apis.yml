@@ -27,12 +27,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Stage Career Function Folders (code only, no pip deps)
+      - name: Stage Career Function Folders
         shell: bash
         run: |
           mkdir -p __staged_careers
@@ -51,17 +46,7 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_233886A9334C42A7B361D9577C76190C }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D79D86DAA64341A6AD251FEC74A6333C }}
 
-      - name: Update App Settings (Enable Oryx Remote Build)
-        shell: bash
-        run: |
-          az functionapp config appsettings set \
-            --name func-ofs-carrer-001 \
-            --resource-group was-ofstride-002_group \
-            --settings \
-              SCM_DO_BUILD_DURING_DEPLOYMENT=1 \
-              ENABLE_ORYX_BUILD=1
-
-      - name: Deploy Code to Azure Functions
+      - name: Deploy to Azure Functions
         uses: Azure/functions-action@v1
         with:
           app-name: func-ofs-carrer-001
