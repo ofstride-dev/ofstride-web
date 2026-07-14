@@ -44,7 +44,6 @@ jobs:
           cp api/host.json __staged_careers/
           cp api/requirements.txt __staged_careers/
           pip install -r api/requirements.txt --target __staged_careers/.python_packages/lib/site-packages
-          cd __staged_careers && zip -r ../career-deploy.zip . && cd ..
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -53,13 +52,8 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_233886A9334C42A7B361D9577C76190C }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D79D86DAA64341A6AD251FEC74A6333C }}
 
-      - name: Deploy to Function App
-        shell: bash
-        run: |
-          az functionapp deploy \
-            --name func-ofs-carrer-001 \
-            --resource-group was-ofstride-002_group \
-            --type zip \
-            --src-path career-deploy.zip \
-            --clean true \
-            --restart true
+      - name: Deploy to Azure Functions
+        uses: Azure/functions-action@v1
+        with:
+          app-name: func-ofs-carrer-001
+          package: __staged_careers
