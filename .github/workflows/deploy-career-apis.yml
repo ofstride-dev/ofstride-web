@@ -28,7 +28,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Stage Career Function Folders
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies into Package
         shell: bash
         run: |
           mkdir -p __staged_careers
@@ -40,6 +45,7 @@ jobs:
           cp api/host.json __staged_careers/
           cp api/requirements.txt __staged_careers/
           cp api/.python_runtime __staged_careers/ 2>/dev/null || true
+          pip install -r api/requirements.txt --target __staged_careers/.python_packages/lib/site-packages
 
       - name: Login to Azure
         uses: azure/login@v2
