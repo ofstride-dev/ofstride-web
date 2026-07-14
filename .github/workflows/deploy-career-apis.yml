@@ -36,6 +36,27 @@ jobs:
           cp api/requirements.txt __staged_careers/
           cp api/.python_runtime __staged_careers/ 2>/dev/null || true
 
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Configure Function App Settings (Oryx + Secrets)
+        shell: bash
+        run: |
+          az functionapp config appsettings set \
+            --name func-ofs-carrer-001 \
+            --resource-group was-ofstride-002_group \
+            --settings \
+              SCM_DO_BUILD_DURING_DEPLOYMENT=true \
+              ENABLE_ORYX_BUILD=true \
+              "CAREERS_BLOB_CONNECTION_STRING=${{ secrets.CAREERS_BLOB_CONNECTION_STRING }}" \
+              "CAREERS_JD_BLOB_CONTAINER=${{ vars.CAREERS_JD_BLOB_CONTAINER || 'careers-jd' }}" \
+              "CAREERS_HR_EMAIL=${{ vars.CAREERS_HR_EMAIL || 'hr@ofstrideservices.com' }}" \
+              "SUPABASE_URL=${{ secrets.SUPABASE_URL || 'https://jxocmzvsspdnooganlps.supabase.co' }}" \
+              "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+              "ADMIN_API_KEY=${{ secrets.VITE_ADMIN_API_KEY }}"
+
       - name: Deploy to Function App
         uses: Azure/functions-action@v1
         id: deploy
@@ -43,69 +64,3 @@ jobs:
           app-name: func-ofs-carrer-001
           package: __staged_careers
           publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE_CAREER }}
-          scm-do-build-during-deployment: true
-          enable-oryx-build: true
-
-      - name: Configure Function App Settings
-        uses: azure/appservice-settings@v1
-        with:
-          app-name: func-ofs-carrer-001
-          mask-inputs: false
-          app-settings-json: |
-            [
-              {
-                "name": "CAREERS_BLOB_CONNECTION_STRING",
-                "value": "${{ secrets.CAREERS_BLOB_CONNECTION_STRING }}",
-                "slotSetting": false
-              },
-              {
-                "name": "CAREERS_JD_BLOB_CONTAINER",
-                "value": "${{ vars.CAREERS_JD_BLOB_CONTAINER || 'careers-jd' }}",
-                "slotSetting": false
-              },
-              {
-                "name": "CAREERS_HR_EMAIL",
-                "value": "${{ vars.CAREERS_HR_EMAIL || 'hr@ofstrideservices.com' }}",
-                "slotSetting": false
-              },
-              {
-                "name": "CONTACT_WEBHOOK_URL",
-                "value": "${{ secrets.CONTACT_WEBHOOK_URL }}",
-                "slotSetting": false
-              },
-              {
-                "name": "MAKE_WEBHOOK_CHAT_URL",
-                "value": "${{ secrets.MAKE_WEBHOOK_CHAT_URL }}",
-                "slotSetting": false
-              },
-              {
-                "name": "CAREERS_HR_WEBHOOK_URL",
-                "value": "${{ secrets.CAREERS_HR_WEBHOOK_URL }}",
-                "slotSetting": false
-              },
-              {
-                "name": "SUPABASE_URL",
-                "value": "${{ secrets.SUPABASE_URL || 'https://jxocmzvsspdnooganlps.supabase.co' }}",
-                "slotSetting": false
-              },
-              {
-                "name": "SUPABASE_SERVICE_ROLE_KEY",
-                "value": "${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}",
-                "slotSetting": false
-              },
-              {
-                "name": "ADMIN_API_KEY",
-                "value": "${{ secrets.VITE_ADMIN_API_KEY }}",
-                "slotSetting": false
-              },
-              {
-                "name": "SCM_DO_BUILD_DURING_DEPLOYMENT",
-                "value": "true",
-                "slotSetting": false
-              },
-              {
-                "name": "ENABLE_ORYX_BUILD",
-                "value": "true",
-                "slotSetting": false
-              }
-            ]
