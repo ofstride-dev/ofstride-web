@@ -1,12 +1,6 @@
-__pycache__/
-*.pyc
-.venv/
-.venv*/
-.python_packages/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.coverage
-tests/
-.env
-.vscode/
+# Career APIs are deployed to a dedicated Function App (func-ofs-carrer-001)
+# via the deploy-career-apis.yml pipeline — exclude them from SWA managed functions
+admin_careers
+careers_init_upload
+careers_complete
+jobs
