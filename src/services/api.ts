@@ -2,6 +2,7 @@
  * OfStride Agent API Client
  * Communicates with Azure Functions backend at /api/*
  * Phase 1: Supabase Auth integration with Bearer JWT tokens
+ * Phase 2: Career APIs routed to dedicated Function App (separate from SWA)
  */
 
 import type {
@@ -22,6 +23,10 @@ import type {
 import { getAccessToken } from "./supabase";
 
 const API_BASE = "/api";
+
+/** Dedicated Career Function App base URL (separate from SWA managed functions) */
+const CAREER_API_BASE = import.meta.env.VITE_CAREER_API_URL
+  || "https://func-ofs-carrer-001-dzd4h9andncbhfha.southindia-01.azurewebsites.net/api";
 
 export interface AuthUser {
   isAuthenticated: boolean;
@@ -226,14 +231,14 @@ export async function notifyChatEnded(payload: {
 }
 
 export async function listCareersJobs(): Promise<CareersJobsResponse> {
-  const response = await fetch(`${API_BASE}/jobs`);
+  const response = await fetch(`${CAREER_API_BASE}/jobs`);
   return parseEnvelope<CareersJobsResponse>(response);
 }
 
 export async function initCareersUpload(
   payload: CareersInitUploadRequest
 ): Promise<CareersInitUploadResponse> {
-  const response = await fetch(`${API_BASE}/careers/init-upload`, {
+  const response = await fetch(`${CAREER_API_BASE}/careers/init-upload`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -242,7 +247,7 @@ export async function initCareersUpload(
 }
 
 export async function completeCareersUpload(applicationId: string): Promise<CareersCompleteResponse> {
-  const response = await fetch(`${API_BASE}/careers/complete`, {
+  const response = await fetch(`${CAREER_API_BASE}/careers/complete`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ application_id: applicationId }),
@@ -250,7 +255,7 @@ export async function completeCareersUpload(applicationId: string): Promise<Care
   return parseEnvelope<CareersCompleteResponse>(response);
 }
 
-// ── Admin Career API (with Supabase Auth) ──────────────────────────────
+// ── Admin Career API (routed to dedicated Function App) ─────────────────
 
 export async function adminListApplications(params?: {
   status?: string;
@@ -265,14 +270,14 @@ export async function adminListApplications(params?: {
   if (typeof params?.offset === "number") query.set("offset", String(params.offset));
 
   const suffix = query.toString() ? `?${query.toString()}` : "";
-  const response = await fetch(`${API_BASE}/admin-careers/applications${suffix}`, {
+  const response = await fetch(`${CAREER_API_BASE}/admin-careers/applications${suffix}`, {
     headers: await authHeaders(),
   });
   return parseEnvelope<AdminCareersListResponse>(response);
 }
 
 export async function adminGetApplication(applicationId: string): Promise<AdminCareersDetail> {
-  const response = await fetch(`${API_BASE}/admin-careers/applications/${encodeURIComponent(applicationId)}`, {
+  const response = await fetch(`${CAREER_API_BASE}/admin-careers/applications/${encodeURIComponent(applicationId)}`, {
     headers: await authHeaders(),
   });
   return parseEnvelope<AdminCareersDetail>(response);
@@ -282,7 +287,7 @@ export async function adminUpdateApplicationStatus(
   applicationId: string,
   status: "under_review" | "shortlisted" | "rejected"
 ): Promise<{ application_id: string; status: string }> {
-  const response = await fetch(`${API_BASE}/admin-careers/applications/${encodeURIComponent(applicationId)}/status`, {
+  const response = await fetch(`${CAREER_API_BASE}/admin-careers/applications/${encodeURIComponent(applicationId)}/status`, {
     method: "POST",
     headers: await authHeaders(),
     body: JSON.stringify({ status }),
@@ -302,7 +307,7 @@ export async function adminRunApplicationAnalysis(
   strengths_summary: string;
   gaps_summary: string;
 }> {
-  const response = await fetch(`${API_BASE}/admin-careers/applications/${encodeURIComponent(applicationId)}/analysis`, {
+  const response = await fetch(`${CAREER_API_BASE}/admin-careers/applications/${encodeURIComponent(applicationId)}/analysis`, {
     method: "POST",
     headers: await authHeaders(),
   });
@@ -319,7 +324,7 @@ export async function adminRunApplicationAnalysis(
 }
 
 export async function adminListJobs(): Promise<{ items: Array<Record<string, unknown>>; count: number }> {
-  const response = await fetch(`${API_BASE}/admin-careers/jobs`, {
+  const response = await fetch(`${CAREER_API_BASE}/admin-careers/jobs`, {
     headers: await authHeaders(),
   });
   return parseEnvelope<{ items: Array<Record<string, unknown>>; count: number }>(response);
@@ -335,7 +340,7 @@ export async function adminSaveJob(payload: {
   jd_raw_text?: string;
   status: "draft" | "active" | "archived";
 }): Promise<Record<string, unknown>> {
-  const response = await fetch(`${API_BASE}/admin-careers/jobs`, {
+  const response = await fetch(`${CAREER_API_BASE}/admin-careers/jobs`, {
     method: "POST",
     headers: await authHeaders(),
     body: JSON.stringify(payload),
@@ -344,7 +349,7 @@ export async function adminSaveJob(payload: {
 }
 
 export async function adminCleanupStaleDrafts(olderThanHours = 24): Promise<{ updated: number; older_than_hours: number }> {
-  const response = await fetch(`${API_BASE}/admin-careers/cleanup`, {
+  const response = await fetch(`${CAREER_API_BASE}/admin-careers/cleanup`, {
     method: "POST",
     headers: await authHeaders(),
     body: JSON.stringify({ older_than_hours: olderThanHours }),
@@ -360,7 +365,7 @@ export async function adminInitJdUpload(payload: {
   upload: { method: string; url: string; expires_in_seconds: number; required_headers: Record<string, string> };
   blob: { container: string; path: string };
 }> {
-  const response = await fetch(`${API_BASE}/admin-careers/jd-upload/init`, {
+  const response = await fetch(`${CAREER_API_BASE}/admin-careers/jd-upload/init`, {
     method: "POST",
     headers: await authHeaders(),
     body: JSON.stringify(payload),
@@ -381,7 +386,7 @@ export async function adminPublishJobFromUpload(payload: {
   blob_path: string;
   blob_container: string;
 }): Promise<Record<string, unknown>> {
-  const response = await fetch(`${API_BASE}/admin-careers/jobs/from-upload`, {
+  const response = await fetch(`${CAREER_API_BASE}/admin-careers/jobs/from-upload`, {
     method: "POST",
     headers: await authHeaders(),
     body: JSON.stringify(payload),
@@ -392,7 +397,7 @@ export async function adminPublishJobFromUpload(payload: {
 export async function adminSendFurtherDiscussionMail(
   applicationId: string
 ): Promise<{ application_id: string; sent: boolean; error?: string | null }> {
-  const response = await fetch(`${API_BASE}/admin-careers/applications/${encodeURIComponent(applicationId)}/notify`, {
+  const response = await fetch(`${CAREER_API_BASE}/admin-careers/applications/${encodeURIComponent(applicationId)}/notify`, {
     method: "POST",
     headers: await authHeaders(),
   });

@@ -1,0 +1,40 @@
+name: Deploy Career APIs to Azure Functions
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'api/admin_careers/**'
+      - 'api/careers_complete/**'
+      - 'api/careers_init_upload/**'
+      - 'api/jobs/**'
+      - 'api/shared/**'
+      - 'api/requirements.txt'
+      - 'api/host.json'
+      - '.github/workflows/deploy-career-apis.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy Career Stack APIs
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies
+        run: |
+          cd api
+          pip install -r requirements.txt --target .python_packages/lib/site-packages
+
+      - name: Deploy to Azure Functions
+        uses: Azure/functions-action@v1
+        with:
+          app-name: func-ofs-carrer-001
+          package: api
+          publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE_CAREER }}
