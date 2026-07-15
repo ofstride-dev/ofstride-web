@@ -404,15 +404,15 @@ async def _handle_publish_from_upload(req: func.HttpRequest, trace_id: str, admi
 
 
 async def main(req: func.HttpRequest) -> func.HttpResponse:
-    from security.admin_auth import AdminAuthError, require_admin  # deferred import
+    from security.admin_auth import AdminAuthError, require_role  # deferred import
 
     trace_id = get_trace_id(req)
     if req.method == "OPTIONS":
         return options_response(trace_id=trace_id, req=req)
 
-    # Authenticate
+    # Authenticate — allow both admin and employer roles for careers management
     try:
-        admin = require_admin(req)
+        admin = require_role(req, allowed_roles=["admin", "employer"])
     except AdminAuthError as exc:
         return error_response(error_type="validation", message=str(exc), trace_id=trace_id, req=req, status_code=401)
 
