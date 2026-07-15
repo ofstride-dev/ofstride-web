@@ -55,6 +55,11 @@ def _get_blob_client(blob_path: str):
     try:
         from azure.storage.blob import BlobServiceClient  # lazy import
     except ImportError as exc:
+        _comp_logger.error(
+            "Blob SDK import failed -- sys.path[0:3]=%s AZ_ENV=%s",
+            sys.path[:3] if hasattr(sys, 'path') else 'N/A',
+            os.getenv("AZURE_FUNCTIONS_ENVIRONMENT", "local"),
+        )
         raise RuntimeError(
             "azure-storage-blob SDK is not installed in the deployment. "
             "Ensure requirements.txt is built during deployment."

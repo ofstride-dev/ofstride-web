@@ -15,6 +15,10 @@ from core.api_contract import error_response, get_trace_id, ok_response, options
 from persistence.careers_store import get_careers_store
 from security.rate_limiter import enforce_rate_limit, get_client_key
 
+import logging as _lg
+_init_logger = _lg.getLogger("ofstride.careers_init_upload")
+
+
 MAX_RESUME_BYTES = 5 * 1024 * 1024
 ALLOWED_CONTENT_TYPES = {
     "application/pdf",
@@ -37,6 +41,11 @@ def _get_blob_config() -> tuple | None:
     try:
         from azure.storage.blob import BlobServiceClient  # lazy import
     except ImportError as exc:
+        _init_logger.error(
+            "Blob SDK import failed -- sys.path[0:3]=%s AZ_ENV=%s",
+            sys.path[:3] if hasattr(sys, 'path') else 'N/A',
+            os.getenv("AZURE_FUNCTIONS_ENVIRONMENT", "local"),
+        )
         raise RuntimeError(
             "azure-storage-blob SDK is not installed in the deployment. "
             "Ensure requirements.txt is built during deployment."

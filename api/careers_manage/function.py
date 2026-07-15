@@ -18,6 +18,9 @@ if shared_path not in sys.path:
 from core.api_contract import error_response, get_trace_id, ok_response, options_response
 from persistence.careers_store import get_careers_store
 
+import logging as _lg
+_mgmt_logger = _lg.getLogger("ofstride.careers_manage")
+
 ALLOWED_JOB_STATUSES = {"draft", "active", "archived"}
 ALLOWED_APPLICATION_STATUSES = {"under_review", "shortlisted", "rejected"}
 MAX_JD_BYTES = 2 * 1024 * 1024
@@ -46,6 +49,11 @@ def _blob_config(container_key: str) -> tuple | None:
     try:
         from azure.storage.blob import BlobServiceClient  # deferred import
     except ImportError as exc:
+        _mgmt_logger.error(
+            "Blob SDK import failed -- sys.path[0:3]=%s AZ_ENV=%s",
+            sys.path[:3] if hasattr(sys, 'path') else 'N/A',
+            os.getenv("AZURE_FUNCTIONS_ENVIRONMENT", "local"),
+        )
         raise RuntimeError(
             "azure-storage-blob SDK is not installed in the deployment. "
             "Ensure requirements.txt is built during deployment."
@@ -67,6 +75,11 @@ def _blob_service():
     try:
         from azure.storage.blob import BlobServiceClient  # deferred import
     except ImportError as exc:
+        _mgmt_logger.error(
+            "Blob SDK import failed -- sys.path[0:3]=%s AZ_ENV=%s",
+            sys.path[:3] if hasattr(sys, 'path') else 'N/A',
+            os.getenv("AZURE_FUNCTIONS_ENVIRONMENT", "local"),
+        )
         raise RuntimeError(
             "azure-storage-blob SDK is not installed in the deployment. "
             "Ensure requirements.txt is built during deployment."

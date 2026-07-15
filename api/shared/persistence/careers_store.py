@@ -863,6 +863,7 @@ _careers_store = CareersSQLiteStore()
 # use Supabase when configured, without changing any function.py files.
 
 _active_store = None
+_supabase_unconfigured = False
 
 
 def get_careers_store():
@@ -871,10 +872,23 @@ def get_careers_store():
     Priority:
       1. Supabase store (if SUPABASE_URL + SUPABASE_SERVICE_KEY are set)
       2. SQLite store (fallback for local dev / unconfigured environments)
+
+    Caching strategy:
+      - Supabase working - cached permanently (fast path for all subsequent calls).
+      - Supabase env vars missing (local dev) - SQLite cached permanently.
+      - Supabase env vars SET but unreachable - SQLite used transiently but
+        NOT cached, so the next call retries Supabase. This prevents a cold-start
+        Supabase hiccup from permanently crippling an Azure Functions instance.
     """
-    global _active_store
+    global _active_store, _supabase_unconfigured
+
+    # Fast path - Supabase already confirmed working on this process
     if _active_store is not None:
         return _active_store
+
+    # Supabase env vars were already checked and are missing - skip retry
+    if _supabase_unconfigured:
+        return _careers_store
 
     # Try Supabase first
     try:
@@ -884,10 +898,21 @@ def get_careers_store():
             _active_store = supabase_store
             _store_logger.info("Using Supabase careers store.")
             return _active_store
+        # Supabase env vars are missing/unset - cache SQLite permanently
+        _supabase_unconfigured = True
+        _store_logger.info(
+            "Supabase not configured (SUPABASE_URL / SUPABASE_SERVICE_KEY missing). "
+            "Using SQLite careers store."
+        )
+        return _careers_store
     except Exception as exc:
-        _store_logger.warning("Supabase store init failed, falling back to SQLite: %s", exc)
+        _store_logger.warning(
+            "Supabase store init failed (will retry on next request): %s", exc
+        )
 
-    # Fall back to SQLite
-    _active_store = _careers_store
-    _store_logger.info("Using SQLite careers store (fallback — Supabase unavailable: SUPABASE_SERVICE_KEY not configured).")
-    return _active_store
+    # Supabase IS configured but unreachable - DON'T cache, retry next call
+    _store_logger.info(
+        "Using SQLite careers store transiently (Supabase unavailable - will retry "
+        "on next request)."
+    )
+    return _careers_store
