@@ -382,6 +382,18 @@ function AdminCareers() {
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-3xl font-bold text-primary">Admin Careers Dashboard</h1>
           <div className="flex items-center gap-3">
+            <a
+              href="/careers/jobs"
+              className="px-3 py-1.5 rounded-lg border border-secondary text-secondary text-xs bg-white hover:bg-blue-50 transition-colors"
+            >
+              View Job Seeker Page
+            </a>
+            <a
+              href="/employer"
+              className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white hover:bg-slate-50 transition-colors"
+            >
+              Employer Portal
+            </a>
             <span className="text-xs text-muted">
               {auth.user?.email} ({auth.role})
             </span>

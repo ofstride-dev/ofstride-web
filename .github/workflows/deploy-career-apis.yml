@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'api/admin_careers/**'
+      - 'api/careers_manage/**'
       - 'api/careers_complete/**'
       - 'api/careers_init_upload/**'
       - 'api/jobs/**'
@@ -31,7 +31,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p __staged_careers
-          cp -r api/admin_careers __staged_careers/
+          cp -r api/careers_manage __staged_careers/
           cp -r api/careers_complete __staged_careers/
           cp -r api/careers_init_upload __staged_careers/
           cp -r api/jobs __staged_careers/

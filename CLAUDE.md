@@ -91,7 +91,7 @@ Error responses:
 ```
 
 ### Naming Conventions
-- Function folders: `snake_case` (e.g., `admin_careers`, `careers_init_upload`)
+- Function folders: `snake_case` (e.g., `careers_manage`, `careers_init_upload`)
 - Routes: `kebab-case` (e.g., `careers/admin`, `careers/init-upload`)
 - Python files: `function.py` inside each function folder
 - API client functions in `api.ts`: `camelCase` (e.g., `adminSaveJob`, `adminListJobs`)
@@ -155,7 +155,7 @@ docs: <description>
 
 ```
 api/
-├── admin_careers/          # Admin careers API (jobs CRUD, applications, analysis)
+├── careers_manage/         # Admin careers API (jobs CRUD, applications, analysis) — NOT named \"admin_careers\" because \"admin\" is reserved by Azure Functions runtime
 │   ├── function.py
 │   └── function.json
 ├── careers_init_upload/    # Jobseeker resume upload init (SAS token)

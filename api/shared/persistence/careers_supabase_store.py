@@ -9,7 +9,7 @@ Environment variables required:
     SUPABASE_SERVICE_KEY  — service-role key (server-side only, bypasses RLS)
 
 All public methods match the interface of CareersSQLiteStore so that
-admin_careers/function.py can switch stores with a single import change.
+careers_manage/function.py can switch stores with a single import change.
 """
 
 from __future__ import annotations

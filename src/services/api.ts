@@ -231,7 +231,8 @@ export async function notifyChatEnded(payload: {
 }
 
 export async function listCareersJobs(): Promise<CareersJobsResponse> {
-  const response = await fetch(`${CAREER_API_BASE}/jobs`);
+  // Add cache-busting param to prevent stale data after cold restarts
+  const response = await fetch(`${CAREER_API_BASE}/jobs?_t=${Date.now()}`);
   return parseEnvelope<CareersJobsResponse>(response);
 }
 
