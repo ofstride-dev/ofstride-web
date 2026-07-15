@@ -133,9 +133,10 @@ def extract_profile_updates(text: str, *, allow_plain_name: bool = False) -> dic
         if normalized_phone:
             updates["phone"] = normalized_phone
 
+    # Capture only a likely person name (1-4 words) and avoid swallowing the next sentence.
     name_patterns = [
-        r"(?:my name is|i am|this is)\s+([A-Za-z][A-Za-z\s.'-]{1,60})",
-        r"(?:it's|its|im)\s+([A-Za-z][A-Za-z\s.'-]{1,60})",
+        r"(?:my name is|i am|this is)\s+([A-Za-z][A-Za-z'-]*(?:\s+[A-Za-z][A-Za-z'-]*){0,3})(?=$|[.,;!?])",
+        r"(?:it's|its|im)\s+([A-Za-z][A-Za-z'-]*(?:\s+[A-Za-z][A-Za-z'-]*){0,3})(?=$|[.,;!?])",
     ]
     for pattern in name_patterns:
         match = re.search(pattern, text, flags=re.IGNORECASE)

@@ -42,6 +42,11 @@
     "ZAPIER_WEBHOOK_URL": "",
 
     "DURABLE_STORE_ENABLED": "true",
-    "DURABLE_SQLITE_PATH": "api/.runtime/chat_state.db"
+    "DURABLE_SQLITE_PATH": "api/.runtime/chat_state.db",
+
+    "ADMIN_API_KEY": "",
+    "ADMIN_ALLOW_AUTHENTICATED": "false",
+    "ENTRA_EMPLOYER_GROUP_IDS": "",
+    "ENTRA_ADMIN_GROUP_IDS": ""
   }
 }

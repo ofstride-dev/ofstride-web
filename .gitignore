@@ -35,3 +35,20 @@ __pycache__/
 
 # Local logs
 debug.log
+
+# Temp/planning docs (not for version control)
+*-refactoring*.md
+chatboat-questionaire.pdf
+response.txt
+Form_Calander_updates.md
+*.pdf
+
+# Azure Functions local runtime
+api/.python_runtime/
+api/local.settings-old.json
+
+# Generated KB data
+api/data/generated_*
+
+# GitHub Copilot instructions (local only)
+.github/copilot-instructions.md

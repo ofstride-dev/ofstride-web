@@ -408,7 +408,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
     except AdminAuthError as exc:
         return error_response(error_type="validation", message=str(exc), trace_id=trace_id, req=req, status_code=401)
 
-    path = str(req.route_params.get("path") or "").strip() if req.route_params else ""
+    path = str(req.params.get("_path") or "").strip()
     segments = _parse_path(path)
     primary = segments[0] if segments else ""
 
@@ -453,4 +453,4 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
         return await _handle_cleanup(req, trace_id, admin)
 
     # ── Fallback 404 ──────────────────────────────────────────────────────
-    return error_response(error_type="validation", message=f"Unknown admin-careers endpoint: {path}", trace_id=trace_id, req=req, status_code=404)
+    return error_response(error_type="validation", message=f"Unknown careers/admin endpoint: {path}", trace_id=trace_id, req=req, status_code=404)

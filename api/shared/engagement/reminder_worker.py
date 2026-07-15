@@ -84,7 +84,7 @@ class ReminderWorker:
         return (
             self._settings.chat_webhook_url
             or self._settings.contact_webhook_url
-            or self._settings.zapier_webhook_url
+            or self._settings.make_webhook_chat_url
         )
 
     def _send_webhook(self, payload: dict[str, Any]) -> tuple[bool, str | None]:

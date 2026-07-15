@@ -1,5 +1,5 @@
 {
-  "welcome_message": "Welcome to Ofstride Services LLP. Every business faces challenges. Let's identify yours and suggest a practical way forward. It takes less than 2 minutes.",
+  "welcome_message": "",
   "question_1": {
     "id": "q1_challenge",
     "question": "Which of these best describes your biggest business challenge today?",
@@ -25,7 +25,7 @@
         "Technology",
         "Market competition"
       ],
-      "response": "Many growing businesses face this challenge. A combination of process improvement, leadership alignment, and AI-enabled workflows often creates the capacity needed for sustainable growth.",
+      "response": "Many growing businesses face this challenge. A combination of process improvement, leadership alignment, and AI-enabled workflows often creates the capacity needed for sustainable growth.\nWould you like a Growth Readiness Assessment?",
       "priority": "Growth Enablement"
     },
     "Operational inefficiencies": {
@@ -80,14 +80,41 @@
       "priority": "Governance & Risk"
     },
     "Reducing costs": {
+      "question": "Where do you see the biggest cost pressure today?",
+      "options": [
+        "High operational overhead",
+        "Low process efficiency",
+        "Vendor spend leakage",
+        "Poor budget visibility",
+        "Manual rework and errors",
+        "Low team productivity"
+      ],
       "response": "Cost pressure usually improves when operations are simplified and decision cycles are shortened with better process visibility.",
       "priority": "Cost Optimization"
     },
     "Decision making & reporting": {
+      "question": "What is the biggest decision/reporting bottleneck for your team?",
+      "options": [
+        "Data is scattered across systems",
+        "Reports take too long",
+        "No real-time visibility",
+        "Unclear KPIs",
+        "Low confidence in data quality",
+        "Too much manual analysis"
+      ],
       "response": "Decision speed usually improves with cleaner operating data, standardized reporting, and focused business intelligence workflows.",
       "priority": "Decision Intelligence"
     },
     "Not sure": {
+      "question": "Which area feels most uncertain right now?",
+      "options": [
+        "Growth strategy",
+        "Operations and execution",
+        "People and leadership",
+        "Compliance and risk",
+        "Technology and automation",
+        "I need a diagnostic first"
+      ],
       "response": "That's completely fine. We can still identify a practical direction through a structured discovery discussion.",
       "priority": "Discovery"
     }

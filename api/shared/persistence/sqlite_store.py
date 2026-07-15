@@ -44,6 +44,7 @@ class DurableSQLiteStore:
 
     def _init_db(self) -> None:
         with self._connect() as conn:
+            conn.execute("PRAGMA foreign_keys = ON")
             conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS session_messages (

@@ -256,6 +256,8 @@ export async function completeCareersUpload(applicationId: string): Promise<Care
 }
 
 // ── Admin Career API (routed to dedicated Function App) ─────────────────
+// Route changed from admin-careers to careers/admin to avoid Azure Functions
+// reserved route families (admin/*, runtime/webhooks/*).
 
 export async function adminListApplications(params?: {
   status?: string;
@@ -269,15 +271,16 @@ export async function adminListApplications(params?: {
   if (typeof params?.limit === "number") query.set("limit", String(params.limit));
   if (typeof params?.offset === "number") query.set("offset", String(params.offset));
 
-  const suffix = query.toString() ? `?${query.toString()}` : "";
-  const response = await fetch(`${CAREER_API_BASE}/admin-careers/applications${suffix}`, {
+  query.set("_path", "applications");
+  const response = await fetch(`${CAREER_API_BASE}/careers/admin?${query.toString()}`, {
     headers: await authHeaders(),
   });
   return parseEnvelope<AdminCareersListResponse>(response);
 }
 
 export async function adminGetApplication(applicationId: string): Promise<AdminCareersDetail> {
-  const response = await fetch(`${CAREER_API_BASE}/admin-careers/applications/${encodeURIComponent(applicationId)}`, {
+  const query = new URLSearchParams({ _path: `applications/${encodeURIComponent(applicationId)}` });
+  const response = await fetch(`${CAREER_API_BASE}/careers/admin?${query.toString()}`, {
     headers: await authHeaders(),
   });
   return parseEnvelope<AdminCareersDetail>(response);
@@ -287,7 +290,8 @@ export async function adminUpdateApplicationStatus(
   applicationId: string,
   status: "under_review" | "shortlisted" | "rejected"
 ): Promise<{ application_id: string; status: string }> {
-  const response = await fetch(`${CAREER_API_BASE}/admin-careers/applications/${encodeURIComponent(applicationId)}/status`, {
+  const query = new URLSearchParams({ _path: `applications/${encodeURIComponent(applicationId)}/status` });
+  const response = await fetch(`${CAREER_API_BASE}/careers/admin?${query.toString()}`, {
     method: "POST",
     headers: await authHeaders(),
     body: JSON.stringify({ status }),
@@ -307,7 +311,8 @@ export async function adminRunApplicationAnalysis(
   strengths_summary: string;
   gaps_summary: string;
 }> {
-  const response = await fetch(`${CAREER_API_BASE}/admin-careers/applications/${encodeURIComponent(applicationId)}/analysis`, {
+  const query = new URLSearchParams({ _path: `applications/${encodeURIComponent(applicationId)}/analysis` });
+  const response = await fetch(`${CAREER_API_BASE}/careers/admin?${query.toString()}`, {
     method: "POST",
     headers: await authHeaders(),
   });
@@ -324,7 +329,8 @@ export async function adminRunApplicationAnalysis(
 }
 
 export async function adminListJobs(): Promise<{ items: Array<Record<string, unknown>>; count: number }> {
-  const response = await fetch(`${CAREER_API_BASE}/admin-careers/jobs`, {
+  const query = new URLSearchParams({ _path: "jobs" });
+  const response = await fetch(`${CAREER_API_BASE}/careers/admin?${query.toString()}`, {
     headers: await authHeaders(),
   });
   return parseEnvelope<{ items: Array<Record<string, unknown>>; count: number }>(response);
@@ -340,7 +346,8 @@ export async function adminSaveJob(payload: {
   jd_raw_text?: string;
   status: "draft" | "active" | "archived";
 }): Promise<Record<string, unknown>> {
-  const response = await fetch(`${CAREER_API_BASE}/admin-careers/jobs`, {
+  const query = new URLSearchParams({ _path: "jobs" });
+  const response = await fetch(`${CAREER_API_BASE}/careers/admin?${query.toString()}`, {
     method: "POST",
     headers: await authHeaders(),
     body: JSON.stringify(payload),
@@ -349,7 +356,8 @@ export async function adminSaveJob(payload: {
 }
 
 export async function adminCleanupStaleDrafts(olderThanHours = 24): Promise<{ updated: number; older_than_hours: number }> {
-  const response = await fetch(`${CAREER_API_BASE}/admin-careers/cleanup`, {
+  const query = new URLSearchParams({ _path: "cleanup" });
+  const response = await fetch(`${CAREER_API_BASE}/careers/admin?${query.toString()}`, {
     method: "POST",
     headers: await authHeaders(),
     body: JSON.stringify({ older_than_hours: olderThanHours }),
@@ -365,7 +373,8 @@ export async function adminInitJdUpload(payload: {
   upload: { method: string; url: string; expires_in_seconds: number; required_headers: Record<string, string> };
   blob: { container: string; path: string };
 }> {
-  const response = await fetch(`${CAREER_API_BASE}/admin-careers/jd-upload/init`, {
+  const query = new URLSearchParams({ _path: "jd-upload/init" });
+  const response = await fetch(`${CAREER_API_BASE}/careers/admin?${query.toString()}`, {
     method: "POST",
     headers: await authHeaders(),
     body: JSON.stringify(payload),
@@ -386,7 +395,8 @@ export async function adminPublishJobFromUpload(payload: {
   blob_path: string;
   blob_container: string;
 }): Promise<Record<string, unknown>> {
-  const response = await fetch(`${CAREER_API_BASE}/admin-careers/jobs/from-upload`, {
+  const query = new URLSearchParams({ _path: "jobs/from-upload" });
+  const response = await fetch(`${CAREER_API_BASE}/careers/admin?${query.toString()}`, {
     method: "POST",
     headers: await authHeaders(),
     body: JSON.stringify(payload),
@@ -397,7 +407,8 @@ export async function adminPublishJobFromUpload(payload: {
 export async function adminSendFurtherDiscussionMail(
   applicationId: string
 ): Promise<{ application_id: string; sent: boolean; error?: string | null }> {
-  const response = await fetch(`${CAREER_API_BASE}/admin-careers/applications/${encodeURIComponent(applicationId)}/notify`, {
+  const query = new URLSearchParams({ _path: `applications/${encodeURIComponent(applicationId)}/notify` });
+  const response = await fetch(`${CAREER_API_BASE}/careers/admin?${query.toString()}`, {
     method: "POST",
     headers: await authHeaders(),
   });

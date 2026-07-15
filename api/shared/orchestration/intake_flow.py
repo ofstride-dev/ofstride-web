@@ -46,7 +46,7 @@ DIRECT_INTENT_HINTS = {
 # ─── ACTION INTENT DETECTION ───────────────────────────────────────────────────
 MEETING_INTENT_TOKENS = {"schedule", "book", "meeting", "calendar", "availability", "time", "slot", "appointment"}
 CALLBACK_INTENT_TOKENS = {"call me back", "callback", "ring", "phone call", "call me", "ring me", "dial"}
-MESSAGE_INTENT_TOKENS = {"message", "send", "email", "contact", "write", "send message", "reach out"}
+MESSAGE_INTENT_TOKENS = {"message", "send message", "contact", "write", "reach out"}
 SERVICE_INQUIRY_TOKENS = {"services", "offerings", "service you offer", "what do you offer", "your services", "service offerings", "list services", "see services", "show services", "service catalog"}
 QUESTION_PREFIXES = ("what", "where", "when", "why", "how", "can", "could", "do", "does", "is", "are")
 DOMAIN_SELECTION_HINTS = {
@@ -95,6 +95,11 @@ def detect_action_intent(text: str) -> str | None:
     if not lowered:
         return None
 
+    # During lead capture users often type details like "my email is..." or numbers.
+    # Do not treat those as action intents.
+    if "my email is" in lowered or "email is" in lowered or "my phone is" in lowered:
+        return None
+
     # Check for exact phrases first
     for token in CALLBACK_INTENT_TOKENS:
         if token in lowered:
@@ -109,6 +114,21 @@ def detect_action_intent(text: str) -> str | None:
             return "meeting_request"
 
     return None
+
+
+def looks_like_lead_submission(text: str) -> bool:
+    lowered = text.lower().strip()
+    if not lowered:
+        return False
+
+    has_name_phrase = any(token in lowered for token in ["my name is", "i am", "this is"]) 
+    has_email = "@" in lowered and "." in lowered
+    digit_count = sum(1 for ch in lowered if ch.isdigit())
+    has_phone = ("phone" in lowered or "mobile" in lowered) and digit_count >= 10
+
+    # Consider it a lead submission when at least two strong signals are present.
+    signal_count = sum([1 if has_name_phrase else 0, 1 if has_email else 0, 1 if has_phone else 0])
+    return signal_count >= 2
 
 
 def _is_question_like(text: str) -> bool:
@@ -255,12 +275,18 @@ def build_domain_search_query(domain: str) -> str:
 
 def build_intro_prompt() -> str:
     return (
-        "Welcome to Ofstride. I can help match you with the right consultant.\n\n"
-        "What kind of service are you looking for?\n"
-        "• People & Workforce\n"
-        "• Finance & Compliance\n"
-        "• Technology & Growth"
+        "Welcome to Ofstride Services LLP. 👋 I'm your virtual assistant. Every business faces challenges. Let's identify yours and suggest a practical way forward. It takes less than 2 minutes.\n\n"
+        "To begin, please share your name, mobile number, and email."
     )
+
+
+def build_assessment_start_prompt(name: str | None = None) -> str:
+    if name:
+        return (
+            f"Thank you, {name}. Your details are captured.\n\n"
+            "Please click Start Assessment to begin the guided questionnaire."
+        )
+    return "Thank you. Your details are captured. Please click Start Assessment to begin the guided questionnaire."
 
 
 def missing_required_fields(profile: dict[str, str]) -> list[str]:
@@ -380,6 +406,34 @@ def get_next_state(
         missing = missing_required_fields(profile)
         domain = detect_domain_interest(query)
 
+        # Enforce lead capture before progressing to service/domain conversation.
+        if missing:
+            return (
+                STATE_INTAKE_FIELDS,
+                build_next_required_prompt(missing),
+                [],
+            )
+
+        # If lead appears to be submitted in one message, move directly to assessment prompt.
+        if not missing and looks_like_lead_submission(query):
+            return (
+                STATE_INTAKE_SUBMITTED,
+                build_assessment_start_prompt(profile.get("name")),
+                [
+                    {"id": "act_1", "label": "Start Assessment", "value": "Start Assessment", "kind": "quick_reply"},
+                ],
+            )
+
+        # If lead details are complete, default to assessment start prompt.
+        if not missing and not query.strip():
+            return (
+                STATE_INTAKE_SUBMITTED,
+                build_assessment_start_prompt(profile.get("name")),
+                [
+                    {"id": "act_1", "label": "Start Assessment", "value": "Start Assessment", "kind": "quick_reply"},
+                ],
+            )
+
         # For informational questions (website/company/services flow), use conversation mode first.
         if _is_question_like(query) or len(query.strip().split()) >= 5:
             return (
@@ -432,11 +486,13 @@ def get_next_state(
                 ],
             )
 
-        # Generic greeting.
+        # Generic fallback after lead capture.
         return (
-            STATE_INTAKE_FIELDS,
-            build_intro_prompt(),
-            [],
+            STATE_INTAKE_SUBMITTED,
+            build_assessment_start_prompt(profile.get("name")),
+            [
+                {"id": "act_1", "label": "Start Assessment", "value": "Start Assessment", "kind": "quick_reply"},
+            ],
         )
     
     # STATE: INTAKE_FIELDS (collecting name, phone, email)
@@ -452,24 +508,12 @@ def get_next_state(
                 [],
             )
         else:
-            # All fields collected, move to next state
-            known_domain = profile.get("service_type") or detect_domain_interest(query)
-            if known_domain:
-                return (
-                    STATE_DOMAIN_SELECTED,
-                    f"Thank you. Now let me find the right {known_domain} consultant for you.",
-                    [],
-                )
-
-            intake_complete = build_intake_completed_message()
-            interest_prompt = build_interest_prompt(profile.get("name"))
-            combined_response = f"{intake_complete}\n\n{interest_prompt}"
+            # All lead fields collected; gate next step to questionnaire start.
             return (
                 STATE_INTAKE_SUBMITTED,
-                combined_response,
+                build_assessment_start_prompt(profile.get("name")),
                 [
-                    {"id": "act_1", "label": "Yes, show services", "value": "Yes, show services", "kind": "quick_reply"},
-                    {"id": "act_2", "label": "Schedule a call", "value": "Schedule a call", "kind": "quick_reply"},
+                    {"id": "act_1", "label": "Start Assessment", "value": "Start Assessment", "kind": "quick_reply"},
                 ],
             )
     
@@ -480,6 +524,13 @@ def get_next_state(
             return (
                 STATE_INTAKE_FIELDS,
                 build_next_required_prompt(missing),
+                [],
+            )
+
+        if query.strip().lower() in {"start assessment", "assessment", "start"}:
+            return (
+                STATE_OPEN,
+                "Start Assessment",
                 [],
             )
 
@@ -520,14 +571,12 @@ def get_next_state(
         else:
             if _is_question_like(query):
                 return (STATE_CONVERSATION, "", [])
-            # Re-ask for service area
-            prompt = build_interest_prompt(profile.get("name"))
+            # Re-ask for assessment start.
             return (
                 STATE_INTAKE_SUBMITTED,
-                prompt,
+                build_assessment_start_prompt(profile.get("name")),
                 [
-                    {"id": "act_1", "label": "Yes, show services", "value": "Yes, show services", "kind": "quick_reply"},
-                    {"id": "act_2", "label": "Schedule a call", "value": "Schedule a call", "kind": "quick_reply"},
+                    {"id": "act_1", "label": "Start Assessment", "value": "Start Assessment", "kind": "quick_reply"},
                 ],
             )
     
