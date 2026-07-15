@@ -1,5 +1,4 @@
 name: Deploy Career APIs to Azure Functions
-
 on:
   push:
     branches:
@@ -14,7 +13,6 @@ on:
       - 'api/host.json'
       - '.github/workflows/deploy-career-apis.yml'
   workflow_dispatch:
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -22,11 +20,9 @@ jobs:
     permissions:
       id-token: write
       contents: read
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-
       - name: Stage Career Function Folders
         shell: bash
         run: |
@@ -39,28 +35,15 @@ jobs:
           cp api/host.json __staged_careers/
           cp api/requirements.txt __staged_careers/
           cp api/.python-version __staged_careers/ 2>/dev/null || true
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies locally (fallback for Oryx)
-        shell: bash
-        run: |
-          pip install -r api/requirements.txt --target="__staged_careers/.python_packages/lib/python3.12/site-packages"
-
       - name: Login to Azure
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_EED27B738214446BB01573AD4107388D }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_233886A9334C42A7B361D9577C76190C }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D79D86DAA64341A6AD251FEC74A6333C }}
-
       - name: Deploy to Azure Functions
         uses: Azure/functions-action@v1
         with:
           app-name: func-ofs-carrer-001
           package: __staged_careers
           scm-do-build-during-deployment: true
-
