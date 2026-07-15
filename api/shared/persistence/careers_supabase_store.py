@@ -374,7 +374,7 @@ class CareersSupabaseStore:
             "id,reference_id,job_id,full_name,email,resume_original_name,"
             "submission_status,created_at,submitted_at,"
             "careers_application_analysis(analysis_status,match_score),"
-            "careers_jobs!inner(title)"
+            "careers_jobs!left(title)"
         )
         params: dict[str, str] = {
             "select": select_fields,
@@ -423,7 +423,7 @@ class CareersSupabaseStore:
             "created_at,submitted_at,updated_at,"
             "careers_application_analysis(analysis_status,match_score,matched_skills_json,"
             "missing_skills_json,strengths_summary,gaps_summary,recommendation,analyzed_by,analyzed_at),"
-            "careers_jobs!inner(title)"
+            "careers_jobs!left(title)"
         )
         params = {
             "select": select_fields,
