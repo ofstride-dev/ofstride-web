@@ -37,47 +37,58 @@ function Careers() {
   const [expandedJobId, setExpandedJobId] = useState("");
   const [showForm, setShowForm] = useState(false);
 
+  const loadJobs = useCallback(async () => {
+    try {
+      setJobsLoading(true);
+      setJobsError("");
+      const response = await listCareersJobs();
+      const nextJobs = Array.isArray(response.jobs) ? response.jobs : [];
+      setJobs(nextJobs);
+      // Auto-expand first job if none expanded yet
+      if (nextJobs.length > 0) {
+        setExpandedJobId((prev) => prev || nextJobs[0].id);
+        setFormData((prev) => ({
+          ...prev,
+          job_id: prev.job_id || nextJobs[0].id,
+        }));
+      }
+    } catch (error) {
+      setJobsError(
+        error instanceof ApiClientError
+          ? error.message
+          : "Could not load jobs right now. Please try again shortly."
+      );
+    } finally {
+      setJobsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     let mounted = true;
-    const loadJobs = async () => {
-      try {
-        setJobsLoading(true);
-        const response = await listCareersJobs();
-        if (mounted) {
-          const nextJobs = Array.isArray(response.jobs) ? response.jobs : [];
-          setJobs(nextJobs);
-          setFormData((prev) => ({
-            ...prev,
-            job_id: prev.job_id || (nextJobs[0]?.id ?? ""),
-          }));
-          setExpandedJobId((prev) => prev || (nextJobs[0]?.id ?? ""));
-        }
-      } catch (error) {
-        if (mounted) {
-          setJobsError("Could not load jobs right now. Please try again shortly.");
-        }
-      } finally {
-        if (mounted) {
-          setJobsLoading(false);
-        }
-      }
-    };
-
-    loadJobs();
+    loadJobs().then(() => {});
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [loadJobs]);
 
   const selectedJob = useMemo(
     () => jobs.find((job) => job.id === formData.job_id) ?? null,
     [jobs, formData.job_id]
   );
 
+  const toggleExpand = (jobId) => {
+    setExpandedJobId((prev) => (prev === jobId ? "" : jobId));
+  };
+
   const onClickApplyForJob = (jobId) => {
     setFormData((prev) => ({ ...prev, job_id: jobId }));
+    setExpandedJobId(jobId);
     setShowForm(true);
     setSubmitError("");
+    // Scroll to form on mobile
+    setTimeout(() => {
+      document.getElementById("application-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
   };
 
   const handleChange = (event) => {
@@ -234,9 +245,10 @@ function Careers() {
         <aside className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm h-fit">
           <h2 className="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
             <Briefcase className="w-5 h-5" /> Open Positions
+            {!jobsLoading && <span className="text-xs text-muted font-normal">({jobs.length} {jobs.length === 1 ? "role" : "roles"})</span>}
           </h2>
 
-          {jobsLoading && <p className="text-sm text-muted">Loading jobs...</p>}
+          {jobsLoading && <p className="text-sm text-muted py-4 text-center">Loading jobs...</p>}
 
           {!jobsLoading && jobsError && (
             <div className="rounded-lg border border-amber-300 bg-amber-50 text-amber-800 text-sm px-3 py-2">
@@ -245,43 +257,71 @@ function Careers() {
           )}
 
           {!jobsLoading && !jobsError && jobs.length === 0 && (
-            <p className="text-sm text-muted">No active jobs are published yet.</p>
+            <div className="text-center py-8">
+              <Users className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+              <p className="text-sm text-muted">No active jobs are published yet.</p>
+              <p className="text-xs text-muted mt-1">Check back later for new opportunities.</p>
+            </div>
           )}
 
           <div className="space-y-3 mt-2">
-            {jobs.map((job) => (
-              <div key={job.id} className="block border border-slate-200 rounded-xl p-3 hover:border-secondary">
-                <button
-                  type="button"
-                  className="w-full text-left"
-                  onClick={() => setExpandedJobId((prev) => (prev === job.id ? "" : job.id))}
+            {jobs.map((job) => {
+              const isExpanded = expandedJobId === job.id;
+              const metaParts = [job.department, job.location, job.employment_type].filter(Boolean);
+              return (
+                <div
+                  key={job.id}
+                  className={`border rounded-xl transition-all duration-200 ${
+                    isExpanded
+                      ? "border-secondary shadow-sm bg-blue-50/30"
+                      : "border-slate-200 hover:border-secondary/50 hover:shadow-sm"
+                  }`}
                 >
-                <span className="font-medium text-primary">{job.title}</span>
-                <div className="text-xs text-muted mt-1">
-                  {[job.department, job.location, job.employment_type].filter(Boolean).join(" • ")}
+                  <button
+                    type="button"
+                    className="w-full text-left px-4 py-3 flex items-start justify-between gap-2"
+                    onClick={() => toggleExpand(job.id)}
+                    aria-expanded={isExpanded}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <span className="font-semibold text-primary block truncate">{job.title}</span>
+                      {metaParts.length > 0 && (
+                        <span className="text-xs text-muted block mt-0.5">
+                          {metaParts.join(" • ")}
+                        </span>
+                      )}
+                    </div>
+                    <span className="mt-0.5 text-slate-400 shrink-0">
+                      {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                    </span>
+                  </button>
+
+                  {isExpanded && (
+                    <div className="px-4 pb-4 border-t border-slate-100 pt-3">
+                      <div className="bg-white border border-slate-200 rounded-lg p-3 text-xs text-text max-h-60 overflow-y-auto">
+                        <pre className="whitespace-pre-wrap font-sans leading-relaxed">
+                          {job.jd_markdown || job.jd_raw_text || "No job details provided."}
+                        </pre>
+                      </div>
+                      <div className="mt-3 flex gap-2">
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors"
+                          onClick={() => onClickApplyForJob(job.id)}
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          Apply Now
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                </button>
-                {expandedJobId === job.id && (
-                  <div className="mt-3">
-                    <details open className="border border-slate-200 rounded-lg p-2 bg-surface">
-                      <summary className="font-medium text-primary cursor-pointer">Job details</summary>
-                      <pre className="mt-2 text-xs whitespace-pre-wrap text-text max-h-44 overflow-auto">{job.jd_markdown || job.jd_raw_text || "No job details provided."}</pre>
-                    </details>
-                    <button
-                      type="button"
-                      className="mt-3 px-3 py-2 rounded-lg bg-primary text-white text-sm"
-                      onClick={() => onClickApplyForJob(job.id)}
-                    >
-                      Apply
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </aside>
 
-        <div className="lg:col-span-3 bg-white rounded-2xl p-6 sm:p-8 shadow-sm">
+        <div id="application-form" className="lg:col-span-3 bg-white rounded-2xl p-6 sm:p-8 shadow-sm">
           <h2 className="text-xl font-semibold text-primary mb-2">Candidate Submission Form</h2>
           <p className="text-sm text-muted mb-6">This submission is handled by Ofstride as a recruitment service provider for client hiring mandates.</p>
 

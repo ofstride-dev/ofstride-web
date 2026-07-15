@@ -48,7 +48,7 @@ jobs:
       - name: Install dependencies locally (fallback for Oryx)
         shell: bash
         run: |
-          pip install -r api/requirements.txt --target="__staged_careers/.python_packages/lib/site-packages"
+          pip install -r api/requirements.txt --target="__staged_careers/.python_packages/lib/python3.12/site-packages"
 
       - name: Login to Azure
         uses: azure/login@v2
