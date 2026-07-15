@@ -18,8 +18,6 @@ if shared_path not in sys.path:
 from core.api_contract import error_response, get_trace_id, ok_response, options_response
 from persistence.careers_store import get_careers_store
 
-# ── Constants ──────────────────────────────────────────────────────────────
-
 ALLOWED_JOB_STATUSES = {"draft", "active", "archived"}
 ALLOWED_APPLICATION_STATUSES = {"under_review", "shortlisted", "rejected"}
 MAX_JD_BYTES = 2 * 1024 * 1024
@@ -32,8 +30,6 @@ SKILL_LEXICON = [
     "payroll", "gst", "tax", "legal", "operations", "strategy",
     "project management", "data analysis", "communication", "leadership",
 ]
-
-# ── Helpers ────────────────────────────────────────────────────────────────
 
 
 def _parse_connection_string(raw: str) -> dict[str, str]:
@@ -70,11 +66,13 @@ def _blob_service():
 
 
 def _normalize_text(value: object) -> str:
+    import re
     text = str(value or "").lower()
     return re.sub(r"\s+", " ", text).strip()
 
 
 def _extract_present_skills(text: str) -> list[str]:
+    import re
     present: list[str] = []
     for skill in SKILL_LEXICON:
         pattern = rf"(^|[^a-z0-9]){re.escape(skill)}([^a-z0-9]|$)"
@@ -216,6 +214,8 @@ async def _handle_run_analysis(req: func.HttpRequest, trace_id: str, admin: dict
 
 
 async def _handle_notify_application(req: func.HttpRequest, trace_id: str, admin: dict, application_id: str) -> func.HttpResponse:
+    from urllib import error as url_error
+    from urllib import request as url_request
     if not application_id:
         return error_response(error_type="validation", message="application_id is required.", trace_id=trace_id, req=req, status_code=400)
     store = get_careers_store()

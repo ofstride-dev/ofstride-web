@@ -7,7 +7,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["get", "post", "options"],
-      "route": "admin-careers"
+      "route": "admin-careers/{*path}"
     },
     {
       "type": "http",
