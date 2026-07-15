@@ -214,8 +214,8 @@ SUPABASE_SERVICE_KEY=your-service-role-key
 
 # Azure Blob Storage (required for JD and resume file uploads)
 CAREERS_BLOB_CONNECTION_STRING=DefaultEndpointsProtocol=https;AccountName=...;AccountKey=...;EndpointSuffix=core.windows.net
-CAREERS_JD_BLOB_CONTAINER=careers-jd
-CAREERS_BLOB_CONTAINER=resumes
+CAREERS_JD_BLOB_CONTAINER=careers-jd-container
+CAREERS_BLOB_CONTAINER=careers-resume-container
 ```
 
 ### For the Frontend (set in SWA Environment Variables):
@@ -230,7 +230,7 @@ VITE_CAREER_API_URL=https://func-ofs-carrer-001.azurewebsites.net/api
 ## 11. Data Architecture
 
 ### Job Descriptions (JDs)
-1. **Admin saves JD** via "Save Job" button → JD markdown stored in **both** Supabase (`careers_jobs.jd_markdown`) and Azure Blob (`careers-jd/jd/{job_id}.md`)
+1. **Admin saves JD** via "Save Job" button → JD markdown stored in **both** Supabase (`careers_jobs.jd_markdown`) and Azure Blob (`careers-jd-container/jd/{job_id}.md`)
 2. **Admin uploads JD file** → File stored in Azure Blob → reference stored in Supabase
 3. **Jobseeker sees jobs** → Fetched from `/api/jobs` endpoint → reads from Supabase
 

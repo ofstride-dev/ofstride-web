@@ -65,7 +65,7 @@ def _get_blob_client(blob_path: str):
             "Ensure requirements.txt is built during deployment."
         ) from exc
     connection_string = (os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip()
-    container_name = (os.getenv("CAREERS_BLOB_CONTAINER") or "resumes").strip()
+    container_name = (os.getenv("CAREERS_BLOB_CONTAINER") or "careers-resume-container").strip()
     if not connection_string:
         return None
 

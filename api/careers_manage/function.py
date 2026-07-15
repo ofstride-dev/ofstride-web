@@ -99,7 +99,7 @@ def _blob_persist_jd(*, job_id: str, jd_content: str) -> None:
         if svc is None:
             _mgmt_logger.info("Blob persistence skipped (blob not configured) for job %s", job_id)
             return
-        container = (os.getenv("CAREERS_JD_BLOB_CONTAINER") or "careers-jd").strip()
+        container = (os.getenv("CAREERS_JD_BLOB_CONTAINER") or "careers-jd-container").strip()
         blob_path = f"jd/{job_id}.md"
         blob_client = svc.get_blob_client(container=container, blob=blob_path)
         blob_client.upload_blob(jd_content.encode("utf-8"), overwrite=True)
@@ -443,7 +443,7 @@ async def _handle_publish_from_upload(req: func.HttpRequest, trace_id: str, admi
         return error_response(error_type="validation", message="Request body must be a JSON object.", trace_id=trace_id, req=req, status_code=400)
     title = str(body.get("title", "")).strip()
     blob_path = str(body.get("blob_path", "")).strip()
-    container = str(body.get("blob_container", "")).strip() or (os.getenv("CAREERS_JD_BLOB_CONTAINER") or "careers-jd").strip()
+    container = str(body.get("blob_container", "")).strip() or (os.getenv("CAREERS_JD_BLOB_CONTAINER") or "careers-jd-container").strip()
     status = str(body.get("status", "draft")).strip().lower()
     if not title or not blob_path:
         return error_response(error_type="validation", message="title and blob_path are required.", trace_id=trace_id, req=req, status_code=400)
