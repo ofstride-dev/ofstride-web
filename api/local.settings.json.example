@@ -47,6 +47,18 @@
     "ADMIN_API_KEY": "",
     "ADMIN_ALLOW_AUTHENTICATED": "false",
     "ENTRA_EMPLOYER_GROUP_IDS": "",
-    "ENTRA_ADMIN_GROUP_IDS": ""
+    "ENTRA_ADMIN_GROUP_IDS": "",
+
+    "SUPABASE_URL": "",
+    "SUPABASE_SERVICE_KEY": "",
+    "SUPABASE_JWT_SECRET": "",
+    "SUPABASE_AUTH_AUDIENCE": "authenticated",
+    "ADMIN_ALLOWED_ROLES": "admin,employer",
+
+    "CAREERS_BLOB_CONNECTION_STRING": "",
+    "CAREERS_JD_BLOB_CONTAINER": "careers-jd",
+    "CAREERS_RESUME_BLOB_CONTAINER": "careers-resumes",
+    "CAREERS_HR_EMAIL": "hr@ofstrideservices.com",
+    "CAREERS_HR_WEBHOOK_URL": ""
   }
 }

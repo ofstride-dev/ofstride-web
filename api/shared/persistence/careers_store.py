@@ -370,7 +370,7 @@ class CareersSQLiteStore:
                             created_by,
                             created_at,
                             updated_at
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?)
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?)
                         """,
                         (
                             final_job_id,
@@ -858,6 +858,36 @@ class CareersSQLiteStore:
 
 _careers_store = CareersSQLiteStore()
 
+# ── Store selector: prefer Supabase, fall back to SQLite ──────────────
+# This allows all existing imports of get_careers_store() to automatically
+# use Supabase when configured, without changing any function.py files.
 
-def get_careers_store() -> CareersSQLiteStore:
-    return _careers_store
+_active_store = None
+
+
+def get_careers_store():
+    """Return the best available careers store.
+
+    Priority:
+      1. Supabase store (if SUPABASE_URL + SUPABASE_SERVICE_KEY are set)
+      2. SQLite store (fallback for local dev / unconfigured environments)
+    """
+    global _active_store
+    if _active_store is not None:
+        return _active_store
+
+    # Try Supabase first
+    try:
+        from persistence.careers_supabase_store import get_careers_supabase_store
+        supabase_store = get_careers_supabase_store()
+        if supabase_store.is_available:
+            _active_store = supabase_store
+            _store_logger.info("Using Supabase careers store.")
+            return _active_store
+    except Exception as exc:
+        _store_logger.warning("Supabase store init failed, falling back to SQLite: %s", exc)
+
+    # Fall back to SQLite
+    _active_store = _careers_store
+    _store_logger.info("Using SQLite careers store (fallback).")
+    return _active_store

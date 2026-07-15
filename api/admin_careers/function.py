@@ -298,14 +298,19 @@ async def _handle_save_job(req: func.HttpRequest, trace_id: str, admin: dict) ->
     if status not in ALLOWED_JOB_STATUSES:
         return error_response(error_type="validation", message="status must be one of: draft, active, archived", trace_id=trace_id, req=req, status_code=400)
     store = get_careers_store()
-    saved = store.upsert_job(
-        job_id=str(body.get("id", "")).strip() or None, title=title,
-        department=str(body.get("department", "")).strip() or None, location=str(body.get("location", "")).strip() or None,
-        employment_type=str(body.get("employment_type", "")).strip() or None,
-        jd_markdown=jd_markdown, jd_raw_text=jd_raw_text,
-        jd_blob_path=str(body.get("jd_blob_path", "")).strip() or None, jd_blob_container=str(body.get("jd_blob_container", "")).strip() or None,
-        status=status, created_by=admin.get("user_name"),
-    )
+    if not store.is_available:
+        return error_response(error_type="infra", message="Careers store unavailable.", trace_id=trace_id, req=req, status_code=503)
+    try:
+        saved = store.upsert_job(
+            job_id=str(body.get("id", "")).strip() or None, title=title,
+            department=str(body.get("department", "")).strip() or None, location=str(body.get("location", "")).strip() or None,
+            employment_type=str(body.get("employment_type", "")).strip() or None,
+            jd_markdown=jd_markdown, jd_raw_text=jd_raw_text,
+            jd_blob_path=str(body.get("jd_blob_path", "")).strip() or None, jd_blob_container=str(body.get("jd_blob_container", "")).strip() or None,
+            status=status, created_by=admin.get("user_name"),
+        )
+    except Exception as exc:
+        return error_response(error_type="infra", message="Failed to save job due to a store error.", trace_id=trace_id, req=req, status_code=500, details={"reason": str(exc)})
     if not saved:
         return error_response(error_type="infra", message="Failed to save job.", trace_id=trace_id, req=req, status_code=500)
     store.log_admin_action(admin_user_id=admin["user_id"], action_type="upsert_job", entity_type="job", entity_id=str(saved.get("id") or ""), action_detail=f"status={saved.get('status', '')}")
@@ -379,13 +384,16 @@ async def _handle_publish_from_upload(req: func.HttpRequest, trace_id: str, admi
     store = get_careers_store()
     if not store.is_available:
         return error_response(error_type="infra", message="Careers store unavailable.", trace_id=trace_id, req=req, status_code=503)
-    saved = store.upsert_job(
-        job_id=str(body.get("id", "")).strip() or None, title=title,
-        department=str(body.get("department", "")).strip() or None, location=str(body.get("location", "")).strip() or None,
-        employment_type=str(body.get("employment_type", "")).strip() or None,
-        jd_markdown=jd_text, jd_raw_text=jd_text, jd_blob_path=blob_path, jd_blob_container=container,
-        status=status, created_by=admin.get("user_name"),
-    )
+    try:
+        saved = store.upsert_job(
+            job_id=str(body.get("id", "")).strip() or None, title=title,
+            department=str(body.get("department", "")).strip() or None, location=str(body.get("location", "")).strip() or None,
+            employment_type=str(body.get("employment_type", "")).strip() or None,
+            jd_markdown=jd_text, jd_raw_text=jd_text, jd_blob_path=blob_path, jd_blob_container=container,
+            status=status, created_by=admin.get("user_name"),
+        )
+    except Exception as exc:
+        return error_response(error_type="infra", message="Failed to publish uploaded JD due to a store error.", trace_id=trace_id, req=req, status_code=500, details={"reason": str(exc)})
     if not saved:
         return error_response(error_type="infra", message="Failed to publish uploaded JD.", trace_id=trace_id, req=req, status_code=500)
     store.log_admin_action(admin_user_id=admin["user_id"], action_type="publish_job_from_upload", entity_type="job", entity_id=str(saved.get("id") or ""), action_detail=f"container={container};path={blob_path};status={status}")

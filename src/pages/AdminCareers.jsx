@@ -43,7 +43,6 @@ function AdminCareers() {
     employment_type: "",
     status: "draft",
     jd_markdown: "",
-    jd_raw_text: "",
   });
   const [savingJob, setSavingJob] = useState(false);
   const [jobMessage, setJobMessage] = useState("");
@@ -164,7 +163,6 @@ function AdminCareers() {
       employment_type: String(job.employment_type || ""),
       status: String(job.status || "draft"),
       jd_markdown: String(job.jd_markdown || ""),
-      jd_raw_text: String(job.jd_raw_text || ""),
     });
   };
 
@@ -181,7 +179,6 @@ function AdminCareers() {
         employment_type: jobForm.employment_type || undefined,
         status: jobForm.status,
         jd_markdown: jobForm.jd_markdown,
-        jd_raw_text: jobForm.jd_raw_text || jobForm.jd_markdown,
       });
       setJobMessage("Job profile saved successfully.");
       await loadJobs();
@@ -404,76 +401,110 @@ function AdminCareers() {
           <section className="bg-white rounded-xl shadow-sm p-4 xl:col-span-1">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-primary">Job Profiles (JD)</h2>
-              <button className="text-sm text-secondary" onClick={loadJobs}>Refresh</button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  className="text-xs text-secondary border border-slate-200 rounded-lg px-2 py-1"
+                  onClick={() => setJobForm({ id: "", title: "", department: "", location: "", employment_type: "", status: "draft", jd_markdown: "" })}
+                >
+                  + New
+                </button>
+                <button className="text-sm text-secondary" onClick={loadJobs}>Refresh</button>
+              </div>
             </div>
 
             <div className="space-y-2 max-h-56 overflow-auto mb-4 pr-1">
               {jobs.map((job) => (
                 <button
                   key={String(job.id)}
-                  className="w-full text-left border rounded-lg px-3 py-2 border-slate-200 hover:border-secondary"
+                  className={`w-full text-left border rounded-lg px-3 py-2 ${jobForm.id === String(job.id) ? "border-secondary bg-blue-50" : "border-slate-200 hover:border-secondary"}`}
                   onClick={() => onPickJob(job)}
                 >
                   <div className="font-medium text-primary">{String(job.title || "Untitled")}</div>
-                  <div className="text-xs text-muted">{String(job.status || "draft")}</div>
+                  <div className="text-xs text-muted">
+                    {String(job.department || "")} {job.department && job.location ? "•" : ""} {String(job.location || "")} • {String(job.status || "draft")}
+                  </div>
                 </button>
               ))}
               {jobs.length === 0 && <p className="text-sm text-muted">No jobs created yet.</p>}
             </div>
 
             <form onSubmit={onSaveJob} className="space-y-3">
-              <input
-                type="text"
-                placeholder="Job title"
-                value={jobForm.title}
-                onChange={(e) => setJobForm((prev) => ({ ...prev, title: e.target.value }))}
-                className="w-full px-3 py-2 rounded-lg border border-slate-200"
-                required
-              />
-              <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-xs font-medium text-primary mb-1">Job Title *</label>
                 <input
                   type="text"
-                  placeholder="Department"
-                  value={jobForm.department}
-                  onChange={(e) => setJobForm((prev) => ({ ...prev, department: e.target.value }))}
+                  placeholder="e.g. Senior Financial Analyst"
+                  value={jobForm.title}
+                  onChange={(e) => setJobForm((prev) => ({ ...prev, title: e.target.value }))}
                   className="w-full px-3 py-2 rounded-lg border border-slate-200"
-                />
-                <input
-                  type="text"
-                  placeholder="Location"
-                  value={jobForm.location}
-                  onChange={(e) => setJobForm((prev) => ({ ...prev, location: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200"
+                  required
                 />
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="text"
-                  placeholder="Employment type"
-                  value={jobForm.employment_type}
-                  onChange={(e) => setJobForm((prev) => ({ ...prev, employment_type: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200"
-                />
-                <select
-                  value={jobForm.status}
-                  onChange={(e) => setJobForm((prev) => ({ ...prev, status: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white"
-                >
-                  <option value="draft">Draft</option>
-                  <option value="active">Active</option>
-                  <option value="archived">Archived</option>
-                </select>
+                <div>
+                  <label className="block text-xs font-medium text-primary mb-1">Department</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Finance"
+                    value={jobForm.department}
+                    onChange={(e) => setJobForm((prev) => ({ ...prev, department: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-primary mb-1">Location</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Mumbai, India"
+                    value={jobForm.location}
+                    onChange={(e) => setJobForm((prev) => ({ ...prev, location: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200"
+                  />
+                </div>
               </div>
-              <textarea
-                rows={8}
-                placeholder="JD markdown"
-                value={jobForm.jd_markdown}
-                onChange={(e) => setJobForm((prev) => ({ ...prev, jd_markdown: e.target.value }))}
-                className="w-full px-3 py-2 rounded-lg border border-slate-200"
-                required
-              />
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-medium text-primary mb-1">Employment Type</label>
+                  <select
+                    value={jobForm.employment_type}
+                    onChange={(e) => setJobForm((prev) => ({ ...prev, employment_type: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white"
+                  >
+                    <option value="">Select...</option>
+                    <option value="full-time">Full-time</option>
+                    <option value="part-time">Part-time</option>
+                    <option value="contract">Contract</option>
+                    <option value="internship">Internship</option>
+                    <option value="temporary">Temporary</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-primary mb-1">Status</label>
+                  <select
+                    value={jobForm.status}
+                    onChange={(e) => setJobForm((prev) => ({ ...prev, status: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white"
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="active">Active</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-primary mb-1">Job Description (Markdown) *</label>
+                <textarea
+                  rows={8}
+                  placeholder={"# Job Title\n\n## Responsibilities\n- ...\n\n## Requirements\n- ..."}
+                  value={jobForm.jd_markdown}
+                  onChange={(e) => setJobForm((prev) => ({ ...prev, jd_markdown: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 font-mono text-sm"
+                  required
+                />
+              </div>
               <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3">
-                <label className="block text-xs font-medium text-primary mb-2">Upload JD file to JD storage (.md or .txt)</label>
+                <label className="block text-xs font-medium text-primary mb-2">Or upload a JD file (.md or .txt)</label>
                 <input
                   type="file"
                   accept=".md,.txt,text/markdown,text/plain"
@@ -490,13 +521,15 @@ function AdminCareers() {
                   {uploadingJd ? "Uploading JD..." : "Upload JD & Publish Role"}
                 </button>
               </div>
-              <button disabled={savingJob} type="submit" className="px-3 py-2 rounded-lg bg-primary text-white text-sm">
-                {savingJob ? "Saving..." : "Save Job"}
-              </button>
-              <button disabled={cleaning} type="button" onClick={onCleanupDrafts} className="ml-2 px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
-                {cleaning ? "Cleaning..." : "Cleanup stale drafts"}
-              </button>
-              {jobMessage && <p className="text-xs text-muted">{jobMessage}</p>}
+              <div className="flex gap-2">
+                <button disabled={savingJob} type="submit" className="flex-1 px-3 py-2 rounded-lg bg-primary text-white text-sm">
+                  {savingJob ? "Saving..." : jobForm.id ? "Update Job" : "Save Job"}
+                </button>
+                <button disabled={cleaning} type="button" onClick={onCleanupDrafts} className="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white">
+                  {cleaning ? "Cleaning..." : "Cleanup Drafts"}
+                </button>
+              </div>
+              {jobMessage && <p className={`text-xs ${jobMessage.includes("success") ? "text-emerald-600" : "text-muted"}`}>{jobMessage}</p>}
             </form>
           </section>
 
