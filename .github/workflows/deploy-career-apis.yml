@@ -58,7 +58,7 @@ jobs:
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D79D86DAA64341A6AD251FEC74A6333C }}
 
       - name: Deploy to Azure Functions
-        uses: Azure/functions-action@v1.12.0
+        uses: Azure/functions-action@v1
         with:
           app-name: func-ofs-carrer-001
           package: __staged_careers
