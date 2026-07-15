@@ -51,7 +51,9 @@ class CareersSupabaseStore:
         self._available = bool(self._url and self._service_key)
         if not self._available:
             _logger.warning(
-                "CareersSupabaseStore unavailable: SUPABASE_URL or SUPABASE_SERVICE_KEY not set."
+                "CareersSupabaseStore unavailable: SUPABASE_URL or SUPABASE_SERVICE_KEY not set. "
+                "SUPABASE_SERVICE_KEY must be the Supabase service_role key (not SUPABASE_JWT_SECRET). "
+                "Get it from Supabase Dashboard > Settings > API > service_role key."
             )
 
     @property

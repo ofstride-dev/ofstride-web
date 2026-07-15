@@ -889,5 +889,5 @@ def get_careers_store():
 
     # Fall back to SQLite
     _active_store = _careers_store
-    _store_logger.info("Using SQLite careers store (fallback).")
+    _store_logger.info("Using SQLite careers store (fallback — Supabase unavailable: SUPABASE_SERVICE_KEY not configured).")
     return _active_store

@@ -38,6 +38,17 @@ jobs:
           cp -r api/shared __staged_careers/
           cp api/host.json __staged_careers/
           cp api/requirements.txt __staged_careers/
+          cp api/.python-version __staged_careers/ 2>/dev/null || true
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies locally (fallback for Oryx)
+        shell: bash
+        run: |
+          pip install -r api/requirements.txt --target="__staged_careers/.python_packages/lib/site-packages"
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -47,13 +58,9 @@ jobs:
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D79D86DAA64341A6AD251FEC74A6333C }}
 
       - name: Deploy to Azure Functions
-        uses: Azure/functions-action@v1
+        uses: Azure/functions-action@v1.12.0
         with:
           app-name: func-ofs-carrer-001
           package: __staged_careers
-          # Required for Python: triggers Oryx remote build so that
-          # `pip install -r requirements.txt` runs in the Azure-hosted
-          # Python environment during deployment. Without this, the zip
-          # is deployed as-is and dependencies (e.g. azure-storage-blob)
-          # are never installed, causing ModuleNotFoundError at runtime.
           scm-do-build-during-deployment: true
+
