@@ -90,6 +90,24 @@ def _blob_service():
     return BlobServiceClient.from_connection_string(conn)
 
 
+def _blob_persist_jd(*, job_id: str, jd_content: str) -> None:
+    """Persist JD markdown content to blob storage as backup.
+    This is a best-effort operation - failures are logged but not propagated.
+    """
+    try:
+        svc = _blob_service()
+        if svc is None:
+            _mgmt_logger.info("Blob persistence skipped (blob not configured) for job %s", job_id)
+            return
+        container = (os.getenv("CAREERS_JD_BLOB_CONTAINER") or "careers-jd").strip()
+        blob_path = f"jd/{job_id}.md"
+        blob_client = svc.get_blob_client(container=container, blob=blob_path)
+        blob_client.upload_blob(jd_content.encode("utf-8"), overwrite=True)
+        _mgmt_logger.info("JD content persisted to blob: %s/%s", container, blob_path)
+    except Exception as exc:
+        _mgmt_logger.warning("JD blob persistence failed for job %s: %s", job_id, exc)
+
+
 def _normalize_text(value: object) -> str:
     import re
     text = str(value or "").lower()
@@ -338,6 +356,10 @@ async def _handle_save_job(req: func.HttpRequest, trace_id: str, admin: dict) ->
         return error_response(error_type="infra", message="Failed to save job due to a store error.", trace_id=trace_id, req=req, status_code=500, details={"reason": str(exc)})
     if not saved:
         return error_response(error_type="infra", message="Failed to save job.", trace_id=trace_id, req=req, status_code=500)
+
+    # Also persist JD content to blob storage as backup, if blob is configured
+    _blob_persist_jd(job_id=str(saved.get("id", "")), jd_content=jd_markdown)
+
     store.log_admin_action(admin_user_id=admin["user_id"], action_type="upsert_job", entity_type="job", entity_id=str(saved.get("id") or ""), action_detail=f"status={saved.get('status', '')}")
     return ok_response(trace_id=trace_id, req=req, data=saved)
 

@@ -204,6 +204,41 @@ src/
 
 ---
 
+## 10. Required Environment Variables
+
+### For the Function App (set in Azure Portal > Configuration):
+```
+# Supabase (required for persistent data — without this, data falls back to SQLite and is LOST on restart)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_KEY=your-service-role-key
+
+# Azure Blob Storage (required for JD and resume file uploads)
+CAREERS_BLOB_CONNECTION_STRING=DefaultEndpointsProtocol=https;AccountName=...;AccountKey=...;EndpointSuffix=core.windows.net
+CAREERS_JD_BLOB_CONTAINER=careers-jd
+CAREERS_BLOB_CONTAINER=resumes
+```
+
+### For the Frontend (set in SWA Environment Variables):
+```
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_CAREER_API_URL=https://func-ofs-carrer-001.azurewebsites.net/api
+```
+
+---
+
+## 11. Data Architecture
+
+### Job Descriptions (JDs)
+1. **Admin saves JD** via "Save Job" button → JD markdown stored in **both** Supabase (`careers_jobs.jd_markdown`) and Azure Blob (`careers-jd/jd/{job_id}.md`)
+2. **Admin uploads JD file** → File stored in Azure Blob → reference stored in Supabase
+3. **Jobseeker sees jobs** → Fetched from `/api/jobs` endpoint → reads from Supabase
+
+### Resumes
+1. **Jobseeker uploads resume** → SAS URL generated → file uploaded directly to Azure Blob (`resumes/`) → reference stored in Supabase
+
+---
+
 ## 10. Common Pitfalls to Avoid
 
 1. **Never use `admin` as a standalone route** — Azure Functions reserves it

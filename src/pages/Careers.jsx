@@ -36,6 +36,18 @@ function Careers() {
   const [referenceId, setReferenceId] = useState("");
   const [expandedJobId, setExpandedJobId] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredJobs = useMemo(() => {
+    if (!searchQuery.trim()) return jobs;
+    const q = searchQuery.toLowerCase().trim();
+    return jobs.filter(
+      (job) =>
+        (job.title || "").toLowerCase().includes(q) ||
+        (job.department || "").toLowerCase().includes(q) ||
+        (job.location || "").toLowerCase().includes(q)
+    );
+  }, [jobs, searchQuery]);
 
   const loadJobs = useCallback(async () => {
     try {
@@ -241,11 +253,36 @@ function Careers() {
           <p className="mt-2 text-xs text-muted">No sign-in required for application submission at the moment.</p>
         </div>
 
+        <div className="mt-8 max-w-md">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search roles by title, department or location..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-3 pl-10 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none text-sm"
+            />
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className="grid lg:grid-cols-5 gap-8">
         <aside className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm h-fit">
           <h2 className="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
             <Briefcase className="w-5 h-5" /> Open Positions
-            {!jobsLoading && <span className="text-xs text-muted font-normal">({jobs.length} {jobs.length === 1 ? "role" : "roles"})</span>}
+            {!jobsLoading && <span className="text-xs text-muted font-normal">({filteredJobs.length} {filteredJobs.length === 1 ? "role" : "roles"})</span>}
           </h2>
 
           {jobsLoading && <p className="text-sm text-muted py-4 text-center">Loading jobs...</p>}
@@ -256,16 +293,16 @@ function Careers() {
             </div>
           )}
 
-          {!jobsLoading && !jobsError && jobs.length === 0 && (
+          {!jobsLoading && !jobsError && (searchQuery ? filteredJobs.length === 0 : jobs.length === 0) && (
             <div className="text-center py-8">
               <Users className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-              <p className="text-sm text-muted">No active jobs are published yet.</p>
+              <p className="text-sm text-muted">{searchQuery ? "No jobs match your search criteria." : "No active jobs are published yet."}</p>
               <p className="text-xs text-muted mt-1">Check back later for new opportunities.</p>
             </div>
           )}
 
           <div className="space-y-3 mt-2">
-            {jobs.map((job) => {
+            {filteredJobs.map((job) => {
               const isExpanded = expandedJobId === job.id;
               const metaParts = [job.department, job.location, job.employment_type].filter(Boolean);
               return (
