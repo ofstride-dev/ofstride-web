@@ -36,7 +36,7 @@ This is a **monorepo** with two deployable components:
 - `webhooks` — reserved by Azure Functions runtime
 - `api` — reserved prefix
 
-**Current safe pattern:** Use `careers/admin` as the route (not `admin-careers`), and pass sub-paths via `_path` query parameter.
+**Current safe pattern:** Use `careers/manage` as the route (not `careers/admin`), and pass sub-paths via `_path` query parameter.
 
 ---
 
@@ -92,7 +92,7 @@ Error responses:
 
 ### Naming Conventions
 - Function folders: `snake_case` (e.g., `careers_manage`, `careers_init_upload`)
-- Routes: `kebab-case` (e.g., `careers/admin`, `careers/init-upload`)
+- Routes: `kebab-case` (e.g., `careers/manage`, `careers/init-upload`)
 - Python files: `function.py` inside each function folder
 - API client functions in `api.ts`: `camelCase` (e.g., `adminSaveJob`, `adminListJobs`)
 

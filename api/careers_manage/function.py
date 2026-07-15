@@ -513,4 +513,4 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
         return await _handle_cleanup(req, trace_id, admin)
 
     # ── Fallback 404 ──────────────────────────────────────────────────────
-    return error_response(error_type="validation", message=f"Unknown careers/admin endpoint: {path}", trace_id=trace_id, req=req, status_code=404)
+    return error_response(error_type="validation", message=f"Unknown careers/manage endpoint: {path}", trace_id=trace_id, req=req, status_code=404)
