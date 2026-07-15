@@ -52,7 +52,13 @@ def _send_hr_notification(payload: dict[str, object]) -> tuple[bool, str | None]
 
 
 def _get_blob_client(blob_path: str):
-    from azure.storage.blob import BlobServiceClient  # lazy import
+    try:
+        from azure.storage.blob import BlobServiceClient  # lazy import
+    except ImportError as exc:
+        raise RuntimeError(
+            "azure-storage-blob SDK is not installed in the deployment. "
+            "Ensure requirements.txt is built during deployment."
+        ) from exc
     connection_string = (os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip()
     container_name = (os.getenv("CAREERS_BLOB_CONTAINER") or "resumes").strip()
     if not connection_string:
@@ -140,7 +146,17 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
         )
 
     blob_path = str(app.get("resume_blob_path", "")).strip()
-    blob_client = _get_blob_client(blob_path)
+    try:
+        blob_client = _get_blob_client(blob_path)
+    except Exception as exc:
+        return error_response(
+            error_type="infra",
+            message="Blob storage SDK is unavailable in the deployment.",
+            trace_id=trace_id,
+            req=req,
+            status_code=503,
+            details={"reason": str(exc)},
+        )
     if not blob_client:
         return error_response(
             error_type="infra",

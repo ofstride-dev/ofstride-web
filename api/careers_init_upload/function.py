@@ -34,7 +34,13 @@ def _parse_connection_string(raw: str) -> dict[str, str]:
 
 
 def _get_blob_config() -> tuple | None:
-    from azure.storage.blob import BlobServiceClient  # lazy import
+    try:
+        from azure.storage.blob import BlobServiceClient  # lazy import
+    except ImportError as exc:
+        raise RuntimeError(
+            "azure-storage-blob SDK is not installed in the deployment. "
+            "Ensure requirements.txt is built during deployment."
+        ) from exc
     connection_string = (os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip()
     container_name = (os.getenv("CAREERS_BLOB_CONTAINER") or "resumes").strip()
     if not connection_string:
@@ -169,7 +175,17 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
             status_code=400,
         )
 
-    blob_config = _get_blob_config()
+    try:
+        blob_config = _get_blob_config()
+    except Exception as exc:
+        return error_response(
+            error_type="infra",
+            message="Blob storage SDK is unavailable in the deployment.",
+            trace_id=trace_id,
+            req=req,
+            status_code=503,
+            details={"reason": str(exc)},
+        )
     if not blob_config:
         return error_response(
             error_type="infra",
@@ -189,7 +205,21 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
             status_code=503,
         )
 
-    if not store.get_active_job(job_id=job_id):
+    # ── Store calls wrapped in try/except for structured error responses ──
+
+    try:
+        active_job = store.get_active_job(job_id=job_id)
+    except Exception as exc:
+        return error_response(
+            error_type="infra",
+            message="Failed to verify job status.",
+            trace_id=trace_id,
+            req=req,
+            status_code=500,
+            details={"reason": str(exc)},
+        )
+
+    if not active_job:
         return error_response(
             error_type="validation",
             message="Job not found or not active.",
@@ -198,7 +228,19 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
             status_code=404,
         )
 
-    if store.has_recent_duplicate_application(job_id=job_id, email=email, window_days=30):
+    try:
+        is_duplicate = store.has_recent_duplicate_application(job_id=job_id, email=email, window_days=30)
+    except Exception as exc:
+        return error_response(
+            error_type="infra",
+            message="Failed to check for duplicate application.",
+            trace_id=trace_id,
+            req=req,
+            status_code=500,
+            details={"reason": str(exc)},
+        )
+
+    if is_duplicate:
         return error_response(
             error_type="validation",
             message="An application for this job was already submitted in the last 30 days.",
@@ -212,22 +254,33 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
     reference_id = f"OFS-{datetime.now(timezone.utc):%Y%m%d}-{uuid.uuid4().hex[:6].upper()}"
     blob_path = f"resumes/{job_id}/{application_id}{extension}"
 
-    created = store.create_application_draft(
-        application_id=application_id,
-        reference_id=reference_id,
-        job_id=job_id,
-        full_name=full_name,
-        email=email,
-        phone=phone,
-        linkedin_url=linkedin_url,
-        years_experience=years_experience,
-        cover_note=cover_note,
-        consent_accepted=consent_accepted,
-        resume_blob_path=blob_path,
-        resume_original_name=resume_original_name,
-        resume_content_type=resume_content_type,
-        resume_size_bytes=resume_size_bytes,
-    )
+    try:
+        created = store.create_application_draft(
+            application_id=application_id,
+            reference_id=reference_id,
+            job_id=job_id,
+            full_name=full_name,
+            email=email,
+            phone=phone,
+            linkedin_url=linkedin_url,
+            years_experience=years_experience,
+            cover_note=cover_note,
+            consent_accepted=consent_accepted,
+            resume_blob_path=blob_path,
+            resume_original_name=resume_original_name,
+            resume_content_type=resume_content_type,
+            resume_size_bytes=resume_size_bytes,
+        )
+    except Exception as exc:
+        return error_response(
+            error_type="infra",
+            message="Failed to create application draft due to a store error.",
+            trace_id=trace_id,
+            req=req,
+            status_code=500,
+            details={"reason": str(exc)},
+        )
+
     if not created:
         return error_response(
             error_type="infra",

@@ -51,3 +51,9 @@ jobs:
         with:
           app-name: func-ofs-carrer-001
           package: __staged_careers
+          # Required for Python: triggers Oryx remote build so that
+          # `pip install -r requirements.txt` runs in the Azure-hosted
+          # Python environment during deployment. Without this, the zip
+          # is deployed as-is and dependencies (e.g. azure-storage-blob)
+          # are never installed, causing ModuleNotFoundError at runtime.
+          scm-do-build-during-deployment: true

@@ -43,7 +43,13 @@ def _parse_connection_string(raw: str) -> dict[str, str]:
 
 
 def _blob_config(container_key: str) -> tuple | None:
-    from azure.storage.blob import BlobServiceClient  # deferred import
+    try:
+        from azure.storage.blob import BlobServiceClient  # deferred import
+    except ImportError as exc:
+        raise RuntimeError(
+            "azure-storage-blob SDK is not installed in the deployment. "
+            "Ensure requirements.txt is built during deployment."
+        ) from exc
     connection_string = (os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip()
     container_name = (os.getenv(container_key) or "").strip()
     if not connection_string or not container_name:
@@ -58,7 +64,13 @@ def _blob_config(container_key: str) -> tuple | None:
 
 
 def _blob_service():
-    from azure.storage.blob import BlobServiceClient  # deferred import
+    try:
+        from azure.storage.blob import BlobServiceClient  # deferred import
+    except ImportError as exc:
+        raise RuntimeError(
+            "azure-storage-blob SDK is not installed in the deployment. "
+            "Ensure requirements.txt is built during deployment."
+        ) from exc
     conn = (os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip()
     if not conn:
         return None
@@ -318,7 +330,17 @@ async def _handle_save_job(req: func.HttpRequest, trace_id: str, admin: dict) ->
 
 
 async def _handle_init_jd_upload(req: func.HttpRequest, trace_id: str) -> func.HttpResponse:
-    from azure.storage.blob import BlobSasPermissions, generate_blob_sas  # deferred import
+    try:
+        from azure.storage.blob import BlobSasPermissions, generate_blob_sas  # deferred import
+    except ImportError as exc:
+        return error_response(
+            error_type="infra",
+            message="Blob storage SDK is unavailable in the deployment.",
+            trace_id=trace_id,
+            req=req,
+            status_code=503,
+            details={"reason": str(exc)},
+        )
     try:
         body = req.get_json()
     except ValueError:
@@ -336,7 +358,17 @@ async def _handle_init_jd_upload(req: func.HttpRequest, trace_id: str) -> func.H
         return error_response(error_type="validation", message="Only .md or .txt JD files are supported.", trace_id=trace_id, req=req, status_code=400)
     if size_bytes <= 0 or size_bytes > MAX_JD_BYTES:
         return error_response(error_type="validation", message="JD file must be <= 2 MB.", trace_id=trace_id, req=req, status_code=400)
-    config = _blob_config("CAREERS_JD_BLOB_CONTAINER")
+    try:
+        config = _blob_config("CAREERS_JD_BLOB_CONTAINER")
+    except Exception as exc:
+        return error_response(
+            error_type="infra",
+            message="Blob storage SDK is unavailable in the deployment.",
+            trace_id=trace_id,
+            req=req,
+            status_code=503,
+            details={"reason": str(exc)},
+        )
     if not config:
         return error_response(error_type="infra", message="Blob storage is not configured for JD uploads.", trace_id=trace_id, req=req, status_code=503)
     service, container_name, account_name, account_key, shared_sas = config
@@ -357,7 +389,17 @@ async def _handle_init_jd_upload(req: func.HttpRequest, trace_id: str) -> func.H
 
 
 async def _handle_publish_from_upload(req: func.HttpRequest, trace_id: str, admin: dict) -> func.HttpResponse:
-    from azure.storage.blob import BlobServiceClient  # deferred import
+    try:
+        from azure.storage.blob import BlobServiceClient  # deferred import
+    except ImportError as exc:
+        return error_response(
+            error_type="infra",
+            message="Blob storage SDK is unavailable in the deployment.",
+            trace_id=trace_id,
+            req=req,
+            status_code=503,
+            details={"reason": str(exc)},
+        )
     try:
         body = req.get_json()
     except ValueError:
@@ -372,7 +414,17 @@ async def _handle_publish_from_upload(req: func.HttpRequest, trace_id: str, admi
         return error_response(error_type="validation", message="title and blob_path are required.", trace_id=trace_id, req=req, status_code=400)
     if status not in ALLOWED_JOB_STATUSES:
         return error_response(error_type="validation", message="status must be one of: draft, active, archived", trace_id=trace_id, req=req, status_code=400)
-    service = _blob_service()
+    try:
+        service = _blob_service()
+    except Exception as exc:
+        return error_response(
+            error_type="infra",
+            message="Blob storage SDK is unavailable in the deployment.",
+            trace_id=trace_id,
+            req=req,
+            status_code=503,
+            details={"reason": str(exc)},
+        )
     if not service:
         return error_response(error_type="infra", message="Blob storage is not configured.", trace_id=trace_id, req=req, status_code=503)
     try:
