@@ -648,22 +648,6 @@ function AdminCareers() {
               {jobs.filter((job) => String(job.status || "").toLowerCase() === "active").length === 0 && <p className="text-sm text-muted">No active jobs yet.</p>}
             </div>
 
-            <div className="mb-2 text-xs font-semibold text-slate-600">Other JDs</div>
-            <div className="space-y-2 max-h-40 overflow-auto mb-4 pr-1">
-              {jobs.filter((job) => String(job.status || "").toLowerCase() !== "active").map((job) => (
-                <button
-                  key={String(job.id)}
-                  className={`w-full text-left border rounded-lg px-3 py-2 ${selectedJobId === String(job.id) ? "border-secondary bg-blue-50" : "border-slate-200 hover:border-secondary"}`}
-                  onClick={() => onPickJob(job)}
-                >
-                  <div className="font-medium text-primary">{String(job.title || "Untitled")}</div>
-                  <div className="text-xs text-muted">
-                    {String(job.department || "")} {job.department && job.location ? "•" : ""} {String(job.location || "")} • {String(job.status || "draft")}
-                  </div>
-                </button>
-              ))}
-            </div>
-
             <div className="mb-3 flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
               <div>
                 <p className="text-xs font-medium text-slate-700">
