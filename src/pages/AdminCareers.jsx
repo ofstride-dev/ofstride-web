@@ -137,6 +137,7 @@ function AdminCareers() {
   const [autoApplyStatus, setAutoApplyStatus] = useState(false);
   const [jdPreview, setJdPreview] = useState(null);
   const [showManualActions, setShowManualActions] = useState(false);
+  const [showJobEditor, setShowJobEditor] = useState(false);
 
   // ── Auth ──────────────────────────────────────────────────────────────
 
@@ -267,6 +268,7 @@ function AdminCareers() {
       status: String(job.status || "draft"),
       jd_markdown: String(job.jd_markdown || ""),
     });
+    setShowJobEditor(false);
   };
 
   const onSaveJob = async (event) => {
@@ -598,7 +600,10 @@ function AdminCareers() {
                 <button
                   type="button"
                   className="text-xs text-secondary border border-slate-200 rounded-lg px-2 py-1"
-                  onClick={() => setJobForm({ id: "", title: "", department: "", location: "", employment_type: "", status: "draft", jd_markdown: "" })}
+                  onClick={() => {
+                    setJobForm({ id: "", title: "", department: "", location: "", employment_type: "", status: "draft", jd_markdown: "" });
+                    setShowJobEditor(true);
+                  }}
                 >
                   + New
                 </button>
@@ -622,6 +627,23 @@ function AdminCareers() {
               {jobs.length === 0 && <p className="text-sm text-muted">No jobs created yet.</p>}
             </div>
 
+            <div className="mb-3 flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+              <div>
+                <p className="text-xs font-medium text-slate-700">
+                  {jobForm.id ? `Selected JD: ${jobForm.title || "Untitled"}` : "No JD selected"}
+                </p>
+                <p className="text-xs text-muted">Edit only when needed; keep list and applications in focus.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowJobEditor((prev) => !prev)}
+                className="px-2 py-1 rounded border border-slate-300 text-xs bg-white"
+              >
+                {showJobEditor ? "Hide JD Form" : "Open JD Form"}
+              </button>
+            </div>
+
+            {showJobEditor && (
             <form onSubmit={onSaveJob} className="space-y-3">
               <div>
                 <label className="block text-xs font-medium text-primary mb-1">Job Title *</label>
@@ -736,6 +758,7 @@ function AdminCareers() {
               </div>
               {jobMessage && <p className={`text-xs ${jobMessage.includes("success") ? "text-emerald-600" : "text-muted"}`}>{jobMessage}</p>}
             </form>
+            )}
           </section>
 
           <section id="applications-panel" className="bg-white rounded-xl shadow-sm p-4 xl:col-span-1 scroll-mt-24">

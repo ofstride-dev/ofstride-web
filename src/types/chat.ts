@@ -170,6 +170,10 @@ export interface CareersCompleteResponse {
   application_id: string;
   reference_id: string;
   status: string;
+  applicant_notification?: {
+    sent: boolean;
+    error?: string | null;
+  };
   hr_notification?: {
     sent: boolean;
     error?: string | null;

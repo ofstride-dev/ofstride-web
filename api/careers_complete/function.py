@@ -56,6 +56,28 @@ def _send_hr_notification(payload: dict[str, object]) -> tuple[bool, str | None]
         return False, str(exc)
 
 
+def _send_applicant_ack(payload: dict[str, object]) -> tuple[bool, str | None]:
+    target = _hr_webhook_target()
+    if not target:
+        return False, "applicant_webhook_not_configured"
+
+    body = json.dumps(payload, ensure_ascii=True).encode("utf-8")
+    req = url_request.Request(
+        target,
+        data=body,
+        headers={"Content-Type": "application/json", "Accept": "application/json"},
+        method="POST",
+    )
+
+    try:
+        with url_request.urlopen(req, timeout=8) as response:
+            if 200 <= response.status < 300:
+                return True, None
+            return False, f"applicant_webhook_http_{response.status}"
+    except (url_error.HTTPError, url_error.URLError, TimeoutError) as exc:
+        return False, str(exc)
+
+
 def _get_blob_config():
     container_name = (
         (os.getenv("CAREERS_RESUME_BLOB_CONTAINER") or "").strip()
@@ -278,15 +300,36 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
         "applicant_email": str(app_after.get("email") or ""),
     }
 
+    applicant_payload = {
+        "type": "career_application_acknowledgement",
+        "source": "ofstride-website",
+        "submitted_at": str(app_after.get("submitted_at") or ""),
+        "notify_requester_email": str(app_after.get("email") or "").strip().lower(),
+        "notify_support_email": hr_email,
+        "application_id": application_id,
+        "reference_id": str(finalized.get("reference_id") or ""),
+        "job_id": str(app_after.get("job_id") or ""),
+        "job_title": str(job.get("title") or ""),
+        "candidate_name": str(app_after.get("full_name") or ""),
+        "application_status": "submitted",
+        "message_hint": "Your application has been received. Our team will review and get back with next steps.",
+    }
+
     hr_sent, hr_error = _send_hr_notification(hr_payload)
     if hr_sent:
         store.mark_hr_email_sent(application_id=application_id)
+
+    applicant_sent, applicant_error = _send_applicant_ack(applicant_payload)
 
     return ok_response(
         trace_id=trace_id,
         req=req,
         data={
             **finalized,
+            "applicant_notification": {
+                "sent": applicant_sent,
+                "error": applicant_error,
+            },
             "hr_notification": {
                 "sent": hr_sent,
                 "error": hr_error,

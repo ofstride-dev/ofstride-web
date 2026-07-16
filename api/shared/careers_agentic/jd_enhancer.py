@@ -5,7 +5,6 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-from core.llm_factory import get_llm_factory
 from core.settings import DATA_ROOT
 
 
@@ -153,8 +152,10 @@ async def enhance_jd_with_existing_llm(*, title: str, department: str | None, lo
         employment_type=employment_type,
         jd_markdown=jd_markdown,
     )
-    llm_factory = get_llm_factory()
     try:
+        # Lazy import keeps non-LLM routes healthy even if optional LLM deps are absent.
+        from core.llm_factory import get_llm_factory
+        llm_factory = get_llm_factory()
         selection = await llm_factory.get_healthy_llm_with_metadata()
         system_prompt = (
             "You are a senior hiring specialist. Rewrite job descriptions into a concise, structured, and practical format. "
