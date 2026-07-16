@@ -235,12 +235,16 @@ export async function listCareersJobs(params?: {
   department?: string;
   location?: string;
   employment_type?: string;
+  page?: number;
+  page_size?: number;
 }): Promise<CareersJobsResponse> {
   const query = new URLSearchParams({ _t: String(Date.now()) });
   if (params?.q) query.set("q", params.q);
   if (params?.department) query.set("department", params.department);
   if (params?.location) query.set("location", params.location);
   if (params?.employment_type) query.set("employment_type", params.employment_type);
+  if (typeof params?.page === "number") query.set("page", String(params.page));
+  if (typeof params?.page_size === "number") query.set("page_size", String(params.page_size));
   const response = await fetch(`${CAREER_API_BASE}/jobs?${query.toString()}`);
   return parseEnvelope<CareersJobsResponse>(response);
 }

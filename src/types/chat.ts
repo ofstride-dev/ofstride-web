@@ -122,6 +122,21 @@ export interface CareerJob {
 export interface CareersJobsResponse {
   jobs: CareerJob[];
   count: number;
+  total_items?: number;
+  page?: number;
+  page_size?: number;
+  total_pages?: number;
+  facets?: {
+    departments?: string[];
+    locations?: string[];
+    employment_types?: string[];
+  };
+  filters?: {
+    query?: string | null;
+    department?: string | null;
+    location?: string | null;
+    employment_type?: string | null;
+  };
 }
 
 export interface CareersInitUploadRequest {

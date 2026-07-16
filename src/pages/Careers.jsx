@@ -53,6 +53,10 @@ function Careers() {
   const [departmentFilter, setDepartmentFilter] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [employmentTypeFilter, setEmploymentTypeFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(12);
+  const [totalPages, setTotalPages] = useState(1);
+  const [facetData, setFacetData] = useState({ departments: [], locations: [], employment_types: [] });
 
   const [formData, setFormData] = useState({
     job_id: "",
@@ -71,11 +75,20 @@ function Careers() {
   const [referenceId, setReferenceId] = useState("");
   const [expandedJobId, setExpandedJobId] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const availableDepartments = useMemo(() => uniqueSorted(jobs.map((job) => job.department)), [jobs]);
-  const availableLocations = useMemo(() => uniqueSorted(jobs.map((job) => job.location)), [jobs]);
-  const availableEmploymentTypes = useMemo(() => uniqueSorted(jobs.map((job) => job.employment_type)), [jobs]);
+  const availableDepartments = useMemo(
+    () => uniqueSorted(facetData.departments.length ? facetData.departments : jobs.map((job) => job.department)),
+    [facetData.departments, jobs]
+  );
+  const availableLocations = useMemo(
+    () => uniqueSorted(facetData.locations.length ? facetData.locations : jobs.map((job) => job.location)),
+    [facetData.locations, jobs]
+  );
+  const availableEmploymentTypes = useMemo(
+    () => uniqueSorted(facetData.employment_types.length ? facetData.employment_types : jobs.map((job) => job.employment_type)),
+    [facetData.employment_types, jobs]
+  );
 
-  const loadJobs = async ({ query = "", department = "", location = "", employmentType = "" } = {}) => {
+  const loadJobs = async ({ query = "", department = "", location = "", employmentType = "", nextPage = 1 } = {}) => {
     try {
       setJobsLoading(true);
       setJobsError("");
@@ -84,9 +97,14 @@ function Careers() {
         ...(department ? { department } : {}),
         ...(location ? { location } : {}),
         ...(employmentType ? { employment_type: employmentType } : {}),
+        page: nextPage,
+        page_size: pageSize,
       });
       const nextJobs = Array.isArray(response.jobs) ? response.jobs : [];
       setJobs(nextJobs);
+      setPage(response.page || nextPage);
+      setTotalPages(response.total_pages || 1);
+      setFacetData(response.facets || { departments: [], locations: [], employment_types: [] });
       if (nextJobs.length > 0) {
         setExpandedJobId((prev) => (nextJobs.some((job) => job.id === prev) ? prev : nextJobs[0].id));
         setFormData((prev) => ({ ...prev, job_id: nextJobs.some((job) => job.id === prev.job_id) ? prev.job_id : nextJobs[0].id }));
@@ -111,6 +129,7 @@ function Careers() {
         department: departmentFilter,
         location: locationFilter,
         employmentType: employmentTypeFilter,
+        nextPage: 1,
       });
     }, 250);
     return () => {
@@ -123,6 +142,7 @@ function Careers() {
     setDepartmentFilter("");
     setLocationFilter("");
     setEmploymentTypeFilter("");
+    setPage(1);
   };
 
   const selectedJob = useMemo(
@@ -364,6 +384,30 @@ function Careers() {
           >
             Clear filters
           </button>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between gap-3 text-sm text-muted">
+          <span>
+            Page {page} of {totalPages}
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={jobsLoading || page <= 1}
+              onClick={() => loadJobs({ query: searchQuery, department: departmentFilter, location: locationFilter, employmentType: employmentTypeFilter, nextPage: page - 1 })}
+              className="px-3 py-2 rounded-lg border border-slate-200 bg-white disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              disabled={jobsLoading || page >= totalPages}
+              onClick={() => loadJobs({ query: searchQuery, department: departmentFilter, location: locationFilter, employmentType: employmentTypeFilter, nextPage: page + 1 })}
+              className="px-3 py-2 rounded-lg border border-slate-200 bg-white disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-5 gap-8">
