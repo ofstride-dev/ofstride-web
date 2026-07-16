@@ -14,7 +14,7 @@ if shared_path not in sys.path:
     sys.path.insert(0, shared_path)
 
 from core.api_contract import error_response, get_trace_id, ok_response, options_response
-from core.blob_rest import blob_config_with_reason, get_blob_properties, resolve_blob_connection_string, upload_blob
+from core.blob_rest import get_blob_properties, resolve_blob_config_with_reason, upload_blob
 from persistence.careers_store import get_careers_store
 from security.rate_limiter import enforce_rate_limit, get_client_key
 
@@ -57,16 +57,15 @@ def _send_hr_notification(payload: dict[str, object]) -> tuple[bool, str | None]
 
 
 def _get_blob_config():
-    connection_string = resolve_blob_connection_string()
     container_name = (
         (os.getenv("CAREERS_RESUME_BLOB_CONTAINER") or "").strip()
         or (os.getenv("CAREERS_BLOB_CONTAINER") or "").strip()
         or "careers-resumes"
     )
-    config, reason = blob_config_with_reason(connection_string)
+    config, diagnostics = resolve_blob_config_with_reason()
     if not config:
-        return None, reason
-    return (config, container_name), None
+        return None, diagnostics
+    return (config, container_name), diagnostics
 
 
 def _decode_base64_content(value: str) -> bytes:
@@ -161,14 +160,12 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
         )
 
     blob_path = str(app.get("resume_blob_path", "")).strip()
-    blob_config, config_reason = _get_blob_config()
+    blob_config, diagnostics = _get_blob_config()
     if not blob_config:
         details = {
-            "CAREERS_BLOB_CONNECTION_STRING_set": bool((os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip()),
-            "AzureWebJobsStorage_set": bool((os.getenv("AzureWebJobsStorage") or "").strip()),
             "CAREERS_RESUME_BLOB_CONTAINER": (os.getenv("CAREERS_RESUME_BLOB_CONTAINER") or "").strip() or None,
             "CAREERS_BLOB_CONTAINER": (os.getenv("CAREERS_BLOB_CONTAINER") or "").strip() or None,
-            "config_reason": config_reason,
+            **(diagnostics or {}),
         }
         return error_response(
             error_type="infra",

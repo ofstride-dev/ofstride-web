@@ -33,6 +33,43 @@ def resolve_blob_connection_string() -> str:
     )
 
 
+def resolve_blob_config_with_reason() -> tuple[BlobRestConfig | None, dict[str, object]]:
+    """Resolve blob config with robust fallback and diagnostics.
+
+    Attempts in order:
+    1) CAREERS_BLOB_CONNECTION_STRING
+    2) AzureWebJobsStorage
+    """
+    careers_raw = (os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip()
+    host_raw = (os.getenv("AzureWebJobsStorage") or "").strip()
+
+    diagnostics: dict[str, object] = {
+        "CAREERS_BLOB_CONNECTION_STRING_set": bool(careers_raw),
+        "AzureWebJobsStorage_set": bool(host_raw),
+        "selected_source": None,
+        "config_reason": None,
+        "careers_reason": None,
+        "host_reason": None,
+    }
+
+    if careers_raw:
+        cfg, reason = blob_config_with_reason(careers_raw)
+        diagnostics["careers_reason"] = reason
+        if cfg is not None:
+            diagnostics["selected_source"] = "CAREERS_BLOB_CONNECTION_STRING"
+            return cfg, diagnostics
+
+    if host_raw:
+        cfg, reason = blob_config_with_reason(host_raw)
+        diagnostics["host_reason"] = reason
+        if cfg is not None:
+            diagnostics["selected_source"] = "AzureWebJobsStorage"
+            return cfg, diagnostics
+
+    diagnostics["config_reason"] = diagnostics.get("careers_reason") or diagnostics.get("host_reason") or "missing_connection_string"
+    return None, diagnostics
+
+
 def parse_connection_string(raw: str) -> dict[str, str]:
     parts: dict[str, str] = {}
     for token in (raw or "").split(";"):
