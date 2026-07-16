@@ -24,6 +24,10 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
 
     store = get_careers_store()
     store_type = type(store).__name__
+    query = (req.params.get("q") or req.params.get("query") or "").strip() or None
+    department = (req.params.get("department") or "").strip() or None
+    location = (req.params.get("location") or "").strip() or None
+    employment_type = (req.params.get("employment_type") or req.params.get("employmentType") or "").strip() or None
     _logger.info(
         "Active careers store: %s (available=%s)",
         store_type,
@@ -33,7 +37,12 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
     # Wrap in try/except so a transient Supabase error doesn't return 500 to the jobseeker
     try:
         if store.is_available:
-            jobs = store.list_active_jobs()
+            jobs = store.list_active_jobs(
+                query=query,
+                department=department,
+                location=location,
+                employment_type=employment_type,
+            )
         else:
             jobs = []
             _logger.warning("Careers store unavailable — returning empty job list")
@@ -62,5 +71,11 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
             "count": len(jobs),
             "store_type": store_type,
             "store_available": store.is_available,
+            "filters": {
+                "query": query,
+                "department": department,
+                "location": location,
+                "employment_type": employment_type,
+            },
         },
     )

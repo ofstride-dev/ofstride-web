@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Briefcase, CheckCircle2, ChevronDown, ChevronRight, FileText, ShieldCheck, UploadCloud, Users } from "lucide-react";
 import {
   completeCareersUpload,
@@ -41,10 +41,18 @@ function readFileAsBase64(file) {
   });
 }
 
+function uniqueSorted(values) {
+  return Array.from(new Set(values.filter(Boolean).map((value) => String(value).trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+}
+
 function Careers() {
   const [jobs, setJobs] = useState([]);
   const [jobsLoading, setJobsLoading] = useState(true);
   const [jobsError, setJobsError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("");
+  const [locationFilter, setLocationFilter] = useState("");
+  const [employmentTypeFilter, setEmploymentTypeFilter] = useState("");
 
   const [formData, setFormData] = useState({
     job_id: "",
@@ -63,33 +71,27 @@ function Careers() {
   const [referenceId, setReferenceId] = useState("");
   const [expandedJobId, setExpandedJobId] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const availableDepartments = useMemo(() => uniqueSorted(jobs.map((job) => job.department)), [jobs]);
+  const availableLocations = useMemo(() => uniqueSorted(jobs.map((job) => job.location)), [jobs]);
+  const availableEmploymentTypes = useMemo(() => uniqueSorted(jobs.map((job) => job.employment_type)), [jobs]);
 
-  const filteredJobs = useMemo(() => {
-    if (!searchQuery.trim()) return jobs;
-    const q = searchQuery.toLowerCase().trim();
-    return jobs.filter(
-      (job) =>
-        (job.title || "").toLowerCase().includes(q) ||
-        (job.department || "").toLowerCase().includes(q) ||
-        (job.location || "").toLowerCase().includes(q)
-    );
-  }, [jobs, searchQuery]);
-
-  const loadJobs = useCallback(async () => {
+  const loadJobs = async ({ query = "", department = "", location = "", employmentType = "" } = {}) => {
     try {
       setJobsLoading(true);
       setJobsError("");
-      const response = await listCareersJobs();
+      const response = await listCareersJobs({
+        ...(query.trim() ? { q: query.trim() } : {}),
+        ...(department ? { department } : {}),
+        ...(location ? { location } : {}),
+        ...(employmentType ? { employment_type: employmentType } : {}),
+      });
       const nextJobs = Array.isArray(response.jobs) ? response.jobs : [];
       setJobs(nextJobs);
-      // Auto-expand first job if none expanded yet
       if (nextJobs.length > 0) {
-        setExpandedJobId((prev) => prev || nextJobs[0].id);
-        setFormData((prev) => ({
-          ...prev,
-          job_id: prev.job_id || nextJobs[0].id,
-        }));
+        setExpandedJobId((prev) => (nextJobs.some((job) => job.id === prev) ? prev : nextJobs[0].id));
+        setFormData((prev) => ({ ...prev, job_id: nextJobs.some((job) => job.id === prev.job_id) ? prev.job_id : nextJobs[0].id }));
+      } else {
+        setExpandedJobId("");
       }
     } catch (error) {
       setJobsError(
@@ -100,15 +102,28 @@ function Careers() {
     } finally {
       setJobsLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
-    let mounted = true;
-    loadJobs().then(() => {});
+    const timer = window.setTimeout(() => {
+      loadJobs({
+        query: searchQuery,
+        department: departmentFilter,
+        location: locationFilter,
+        employmentType: employmentTypeFilter,
+      });
+    }, 250);
     return () => {
-      mounted = false;
+      window.clearTimeout(timer);
     };
-  }, [loadJobs]);
+  }, [searchQuery, departmentFilter, locationFilter, employmentTypeFilter]);
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setDepartmentFilter("");
+    setLocationFilter("");
+    setEmploymentTypeFilter("");
+  };
 
   const selectedJob = useMemo(
     () => jobs.find((job) => job.id === formData.job_id) ?? null,
@@ -311,11 +326,51 @@ function Careers() {
           </div>
         </div>
 
+        <div className="mt-4 grid gap-3 lg:grid-cols-4 sm:grid-cols-2">
+          <select
+            value={departmentFilter}
+            onChange={(e) => setDepartmentFilter(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm"
+          >
+            <option value="">All departments</option>
+            {availableDepartments.map((department) => (
+              <option key={department} value={department}>{department}</option>
+            ))}
+          </select>
+          <select
+            value={locationFilter}
+            onChange={(e) => setLocationFilter(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm"
+          >
+            <option value="">All locations</option>
+            {availableLocations.map((location) => (
+              <option key={location} value={location}>{location}</option>
+            ))}
+          </select>
+          <select
+            value={employmentTypeFilter}
+            onChange={(e) => setEmploymentTypeFilter(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm"
+          >
+            <option value="">All employment types</option>
+            {availableEmploymentTypes.map((employmentType) => (
+              <option key={employmentType} value={employmentType}>{employmentType}</option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm font-medium text-secondary hover:bg-blue-50"
+          >
+            Clear filters
+          </button>
+        </div>
+
         <div className="grid lg:grid-cols-5 gap-8">
         <aside className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm h-fit">
           <h2 className="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
             <Briefcase className="w-5 h-5" /> Open Positions
-            {!jobsLoading && <span className="text-xs text-muted font-normal">({filteredJobs.length} {filteredJobs.length === 1 ? "role" : "roles"})</span>}
+            {!jobsLoading && <span className="text-xs text-muted font-normal">({jobs.length} {jobs.length === 1 ? "role" : "roles"})</span>}
           </h2>
 
           {jobsLoading && <p className="text-sm text-muted py-4 text-center">Loading jobs...</p>}
@@ -326,7 +381,7 @@ function Careers() {
             </div>
           )}
 
-          {!jobsLoading && !jobsError && (searchQuery ? filteredJobs.length === 0 : jobs.length === 0) && (
+          {!jobsLoading && !jobsError && jobs.length === 0 && (
             <div className="text-center py-8">
               <Users className="w-10 h-10 text-slate-300 mx-auto mb-2" />
               <p className="text-sm text-muted">{searchQuery ? "No jobs match your search criteria." : "No active jobs are published yet."}</p>
@@ -335,9 +390,10 @@ function Careers() {
           )}
 
           <div className="space-y-3 mt-2">
-            {filteredJobs.map((job) => {
+            {jobs.map((job) => {
               const isExpanded = expandedJobId === job.id;
               const metaParts = [job.department, job.location, job.employment_type].filter(Boolean);
+              const jobDescription = job.jd_markdown || job.jd_raw_text;
               return (
                 <div
                   key={job.id}
@@ -370,7 +426,7 @@ function Careers() {
                     <div className="px-4 pb-4 border-t border-slate-100 pt-3">
                       <div className="bg-white border border-slate-200 rounded-lg p-3 text-xs text-text max-h-60 overflow-y-auto">
                         <pre className="whitespace-pre-wrap font-sans leading-relaxed">
-                          {job.jd_markdown || job.jd_raw_text || "No job details provided."}
+                          {jobDescription || "JD pending. Apply now and we will share the full role brief during screening."}
                         </pre>
                       </div>
                       <div className="mt-3 flex gap-2">

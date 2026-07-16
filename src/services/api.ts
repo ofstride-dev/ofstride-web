@@ -230,9 +230,18 @@ export async function notifyChatEnded(payload: {
   });
 }
 
-export async function listCareersJobs(): Promise<CareersJobsResponse> {
-  // Add cache-busting param to prevent stale data after cold restarts
-  const response = await fetch(`${CAREER_API_BASE}/jobs?_t=${Date.now()}`);
+export async function listCareersJobs(params?: {
+  q?: string;
+  department?: string;
+  location?: string;
+  employment_type?: string;
+}): Promise<CareersJobsResponse> {
+  const query = new URLSearchParams({ _t: String(Date.now()) });
+  if (params?.q) query.set("q", params.q);
+  if (params?.department) query.set("department", params.department);
+  if (params?.location) query.set("location", params.location);
+  if (params?.employment_type) query.set("employment_type", params.employment_type);
+  const response = await fetch(`${CAREER_API_BASE}/jobs?${query.toString()}`);
   return parseEnvelope<CareersJobsResponse>(response);
 }
 

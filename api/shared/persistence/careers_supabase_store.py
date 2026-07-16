@@ -111,9 +111,53 @@ class CareersSupabaseStore:
             _logger.error("Supabase connection error: %s", exc)
             raise
 
+    @staticmethod
+    def _job_matches_filters(
+        job: dict[str, Any],
+        *,
+        query: str | None = None,
+        department: str | None = None,
+        location: str | None = None,
+        employment_type: str | None = None,
+    ) -> bool:
+        def norm(value: object) -> str:
+            return str(value or "").strip().lower()
+
+        q = norm(query)
+        if q:
+            haystack = " ".join(
+                [
+                    norm(job.get("title")),
+                    norm(job.get("department")),
+                    norm(job.get("location")),
+                    norm(job.get("employment_type")),
+                    norm(job.get("jd_markdown")),
+                    norm(job.get("jd_raw_text")),
+                ]
+            )
+            if q not in haystack:
+                return False
+
+        filters = (
+            (department, job.get("department")),
+            (location, job.get("location")),
+            (employment_type, job.get("employment_type")),
+        )
+        for expected, actual in filters:
+            if norm(expected) and norm(expected) != norm(actual):
+                return False
+        return True
+
     # ── Jobs ───────────────────────────────────────────────────────────
 
-    def list_active_jobs(self) -> list[dict[str, Any]]:
+    def list_active_jobs(
+        self,
+        *,
+        query: str | None = None,
+        department: str | None = None,
+        location: str | None = None,
+        employment_type: str | None = None,
+    ) -> list[dict[str, Any]]:
         if not self._available:
             return []
         params = {
@@ -122,7 +166,20 @@ class CareersSupabaseStore:
             "order": "updated_at.desc",
         }
         result = self._request("GET", "careers_jobs", params=params)
-        return result if isinstance(result, list) else []
+        jobs = result if isinstance(result, list) else []
+        if not any([query, department, location, employment_type]):
+            return jobs
+        return [
+            job
+            for job in jobs
+            if self._job_matches_filters(
+                job,
+                query=query,
+                department=department,
+                location=location,
+                employment_type=employment_type,
+            )
+        ]
 
     def list_jobs(self, *, include_inactive: bool = True) -> list[dict[str, Any]]:
         if not self._available:

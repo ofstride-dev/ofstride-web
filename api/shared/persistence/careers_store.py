@@ -236,7 +236,14 @@ class CareersSQLiteStore:
             return None
         return {"id": row["id"], "title": row["title"], "status": row["status"]}
 
-    def list_active_jobs(self) -> list[dict[str, Any]]:
+    def list_active_jobs(
+        self,
+        *,
+        query: str | None = None,
+        department: str | None = None,
+        location: str | None = None,
+        employment_type: str | None = None,
+    ) -> list[dict[str, Any]]:
         if not self._available:
             return []
 
@@ -262,7 +269,38 @@ class CareersSQLiteStore:
                     """
                 ).fetchall()
 
-        return [{k: row[k] for k in row.keys()} for row in rows]
+        jobs = [{k: row[k] for k in row.keys()} for row in rows]
+        if not any([query, department, location, employment_type]):
+            return jobs
+
+        def norm(value: object) -> str:
+            return str(value or "").strip().lower()
+
+        q = norm(query)
+        filtered: list[dict[str, Any]] = []
+        for job in jobs:
+            if q:
+                haystack = " ".join(
+                    [
+                        norm(job.get("title")),
+                        norm(job.get("department")),
+                        norm(job.get("location")),
+                        norm(job.get("employment_type")),
+                        norm(job.get("jd_markdown")),
+                        norm(job.get("jd_raw_text")),
+                    ]
+                )
+                if q not in haystack:
+                    continue
+            if department and norm(department) != norm(job.get("department")):
+                continue
+            if location and norm(location) != norm(job.get("location")):
+                continue
+            if employment_type and norm(employment_type) != norm(job.get("employment_type")):
+                continue
+            filtered.append(job)
+
+        return filtered
 
     def list_jobs(self, *, include_inactive: bool = True) -> list[dict[str, Any]]:
         if not self._available:
