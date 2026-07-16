@@ -116,6 +116,7 @@ function AdminCareers() {
   const [detail, setDetail] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [jobs, setJobs] = useState([]);
+  const [selectedJobId, setSelectedJobId] = useState("");
   const [jobForm, setJobForm] = useState({
     id: "",
     title: "",
@@ -180,11 +181,12 @@ function AdminCareers() {
 
   // ── Data Loading ──────────────────────────────────────────────────────
 
-  const loadList = async () => {
+  const loadList = async (jobIdOverride) => {
     setLoading(true);
     setError("");
     try {
-      const data = await adminListApplications({ limit: 100 });
+      const effectiveJobId = String(jobIdOverride || selectedJobId || "").trim();
+      const data = await adminListApplications({ limit: 100, job_id: effectiveJobId || undefined });
       setItems(Array.isArray(data.items) ? data.items : []);
       if (!selectedId && data.items?.[0]?.id) {
         setSelectedId(String(data.items[0].id));
@@ -203,7 +205,21 @@ function AdminCareers() {
   const loadJobs = async () => {
     try {
       const data = await adminListJobs();
-      setJobs(Array.isArray(data.items) ? data.items : []);
+      const allJobs = Array.isArray(data.items) ? data.items : [];
+      const sorted = [...allJobs].sort((a, b) => {
+        const aActive = String(a.status || "").toLowerCase() === "active" ? 0 : 1;
+        const bActive = String(b.status || "").toLowerCase() === "active" ? 0 : 1;
+        return aActive - bActive;
+      });
+      setJobs(sorted);
+      if (!selectedJobId && sorted.length > 0) {
+        const firstActive = sorted.find((job) => String(job.status || "").toLowerCase() === "active") || sorted[0];
+        const jobId = String(firstActive.id || "");
+        if (jobId) {
+          setSelectedJobId(jobId);
+          await loadList(jobId);
+        }
+      }
     } catch {
       // Keep UX resilient
     }
@@ -259,8 +275,10 @@ function AdminCareers() {
   };
 
   const onPickJob = (job) => {
+    const nextJobId = String(job.id || "");
+    setSelectedJobId(nextJobId);
     setJobForm({
-      id: String(job.id || ""),
+      id: nextJobId,
       title: String(job.title || ""),
       department: String(job.department || ""),
       location: String(job.location || ""),
@@ -269,6 +287,8 @@ function AdminCareers() {
       jd_markdown: String(job.jd_markdown || ""),
     });
     setShowJobEditor(false);
+    setSelectedId("");
+    loadList(nextJobId);
   };
 
   const onSaveJob = async (event) => {
@@ -287,7 +307,7 @@ function AdminCareers() {
       });
       setJobMessage("Job profile saved successfully.");
       await loadJobs();
-      await loadList();
+      await loadList(selectedJobId);
     } catch (e) {
       if (e instanceof ApiClientError) {
         setJobMessage(e.message);
@@ -347,7 +367,7 @@ function AdminCareers() {
       setJobMessage("JD uploaded to JD container and role published.");
       setJdFile(null);
       await loadJobs();
-      await loadList();
+      await loadList(selectedJobId);
     } catch (e) {
       if (e instanceof ApiClientError) {
         setJobMessage(e.message);
@@ -611,11 +631,12 @@ function AdminCareers() {
               </div>
             </div>
 
-            <div className="space-y-2 max-h-56 overflow-auto mb-4 pr-1">
-              {jobs.map((job) => (
+            <div className="mb-2 text-xs font-semibold text-emerald-700">Active JDs</div>
+            <div className="space-y-2 max-h-56 overflow-auto mb-3 pr-1">
+              {jobs.filter((job) => String(job.status || "").toLowerCase() === "active").map((job) => (
                 <button
                   key={String(job.id)}
-                  className={`w-full text-left border rounded-lg px-3 py-2 ${jobForm.id === String(job.id) ? "border-secondary bg-blue-50" : "border-slate-200 hover:border-secondary"}`}
+                  className={`w-full text-left border rounded-lg px-3 py-2 ${selectedJobId === String(job.id) ? "border-secondary bg-blue-50" : "border-slate-200 hover:border-secondary"}`}
                   onClick={() => onPickJob(job)}
                 >
                   <div className="font-medium text-primary">{String(job.title || "Untitled")}</div>
@@ -624,7 +645,23 @@ function AdminCareers() {
                   </div>
                 </button>
               ))}
-              {jobs.length === 0 && <p className="text-sm text-muted">No jobs created yet.</p>}
+              {jobs.filter((job) => String(job.status || "").toLowerCase() === "active").length === 0 && <p className="text-sm text-muted">No active jobs yet.</p>}
+            </div>
+
+            <div className="mb-2 text-xs font-semibold text-slate-600">Other JDs</div>
+            <div className="space-y-2 max-h-40 overflow-auto mb-4 pr-1">
+              {jobs.filter((job) => String(job.status || "").toLowerCase() !== "active").map((job) => (
+                <button
+                  key={String(job.id)}
+                  className={`w-full text-left border rounded-lg px-3 py-2 ${selectedJobId === String(job.id) ? "border-secondary bg-blue-50" : "border-slate-200 hover:border-secondary"}`}
+                  onClick={() => onPickJob(job)}
+                >
+                  <div className="font-medium text-primary">{String(job.title || "Untitled")}</div>
+                  <div className="text-xs text-muted">
+                    {String(job.department || "")} {job.department && job.location ? "•" : ""} {String(job.location || "")} • {String(job.status || "draft")}
+                  </div>
+                </button>
+              ))}
             </div>
 
             <div className="mb-3 flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
@@ -763,8 +800,13 @@ function AdminCareers() {
 
           <section id="applications-panel" className="bg-white rounded-xl shadow-sm p-4 xl:col-span-1 scroll-mt-24">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-primary">Applications</h2>
-              <button className="text-sm text-secondary" onClick={loadList}>Refresh</button>
+              <div>
+                <h2 className="font-semibold text-primary">Applied Resumes</h2>
+                <p className="text-xs text-muted">
+                  {selectedJobId ? `Showing applications for selected JD (${selectedJobId}).` : "Select a JD to view related applications."}
+                </p>
+              </div>
+              <button className="text-sm text-secondary" onClick={() => loadList(selectedJobId)}>Refresh</button>
             </div>
             {loading ? (
               <p className="text-sm text-muted">Loading...</p>

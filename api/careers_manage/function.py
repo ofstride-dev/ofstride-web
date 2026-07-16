@@ -267,23 +267,43 @@ async def _handle_run_analysis(req: func.HttpRequest, trace_id: str, admin: dict
     except ValueError:
         auto_apply = False
 
-    job = store.get_job_by_id(job_id=str(detail.get("job_id") or "")) or {}
-    agentic = analyze_application(job=job, application=detail)
-    matched_skills = agentic["matched_skills"]
-    missing_skills = agentic["missing_skills"]
-    strengths_summary = agentic["strengths_summary"]
-    gaps_summary = agentic["gaps_summary"]
-    score = float(agentic["match_score"])
-    recommendation = str(agentic["recommendation"])
-    suggested_status = str(agentic["suggested_status"])
+    try:
+        job = store.get_job_by_id(job_id=str(detail.get("job_id") or "")) or {}
+        agentic = analyze_application(job=job, application=detail)
+        matched_skills = agentic["matched_skills"]
+        missing_skills = agentic["missing_skills"]
+        strengths_summary = agentic["strengths_summary"]
+        gaps_summary = agentic["gaps_summary"]
+        score = float(agentic["match_score"])
+        recommendation = str(agentic["recommendation"])
+        suggested_status = str(agentic["suggested_status"])
+    except Exception as exc:
+        return error_response(
+            error_type="infra",
+            message="Failed to run analysis due to internal processing error.",
+            trace_id=trace_id,
+            req=req,
+            status_code=500,
+            details={"reason": str(exc)},
+        )
 
-    updated = store.update_analysis_status(
-        application_id=application_id, analysis_status="completed",
-        analyzed_by=admin["user_name"], recommendation=recommendation, match_score=score,
-        matched_skills_json=json.dumps(matched_skills, ensure_ascii=True),
-        missing_skills_json=json.dumps(missing_skills, ensure_ascii=True),
-        strengths_summary=strengths_summary, gaps_summary=gaps_summary,
-    )
+    try:
+        updated = store.update_analysis_status(
+            application_id=application_id, analysis_status="completed",
+            analyzed_by=admin["user_name"], recommendation=recommendation, match_score=score,
+            matched_skills_json=json.dumps(matched_skills, ensure_ascii=True),
+            missing_skills_json=json.dumps(missing_skills, ensure_ascii=True),
+            strengths_summary=strengths_summary, gaps_summary=gaps_summary,
+        )
+    except Exception as exc:
+        return error_response(
+            error_type="infra",
+            message="Failed to persist analysis result.",
+            trace_id=trace_id,
+            req=req,
+            status_code=500,
+            details={"reason": str(exc)},
+        )
     if not updated:
         return error_response(error_type="infra", message="Failed to update analysis status.", trace_id=trace_id, req=req, status_code=500)
 

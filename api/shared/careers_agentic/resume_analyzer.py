@@ -32,6 +32,22 @@ def _score_to_status(score: float) -> str:
     return "under_review"
 
 
+def _safe_years_experience(value: Any) -> float:
+    raw = str(value or "").strip()
+    if not raw:
+        return 0.0
+    try:
+        return float(raw)
+    except (TypeError, ValueError):
+        match = re.search(r"\d+(\.\d+)?", raw)
+        if not match:
+            return 0.0
+        try:
+            return float(match.group(0))
+        except (TypeError, ValueError):
+            return 0.0
+
+
 def analyze_application(*, job: dict[str, Any], application: dict[str, Any]) -> dict[str, Any]:
     jd_text = " ".join(
         [
@@ -55,7 +71,7 @@ def analyze_application(*, job: dict[str, Any], application: dict[str, Any]) -> 
     matched = sorted({skill for skill in required if skill in candidate})
     missing = sorted({skill for skill in required if skill not in candidate})
 
-    years = float(application.get("years_experience") or 0)
+    years = _safe_years_experience(application.get("years_experience"))
     score = round(min(97.0, 40.0 + min(years, 15.0) * 2.0 + ((len(matched) / len(required)) * 40.0)), 1)
 
     if score >= 75:
