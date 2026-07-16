@@ -47,6 +47,9 @@ Form_Calander_updates.md
 api/.python_runtime/
 api/local.settings-old.json
 
+# Local deployment artifacts (CI/CD handles deployment)
+api-deploy.zip
+
 # Generated KB data
 api/data/generated_*
 

@@ -49,15 +49,63 @@ jobs:
       - name: Ensure Oryx Build Settings
         shell: bash
         run: |
+          RG=$(az functionapp show --name func-ofs-carrer-001 --query resourceGroup -o tsv)
           # Ensure the Function App has Oryx build enabled so requirements.txt is processed
           az functionapp config appsettings set \
             --name func-ofs-carrer-001 \
-            --resource-group rg-ofstride-careers \
+            --resource-group "$RG" \
             --settings \
               ENABLE_ORYX_BUILD=true \
               SCM_DO_BUILD_DURING_DEPLOYMENT=true \
               PYTHON_IS_WORKER_IN_VENV=true \
             || echo "WARN: could not set appsettings (may already be configured)"
+      - name: Sync Optional LLM Settings (Same CI/CD Pipeline)
+        shell: bash
+        env:
+          LLM_PROVIDER: ${{ secrets.CAREERS_LLM_PROVIDER }}
+          MODEL_NAME: ${{ secrets.CAREERS_MODEL_NAME }}
+          OPENAI_API_KEY: ${{ secrets.CAREERS_OPENAI_API_KEY }}
+          AZURE_OPENAI_API_KEY: ${{ secrets.CAREERS_AZURE_OPENAI_API_KEY }}
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.CAREERS_AZURE_OPENAI_ENDPOINT }}
+          AZURE_OPENAI_DEPLOYMENT: ${{ secrets.CAREERS_AZURE_OPENAI_DEPLOYMENT }}
+          AZURE_OPENAI_EMBEDDING_DEPLOYMENT: ${{ secrets.CAREERS_AZURE_OPENAI_EMBEDDING_DEPLOYMENT }}
+          AZURE_OPENAI_API_VERSION: ${{ secrets.CAREERS_AZURE_OPENAI_API_VERSION }}
+          GEMINI_API_KEY: ${{ secrets.CAREERS_GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ secrets.CAREERS_GEMINI_MODEL }}
+          ALLOW_MOCK_PROVIDER: ${{ secrets.CAREERS_ALLOW_MOCK_PROVIDER }}
+        run: |
+          RG=$(az functionapp show --name func-ofs-carrer-001 --query resourceGroup -o tsv)
+          SETTINGS=()
+
+          add_setting() {
+            local key="$1"
+            local value="$2"
+            if [ -n "$value" ]; then
+              SETTINGS+=("${key}=${value}")
+            fi
+          }
+
+          add_setting "LLM_PROVIDER" "$LLM_PROVIDER"
+          add_setting "MODEL_NAME" "$MODEL_NAME"
+          add_setting "OPENAI_API_KEY" "$OPENAI_API_KEY"
+          add_setting "AZURE_OPENAI_API_KEY" "$AZURE_OPENAI_API_KEY"
+          add_setting "AZURE_OPENAI_ENDPOINT" "$AZURE_OPENAI_ENDPOINT"
+          add_setting "AZURE_OPENAI_DEPLOYMENT" "$AZURE_OPENAI_DEPLOYMENT"
+          add_setting "AZURE_OPENAI_EMBEDDING_DEPLOYMENT" "$AZURE_OPENAI_EMBEDDING_DEPLOYMENT"
+          add_setting "AZURE_OPENAI_API_VERSION" "$AZURE_OPENAI_API_VERSION"
+          add_setting "GEMINI_API_KEY" "$GEMINI_API_KEY"
+          add_setting "GEMINI_MODEL" "$GEMINI_MODEL"
+          add_setting "ALLOW_MOCK_PROVIDER" "$ALLOW_MOCK_PROVIDER"
+
+          if [ ${#SETTINGS[@]} -eq 0 ]; then
+            echo "No optional LLM settings provided via secrets; skipping appsettings sync."
+            exit 0
+          fi
+
+          az functionapp config appsettings set \
+            --name func-ofs-carrer-001 \
+            --resource-group "$RG" \
+            --settings "${SETTINGS[@]}"
       - name: Deploy to Azure Functions
         uses: Azure/functions-action@v1
         with:
