@@ -20,6 +20,37 @@ import {
   getAccessToken,
 } from "../services/supabase";
 
+function computeSimpleDiff(originalText, enhancedText) {
+  const before = String(originalText || "").split("\n");
+  const after = String(enhancedText || "").split("\n");
+  const maxLen = Math.max(before.length, after.length);
+  const rows = [];
+  for (let i = 0; i < maxLen; i += 1) {
+    const prev = before[i] ?? "";
+    const next = after[i] ?? "";
+    if (prev === next) {
+      continue;
+    }
+    rows.push({
+      line: i + 1,
+      prev,
+      next,
+      type: !prev ? "added" : !next ? "removed" : "changed",
+    });
+    if (rows.length >= 40) {
+      break;
+    }
+  }
+  return rows;
+}
+
+function scrollToSection(sectionId) {
+  const node = document.getElementById(sectionId);
+  if (node) {
+    node.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
 function AdminCareers() {
   const [auth, setAuth] = useState({ user: null, session: null, role: null, loading: true });
   const [email, setEmail] = useState("");
@@ -53,6 +84,7 @@ function AdminCareers() {
   const [enhanceMessage, setEnhanceMessage] = useState("");
   const [analysisMessage, setAnalysisMessage] = useState("");
   const [autoApplyStatus, setAutoApplyStatus] = useState(false);
+  const [jdPreview, setJdPreview] = useState(null);
 
   // ── Auth ──────────────────────────────────────────────────────────────
 
@@ -281,6 +313,7 @@ function AdminCareers() {
     setEnhancingJd(true);
     setEnhanceMessage("");
     try {
+      const original = String(jobForm.jd_markdown || "");
       const result = await adminEnhanceJobDescription({
         id: jobForm.id || undefined,
         title: jobForm.title,
@@ -289,12 +322,15 @@ function AdminCareers() {
         employment_type: jobForm.employment_type || undefined,
         jd_markdown: jobForm.jd_markdown || undefined,
       });
-      setJobForm((prev) => ({ ...prev, jd_markdown: result.enhanced_jd_markdown }));
-      setEnhanceMessage(
-        result.has_template_match
-          ? `JD enhanced using template ${result.template_id}.`
-          : "JD enhanced using fallback template."
-      );
+      setJdPreview({
+        original,
+        enhanced: result.enhanced_jd_markdown,
+        templateId: result.template_id,
+        usedLlm: Boolean(result.used_llm),
+        llmProvider: result.llm_provider || "",
+        hasTemplateMatch: Boolean(result.has_template_match),
+      });
+      setEnhanceMessage("Preview generated. Review diff and apply changes if approved.");
     } catch (e) {
       if (e instanceof ApiClientError) {
         setEnhanceMessage(e.message);
@@ -304,6 +340,17 @@ function AdminCareers() {
     } finally {
       setEnhancingJd(false);
     }
+  };
+
+  const onApplyEnhancedJd = () => {
+    if (!jdPreview) return;
+    setJobForm((prev) => ({ ...prev, jd_markdown: jdPreview.enhanced }));
+    setEnhanceMessage(
+      jdPreview.usedLlm
+        ? `JD updated using ${jdPreview.llmProvider || "existing LLM"}.`
+        : `JD updated using template ${jdPreview.templateId || "fallback"}.`
+    );
+    setJdPreview(null);
   };
 
   const onSendFurtherDiscussionMail = async () => {
@@ -441,11 +488,34 @@ function AdminCareers() {
           </div>
         </div>
         <p className="text-text mb-3">Manage published job descriptions, review applicants, and run AI-assisted analysis.</p>
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
+            onClick={() => scrollToSection("jobs-panel")}
+          >
+            Jump to Jobs
+          </button>
+          <button
+            type="button"
+            className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
+            onClick={() => scrollToSection("applications-panel")}
+          >
+            Jump to Applications
+          </button>
+          <button
+            type="button"
+            className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
+            onClick={() => scrollToSection("details-panel")}
+          >
+            Jump to Detail Actions
+          </button>
+        </div>
 
         {error && <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-amber-800 text-sm">{error}</div>}
 
         <div className="grid xl:grid-cols-3 gap-6">
-          <section className="bg-white rounded-xl shadow-sm p-4 xl:col-span-1">
+          <section id="jobs-panel" className="bg-white rounded-xl shadow-sm p-4 xl:col-span-1 scroll-mt-24">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-primary">Job Profiles (JD)</h2>
               <div className="flex gap-2">
@@ -592,7 +662,7 @@ function AdminCareers() {
             </form>
           </section>
 
-          <section className="bg-white rounded-xl shadow-sm p-4 xl:col-span-1">
+          <section id="applications-panel" className="bg-white rounded-xl shadow-sm p-4 xl:col-span-1 scroll-mt-24">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-primary">Applications</h2>
               <button className="text-sm text-secondary" onClick={loadList}>Refresh</button>
@@ -620,7 +690,7 @@ function AdminCareers() {
             )}
           </section>
 
-          <section className="bg-white rounded-xl shadow-sm p-4 xl:col-span-1">
+          <section id="details-panel" className="bg-white rounded-xl shadow-sm p-4 xl:col-span-1 scroll-mt-24">
             <h2 className="font-semibold text-primary mb-4">Application Detail</h2>
             {detailLoading ? (
               <p className="text-sm text-muted">Loading detail...</p>
@@ -667,6 +737,75 @@ function AdminCareers() {
           </section>
         </div>
       </div>
+
+      {jdPreview && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 p-4 sm:p-6 flex items-center justify-center">
+          <div className="w-full max-w-6xl bg-white rounded-xl shadow-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-primary">JD Enhancement Preview</h3>
+                <p className="text-xs text-muted">
+                  {jdPreview.usedLlm
+                    ? `Generated via existing LLM (${jdPreview.llmProvider || "configured provider"}).`
+                    : `Generated via template mode (${jdPreview.templateId || "fallback"}).`}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setJdPreview(null)}
+                className="px-2 py-1 rounded border border-slate-300 text-xs"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-0">
+              <div className="border-r border-slate-200 p-3">
+                <h4 className="text-xs font-semibold text-slate-700 mb-2">Current JD</h4>
+                <pre className="text-xs leading-5 whitespace-pre-wrap bg-slate-50 rounded-lg p-3 max-h-[52vh] overflow-auto">{jdPreview.original || "(empty)"}</pre>
+              </div>
+              <div className="p-3">
+                <h4 className="text-xs font-semibold text-slate-700 mb-2">Proposed JD</h4>
+                <pre className="text-xs leading-5 whitespace-pre-wrap bg-emerald-50 rounded-lg p-3 max-h-[52vh] overflow-auto">{jdPreview.enhanced || "(empty)"}</pre>
+              </div>
+            </div>
+
+            <div className="px-4 pb-3">
+              <h4 className="text-xs font-semibold text-slate-700 mb-2">Diff Summary (first 40 changed lines)</h4>
+              <div className="max-h-40 overflow-auto border border-slate-200 rounded-lg">
+                {computeSimpleDiff(jdPreview.original, jdPreview.enhanced).length === 0 ? (
+                  <p className="text-xs text-muted p-3">No textual differences detected.</p>
+                ) : (
+                  computeSimpleDiff(jdPreview.original, jdPreview.enhanced).map((row) => (
+                    <div key={`${row.line}-${row.type}`} className="px-3 py-2 border-b border-slate-100 text-xs">
+                      <div className="font-semibold text-slate-700">Line {row.line} ({row.type})</div>
+                      <div className="text-rose-700">- {row.prev || "(empty)"}</div>
+                      <div className="text-emerald-700">+ {row.next || "(empty)"}</div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="px-4 py-3 border-t border-slate-200 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setJdPreview(null)}
+                className="px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
+              >
+                Discard
+              </button>
+              <button
+                type="button"
+                onClick={onApplyEnhancedJd}
+                className="px-3 py-2 rounded-lg bg-primary text-white text-xs"
+              >
+                Apply Enhanced JD
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

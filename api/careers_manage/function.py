@@ -18,7 +18,7 @@ if shared_path not in sys.path:
 
 from core.api_contract import error_response, get_trace_id, ok_response, options_response
 from core.blob_rest import resolve_blob_config_with_reason, upload_blob
-from careers_agentic.jd_enhancer import enhance_jd_markdown
+from careers_agentic.jd_enhancer import enhance_jd_with_existing_llm
 from careers_agentic.resume_analyzer import analyze_application
 from persistence.careers_store import get_careers_store
 
@@ -323,7 +323,7 @@ async def _handle_enhance_jd(req: func.HttpRequest, trace_id: str, admin: dict) 
     if not title:
         return error_response(error_type="validation", message="title is required for JD enhancement.", trace_id=trace_id, req=req, status_code=400)
 
-    enhanced = enhance_jd_markdown(
+    enhanced = await enhance_jd_with_existing_llm(
         title=title,
         department=str(body.get("department") or "").strip(),
         location=str(body.get("location") or "").strip(),

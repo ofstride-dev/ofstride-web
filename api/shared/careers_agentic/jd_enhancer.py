@@ -5,6 +5,7 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
+from core.llm_factory import get_llm_factory
 from core.settings import DATA_ROOT
 
 
@@ -142,3 +143,67 @@ def enhance_jd_markdown(*, title: str, department: str | None, location: str | N
         "template_id": best.template_id if best else "fallback",
         "has_template_match": bool(best),
     }
+
+
+async def enhance_jd_with_existing_llm(*, title: str, department: str | None, location: str | None, employment_type: str | None, jd_markdown: str) -> dict[str, Any]:
+    baseline = enhance_jd_markdown(
+        title=title,
+        department=department,
+        location=location,
+        employment_type=employment_type,
+        jd_markdown=jd_markdown,
+    )
+    llm_factory = get_llm_factory()
+    try:
+        selection = await llm_factory.get_healthy_llm_with_metadata()
+        system_prompt = (
+            "You are a senior hiring specialist. Rewrite job descriptions into a concise, structured, and practical format. "
+            "Keep facts grounded in the provided content and avoid inventing compensation, legal terms, or company policies."
+        )
+        user_prompt = "\n".join(
+            [
+                f"Job title: {title}",
+                f"Department: {department or 'General'}",
+                f"Location: {location or 'As discussed'}",
+                f"Employment type: {employment_type or 'Full-time'}",
+                "",
+                "Current JD markdown:",
+                jd_markdown or baseline["enhanced_jd_markdown"],
+                "",
+                "Return markdown only with sections:",
+                "1) Snapshot",
+                "2) Role Summary",
+                "3) Key Responsibilities (5 bullets)",
+                "4) Must-Have Skills (5-7 bullets)",
+                "5) Preferred Skills (3-5 bullets)",
+                "6) Interview Focus (4 bullets)",
+            ]
+        )
+        content = await selection.client.agenerate(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            temperature=0.2,
+            max_tokens=900,
+        )
+        markdown = str(content or "").strip()
+        if len(markdown) < 80:
+            return {
+                **baseline,
+                "used_llm": False,
+                "llm_provider": None,
+                "llm_reason": "llm_response_too_short",
+            }
+        return {
+            **baseline,
+            "enhanced_jd_markdown": markdown,
+            "used_llm": True,
+            "llm_provider": selection.provider.value,
+            "llm_reason": selection.fallback_reason,
+        }
+    except Exception as exc:
+        return {
+            **baseline,
+            "used_llm": False,
+            "llm_provider": None,
+            "llm_reason": str(exc),
+        }

@@ -378,6 +378,9 @@ export async function adminEnhanceJobDescription(payload: {
   enhanced_jd_markdown: string;
   template_id: string;
   has_template_match: boolean;
+  used_llm?: boolean;
+  llm_provider?: string | null;
+  llm_reason?: string | null;
 }> {
   const query = new URLSearchParams({ _path: "jd/enhance" });
   const response = await fetch(`${CAREER_API_BASE}/careers/manage?${query.toString()}`, {
@@ -389,6 +392,9 @@ export async function adminEnhanceJobDescription(payload: {
     enhanced_jd_markdown: string;
     template_id: string;
     has_template_match: boolean;
+    used_llm?: boolean;
+    llm_provider?: string | null;
+    llm_reason?: string | null;
   }>(response);
 }
 
