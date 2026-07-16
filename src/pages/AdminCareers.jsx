@@ -51,6 +51,57 @@ function scrollToSection(sectionId) {
   }
 }
 
+function getSuggestedAction(detail) {
+  const status = String(detail?.submission_status || "").toLowerCase();
+  const analysisStatus = String(detail?.analysis_status || "").toLowerCase();
+  const recommendation = String(detail?.recommendation || "").toLowerCase();
+  const mailSent = Boolean(detail?.applicant_email_sent_at);
+
+  if (analysisStatus !== "completed") {
+    return {
+      key: "run-analysis",
+      title: "Run resume analysis",
+      description: "Start AI evaluation to generate score, recommendation, and next-step guidance.",
+    };
+  }
+
+  if (status === "shortlisted" && !mailSent) {
+    return {
+      key: "send-confirmation",
+      title: "Send shortlisted confirmation",
+      description: "Notify the candidate with further discussion details.",
+    };
+  }
+
+  if (status === "submitted" || status === "under_review") {
+    if (recommendation === "shortlist") {
+      return {
+        key: "shortlist",
+        title: "Shortlist candidate",
+        description: "Analysis indicates strong fit. Move candidate to shortlisted status.",
+      };
+    }
+    if (recommendation === "hold") {
+      return {
+        key: "reject",
+        title: "Reject candidate",
+        description: "Analysis indicates low fit. Close application with a rejection decision.",
+      };
+    }
+    return {
+      key: "under-review",
+      title: "Keep under review",
+      description: "Candidate needs manual review before final decision.",
+    };
+  }
+
+  return {
+    key: "none",
+    title: "No immediate action required",
+    description: "Current state looks complete. Use manual actions only if you want to override.",
+  };
+}
+
 function AdminCareers() {
   const [auth, setAuth] = useState({ user: null, session: null, role: null, loading: true });
   const [email, setEmail] = useState("");
@@ -85,6 +136,7 @@ function AdminCareers() {
   const [analysisMessage, setAnalysisMessage] = useState("");
   const [autoApplyStatus, setAutoApplyStatus] = useState(false);
   const [jdPreview, setJdPreview] = useState(null);
+  const [showManualActions, setShowManualActions] = useState(false);
 
   // ── Auth ──────────────────────────────────────────────────────────────
 
@@ -370,6 +422,30 @@ function AdminCareers() {
       } else {
         setNotifyMessage("Could not send follow-up mail.");
       }
+    }
+  };
+
+  const onRunSuggestedAction = async () => {
+    if (!detail) return;
+    const suggested = getSuggestedAction(detail);
+    if (suggested.key === "run-analysis") {
+      await onRunAnalysis();
+      return;
+    }
+    if (suggested.key === "send-confirmation") {
+      await onSendFurtherDiscussionMail();
+      return;
+    }
+    if (suggested.key === "shortlist") {
+      await onSetStatus("shortlisted");
+      return;
+    }
+    if (suggested.key === "reject") {
+      await onSetStatus("rejected");
+      return;
+    }
+    if (suggested.key === "under-review") {
+      await onSetStatus("under_review");
     }
   };
 
@@ -698,6 +774,25 @@ function AdminCareers() {
               <p className="text-sm text-muted">Select an application to view details.</p>
             ) : (
               <div className="space-y-3 text-sm">
+                {(() => {
+                  const suggested = getSuggestedAction(detail);
+                  return (
+                    <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3">
+                      <div className="text-xs font-semibold text-indigo-900">Suggested Next Action</div>
+                      <div className="text-sm font-medium text-indigo-900 mt-1">{suggested.title}</div>
+                      <div className="text-xs text-indigo-800 mt-1">{suggested.description}</div>
+                      {suggested.key !== "none" && (
+                        <button
+                          onClick={onRunSuggestedAction}
+                          className="mt-2 px-3 py-1.5 rounded-lg bg-indigo-700 text-white text-xs"
+                        >
+                          Proceed
+                        </button>
+                      )}
+                    </div>
+                  );
+                })()}
+
                 <div><strong>Reference:</strong> {String(detail.reference_id || "-")}</div>
                 <div><strong>Name:</strong> {String(detail.full_name || "-")}</div>
                 <div><strong>Email:</strong> {String(detail.email || "-")}</div>
@@ -710,25 +805,39 @@ function AdminCareers() {
                 <div><strong>Strengths:</strong> {String(detail.strengths_summary || "-")}</div>
                 <div><strong>Gaps:</strong> {String(detail.gaps_summary || "-")}</div>
 
-                <div className="pt-3 border-t border-slate-200 flex flex-wrap gap-2">
-                  <button onClick={onRunAnalysis} className="px-3 py-2 rounded-lg bg-primary text-white text-sm">Run Analysis</button>
-                  <label className="inline-flex items-center gap-2 px-2 py-2 rounded-lg border border-slate-200 text-xs">
-                    <input
-                      type="checkbox"
-                      checked={autoApplyStatus}
-                      onChange={(e) => setAutoApplyStatus(Boolean(e.target.checked))}
-                    />
-                    Auto-apply suggested status
-                  </label>
-                  <button onClick={() => onSetStatus("under_review")} className="px-3 py-2 rounded-lg border border-slate-300 text-sm">Mark Under Review</button>
-                  <button onClick={() => onSetStatus("shortlisted")} className="px-3 py-2 rounded-lg border border-emerald-400 text-emerald-700 text-sm">Shortlist</button>
-                  <button onClick={() => onSetStatus("rejected")} className="px-3 py-2 rounded-lg border border-rose-400 text-rose-700 text-sm">Reject</button>
-                  <button
-                    onClick={onSendFurtherDiscussionMail}
-                    className="px-3 py-2 rounded-lg border border-indigo-400 text-indigo-700 text-sm"
-                  >
-                    Send further discussion mail
-                  </button>
+                <div className="pt-3 border-t border-slate-200 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="inline-flex items-center gap-2 px-2 py-2 rounded-lg border border-slate-200 text-xs">
+                      <input
+                        type="checkbox"
+                        checked={autoApplyStatus}
+                        onChange={(e) => setAutoApplyStatus(Boolean(e.target.checked))}
+                      />
+                      Auto-apply suggested status during analysis
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowManualActions((prev) => !prev)}
+                      className="px-2 py-1 rounded border border-slate-300 text-xs bg-white"
+                    >
+                      {showManualActions ? "Hide Manual Actions" : "Show Manual Actions"}
+                    </button>
+                  </div>
+
+                  {showManualActions && (
+                    <div className="flex flex-wrap gap-2">
+                      <button onClick={onRunAnalysis} className="px-3 py-2 rounded-lg bg-primary text-white text-sm">Run Analysis</button>
+                      <button onClick={() => onSetStatus("under_review")} className="px-3 py-2 rounded-lg border border-slate-300 text-sm">Mark Under Review</button>
+                      <button onClick={() => onSetStatus("shortlisted")} className="px-3 py-2 rounded-lg border border-emerald-400 text-emerald-700 text-sm">Shortlist</button>
+                      <button onClick={() => onSetStatus("rejected")} className="px-3 py-2 rounded-lg border border-rose-400 text-rose-700 text-sm">Reject</button>
+                      <button
+                        onClick={onSendFurtherDiscussionMail}
+                        className="px-3 py-2 rounded-lg border border-indigo-400 text-indigo-700 text-sm"
+                      >
+                        Send confirmation mail
+                      </button>
+                    </div>
+                  )}
                 </div>
                 {analysisMessage && <div className="text-xs text-muted">{analysisMessage}</div>}
                 {notifyMessage && <div className="text-xs text-muted">{notifyMessage}</div>}
