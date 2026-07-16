@@ -17,7 +17,7 @@ if shared_path not in sys.path:
     sys.path.insert(0, shared_path)
 
 from core.api_contract import error_response, get_trace_id, ok_response, options_response
-from core.blob_rest import blob_config_from_connection_string, upload_blob
+from core.blob_rest import blob_config_from_connection_string, resolve_blob_connection_string, upload_blob
 from persistence.careers_store import get_careers_store
 
 import logging as _lg
@@ -146,7 +146,7 @@ def _blob_persist_jd(*, job_id: str, jd_content: str) -> dict[str, str] | None:
     This is a best-effort operation - failures are logged but not propagated.
     """
     try:
-        config = blob_config_from_connection_string((os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip())
+        config = blob_config_from_connection_string(resolve_blob_connection_string())
         if config is None:
             _mgmt_logger.info("Blob persistence skipped (blob not configured) for job %s", job_id)
             return None
@@ -417,7 +417,7 @@ async def _handle_save_job(req: func.HttpRequest, trace_id: str, admin: dict) ->
             except UnicodeDecodeError:
                 return error_response(error_type="validation", message="JD file must be UTF-8 text.", trace_id=trace_id, req=req, status_code=400)
         try:
-            config = blob_config_from_connection_string((os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip())
+            config = blob_config_from_connection_string(resolve_blob_connection_string())
             if config is None:
                 return error_response(error_type="infra", message="Blob storage is not configured for JD uploads.", trace_id=trace_id, req=req, status_code=503)
             container = (os.getenv("CAREERS_JD_BLOB_CONTAINER") or "careers-jd-container").strip()
@@ -552,7 +552,7 @@ async def _handle_publish_from_upload(req: func.HttpRequest, trace_id: str, admi
             jd_bytes = _decode_base64_content(jd_content_base64)
             if not jd_bytes:
                 return error_response(error_type="validation", message="JD file content is empty.", trace_id=trace_id, req=req, status_code=400)
-            config = blob_config_from_connection_string((os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip())
+            config = blob_config_from_connection_string(resolve_blob_connection_string())
             if config is None:
                 return error_response(error_type="infra", message="Blob storage is not configured.", trace_id=trace_id, req=req, status_code=503)
             upload_blob(config, container=container, blob_path=blob_path, content=jd_bytes, content_type=_normalize_jd_content_type(blob_path, str(body.get("content_type", ""))))

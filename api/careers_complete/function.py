@@ -14,7 +14,7 @@ if shared_path not in sys.path:
     sys.path.insert(0, shared_path)
 
 from core.api_contract import error_response, get_trace_id, ok_response, options_response
-from core.blob_rest import blob_config_from_connection_string, get_blob_properties, upload_blob
+from core.blob_rest import blob_config_from_connection_string, get_blob_properties, resolve_blob_connection_string, upload_blob
 from persistence.careers_store import get_careers_store
 from security.rate_limiter import enforce_rate_limit, get_client_key
 
@@ -57,7 +57,7 @@ def _send_hr_notification(payload: dict[str, object]) -> tuple[bool, str | None]
 
 
 def _get_blob_config():
-    connection_string = (os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip()
+    connection_string = resolve_blob_connection_string()
     container_name = (
         (os.getenv("CAREERS_RESUME_BLOB_CONTAINER") or "").strip()
         or (os.getenv("CAREERS_BLOB_CONTAINER") or "").strip()
@@ -163,12 +163,19 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
     blob_path = str(app.get("resume_blob_path", "")).strip()
     blob_config = _get_blob_config()
     if not blob_config:
+        details = {
+            "CAREERS_BLOB_CONNECTION_STRING_set": bool((os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip()),
+            "AzureWebJobsStorage_set": bool((os.getenv("AzureWebJobsStorage") or "").strip()),
+            "CAREERS_RESUME_BLOB_CONTAINER": (os.getenv("CAREERS_RESUME_BLOB_CONTAINER") or "").strip() or None,
+            "CAREERS_BLOB_CONTAINER": (os.getenv("CAREERS_BLOB_CONTAINER") or "").strip() or None,
+        }
         return error_response(
             error_type="infra",
-            message="Blob storage is not configured. Set CAREERS_BLOB_CONNECTION_STRING and CAREERS_RESUME_BLOB_CONTAINER.",
+            message="Blob storage is not configured. Set CAREERS_BLOB_CONNECTION_STRING (or AzureWebJobsStorage) and CAREERS_RESUME_BLOB_CONTAINER.",
             trace_id=trace_id,
             req=req,
             status_code=503,
+            details=details,
         )
     config, container_name = blob_config
 

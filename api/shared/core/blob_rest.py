@@ -6,6 +6,7 @@ import hmac
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from email.utils import format_datetime
+import os
 from urllib import error as url_error
 from urllib import parse as url_parse
 from urllib import request as url_request
@@ -17,6 +18,19 @@ class BlobRestConfig:
     account_key: str | None
     shared_sas: str | None
     blob_endpoint: str
+
+
+def resolve_blob_connection_string() -> str:
+    """Resolve blob connection string from careers-specific or host defaults.
+
+    Priority:
+    1) CAREERS_BLOB_CONNECTION_STRING
+    2) AzureWebJobsStorage
+    """
+    return (
+        (os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip()
+        or (os.getenv("AzureWebJobsStorage") or "").strip()
+    )
 
 
 def parse_connection_string(raw: str) -> dict[str, str]:
