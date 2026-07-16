@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 from typing import Any
 
@@ -99,3 +100,77 @@ def analyze_application(*, job: dict[str, Any], application: dict[str, Any]) -> 
             "top_gaps": missing[:5],
         },
     }
+
+
+async def ai_revalidate_analysis(*, job: dict[str, Any], application: dict[str, Any], base_result: dict[str, Any]) -> dict[str, Any]:
+    """Use configured LLM to revalidate deterministic analysis.
+    Falls back to base_result if AI provider is unavailable.
+    """
+    try:
+        from core.llm_factory import get_llm_factory
+
+        factory = get_llm_factory()
+        selection = await factory.get_healthy_llm_with_metadata()
+        client = selection.client
+
+        system_prompt = (
+            "You are a senior technical recruiter. Validate candidate-job fit and output strict JSON only. "
+            "Keep scoring realistic and concise."
+        )
+        user_prompt = json.dumps(
+            {
+                "job": {
+                    "title": job.get("title"),
+                    "department": job.get("department"),
+                    "employment_type": job.get("employment_type"),
+                    "jd_markdown": job.get("jd_markdown"),
+                },
+                "candidate": {
+                    "full_name": application.get("full_name"),
+                    "years_experience": application.get("years_experience"),
+                    "cover_note": application.get("cover_note"),
+                    "linkedin_url": application.get("linkedin_url"),
+                },
+                "base_result": base_result,
+                "required_output": {
+                    "match_score": "number between 0 and 100",
+                    "recommendation": "shortlist|review|hold",
+                    "summary": "short paragraph <= 240 chars",
+                    "strengths_summary": "short sentence",
+                    "gaps_summary": "short sentence",
+                },
+            },
+            ensure_ascii=True,
+        )
+
+        raw = await client.agenerate(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            temperature=0.1,
+            max_tokens=450,
+        )
+        data = json.loads(str(raw or "{}"))
+
+        ai_score = float(data.get("match_score")) if data.get("match_score") is not None else float(base_result["match_score"])
+        ai_score = max(0.0, min(100.0, round(ai_score, 1)))
+        ai_reco = str(data.get("recommendation") or base_result["recommendation"]).strip().lower()
+        if ai_reco not in {"shortlist", "review", "hold"}:
+            ai_reco = str(base_result["recommendation"])
+
+        return {
+            **base_result,
+            "match_score": ai_score,
+            "recommendation": ai_reco,
+            "strengths_summary": str(data.get("strengths_summary") or base_result["strengths_summary"]),
+            "gaps_summary": str(data.get("gaps_summary") or base_result["gaps_summary"]),
+            "ai_summary": str(data.get("summary") or "").strip(),
+            "ai_used": True,
+            "ai_provider": selection.provider.value,
+        }
+    except Exception:
+        return {
+            **base_result,
+            "ai_summary": "",
+            "ai_used": False,
+            "ai_provider": None,
+        }

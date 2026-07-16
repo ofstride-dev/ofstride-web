@@ -117,6 +117,7 @@ function AdminCareers() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [jobs, setJobs] = useState([]);
   const [selectedJobId, setSelectedJobId] = useState("");
+  const [jobApplicationCounts, setJobApplicationCounts] = useState({});
   const [jobForm, setJobForm] = useState({
     id: "",
     title: "",
@@ -212,6 +213,21 @@ function AdminCareers() {
         return aActive - bActive;
       });
       setJobs(sorted);
+      const active = sorted.filter((job) => String(job.status || "").toLowerCase() === "active");
+      const countsEntries = await Promise.all(
+        active.map(async (job) => {
+          const id = String(job.id || "");
+          if (!id) return [id, 0];
+          try {
+            const result = await adminListApplications({ job_id: id, limit: 200 });
+            return [id, Number(result.count || 0)];
+          } catch {
+            return [id, 0];
+          }
+        })
+      );
+      setJobApplicationCounts(Object.fromEntries(countsEntries));
+
       if (!selectedJobId && sorted.length > 0) {
         const firstActive = sorted.find((job) => String(job.status || "").toLowerCase() === "active") || sorted[0];
         const jobId = String(firstActive.id || "");
@@ -642,6 +658,9 @@ function AdminCareers() {
                   <div className="font-medium text-primary">{String(job.title || "Untitled")}</div>
                   <div className="text-xs text-muted">
                     {String(job.department || "")} {job.department && job.location ? "•" : ""} {String(job.location || "")} • {String(job.status || "draft")}
+                  </div>
+                  <div className="mt-1 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-700">
+                    {Number(jobApplicationCounts[String(job.id)] || 0)} applied
                   </div>
                 </button>
               ))}

@@ -19,7 +19,7 @@ if shared_path not in sys.path:
 from core.api_contract import error_response, get_trace_id, ok_response, options_response
 from core.blob_rest import resolve_blob_config_with_reason, upload_blob
 from careers_agentic.jd_enhancer import enhance_jd_with_existing_llm
-from careers_agentic.resume_analyzer import analyze_application
+from careers_agentic.resume_analyzer import ai_revalidate_analysis, analyze_application
 from persistence.careers_store import get_careers_store
 
 import logging as _lg
@@ -270,6 +270,7 @@ async def _handle_run_analysis(req: func.HttpRequest, trace_id: str, admin: dict
     try:
         job = store.get_job_by_id(job_id=str(detail.get("job_id") or "")) or {}
         agentic = analyze_application(job=job, application=detail)
+        agentic = await ai_revalidate_analysis(job=job, application=detail, base_result=agentic)
         matched_skills = agentic["matched_skills"]
         missing_skills = agentic["missing_skills"]
         strengths_summary = agentic["strengths_summary"]
@@ -328,6 +329,9 @@ async def _handle_run_analysis(req: func.HttpRequest, trace_id: str, admin: dict
         "suggested_status": suggested_status,
         "auto_applied": auto_applied,
         "admin_summary": agentic.get("admin_summary"),
+        "ai_summary": agentic.get("ai_summary"),
+        "ai_used": agentic.get("ai_used"),
+        "ai_provider": agentic.get("ai_provider"),
     })
 
 
