@@ -14,6 +14,33 @@ const ALLOWED_TYPES = [
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ];
 
+function normalizeResumeContentType(file) {
+  const rawType = String(file?.type || "").toLowerCase();
+  const extension = `.${String(file?.name || "").split(".").pop()?.toLowerCase() || ""}`;
+  if (ALLOWED_TYPES.includes(rawType)) {
+    return rawType;
+  }
+  if (extension === ".pdf") {
+    return "application/pdf";
+  }
+  if (extension === ".docx") {
+    return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  }
+  return rawType;
+}
+
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || "");
+      resolve(result.includes(",") ? result.split(",", 2)[1] : result);
+    };
+    reader.onerror = () => reject(reader.error || new Error("Unable to read resume file."));
+    reader.readAsDataURL(file);
+  });
+}
+
 function Careers() {
   const [jobs, setJobs] = useState([]);
   const [jobsLoading, setJobsLoading] = useState(true);
@@ -120,7 +147,8 @@ function Careers() {
     }
 
     const extension = `.${file.name.split(".").pop()?.toLowerCase() || ""}`;
-    if (!ALLOWED_EXTENSIONS.includes(extension) || !ALLOWED_TYPES.includes(file.type)) {
+    const normalizedType = normalizeResumeContentType(file);
+    if (!ALLOWED_EXTENSIONS.includes(extension) || !ALLOWED_TYPES.includes(normalizedType)) {
       setSubmitError("Only PDF or DOCX resumes are allowed.");
       setResumeFile(null);
       return;
@@ -156,6 +184,8 @@ function Careers() {
 
     try {
       setSubmitting(true);
+      const resumeContentType = normalizeResumeContentType(resumeFile);
+      const resumeContentBase64 = await readFileAsBase64(resumeFile);
 
       const initPayload = {
         job_id: formData.job_id,
@@ -170,27 +200,30 @@ function Careers() {
         cover_note: formData.cover_note.trim(),
         consent_accepted: formData.consent_accepted,
         resume_original_name: resumeFile.name,
-        resume_content_type: resumeFile.type,
+        resume_content_type: resumeContentType,
         resume_size_bytes: resumeFile.size,
+        resume_content_base64: resumeContentBase64,
       };
 
       const initResponse = await initCareersUpload(initPayload);
 
-      const uploadHeaders = {
-        "x-ms-blob-type": initResponse.upload.required_headers["x-ms-blob-type"] || "BlockBlob",
-        "Content-Type": initResponse.upload.required_headers["Content-Type"] || resumeFile.type,
-      };
+      if (!initResponse.upload?.uploaded) {
+        const uploadHeaders = {
+          "x-ms-blob-type": initResponse.upload.required_headers["x-ms-blob-type"] || "BlockBlob",
+          "Content-Type": initResponse.upload.required_headers["Content-Type"] || resumeContentType,
+        };
 
-      const uploadResponse = await fetch(initResponse.upload.url, {
-        method: initResponse.upload.method || "PUT",
-        headers: uploadHeaders,
-        body: resumeFile,
-      });
-      if (!uploadResponse.ok) {
-        throw new Error(`Resume upload failed (HTTP ${uploadResponse.status})`);
+        const uploadResponse = await fetch(initResponse.upload.url, {
+          method: initResponse.upload.method || "PUT",
+          headers: uploadHeaders,
+          body: resumeFile,
+        });
+        if (!uploadResponse.ok) {
+          throw new Error(`Resume upload failed (HTTP ${uploadResponse.status})`);
+        }
       }
 
-      const completeResponse = await completeCareersUpload(initResponse.application_id);
+      const completeResponse = await completeCareersUpload(initResponse.application_id, resumeContentBase64);
       setReferenceId(completeResponse.reference_id || initResponse.reference_id);
       setSubmitted(true);
     } catch (error) {

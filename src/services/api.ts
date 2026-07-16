@@ -247,11 +247,18 @@ export async function initCareersUpload(
   return parseEnvelope<CareersInitUploadResponse>(response);
 }
 
-export async function completeCareersUpload(applicationId: string): Promise<CareersCompleteResponse> {
+export async function completeCareersUpload(
+  applicationId: string,
+  resumeContentBase64?: string
+): Promise<CareersCompleteResponse> {
+  const body: Record<string, unknown> = { application_id: applicationId };
+  if (resumeContentBase64) {
+    body.resume_content_base64 = resumeContentBase64;
+  }
   const response = await fetch(`${CAREER_API_BASE}/careers/complete`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ application_id: applicationId }),
+    body: JSON.stringify(body),
   });
   return parseEnvelope<CareersCompleteResponse>(response);
 }
@@ -346,6 +353,9 @@ export async function adminSaveJob(payload: {
   jd_markdown: string;
   jd_raw_text?: string;
   status: "draft" | "active" | "archived";
+  jd_file_name?: string;
+  jd_file_content_type?: string;
+  jd_content_base64?: string;
 }): Promise<Record<string, unknown>> {
   const query = new URLSearchParams({ _path: "jobs" });
   const response = await fetch(`${CAREER_API_BASE}/careers/manage?${query.toString()}`, {

@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 import re
@@ -90,7 +91,56 @@ def _blob_service():
     return BlobServiceClient.from_connection_string(conn)
 
 
-def _blob_persist_jd(*, job_id: str, jd_content: str) -> None:
+def _ensure_container(service, container_name: str) -> None:
+    try:
+        container_client = service.get_container_client(container_name)
+        container_client.create_container()
+    except Exception:
+        pass
+
+
+def _upload_blob_bytes(*, service, container_name: str, blob_path: str, content_bytes: bytes, content_type: str) -> None:
+    from azure.storage.blob import ContentSettings
+
+    _ensure_container(service, container_name)
+    blob_client = service.get_blob_client(container=container_name, blob=blob_path)
+    blob_client.upload_blob(content_bytes, overwrite=True, content_settings=ContentSettings(content_type=content_type))
+
+
+def _decode_base64_content(value: str) -> bytes:
+    raw = (value or "").strip()
+    if not raw:
+        return b""
+    if "," in raw and raw.startswith("data:"):
+        raw = raw.split(",", 1)[1]
+    return base64.b64decode(raw)
+
+
+def _normalize_jd_content_type(file_name: str | None, content_type: str | None) -> str:
+    normalized = (content_type or "").strip().lower()
+    ext = Path(file_name or "").suffix.lower()
+    if normalized in ALLOWED_JD_TYPES:
+        return normalized
+    if ext == ".md":
+        return "text/markdown"
+    if ext == ".txt":
+        return "text/plain"
+    return normalized or "text/plain"
+
+
+def _normalize_resume_content_type(file_name: str | None, content_type: str | None) -> str:
+    normalized = (content_type or "").strip().lower()
+    ext = Path(file_name or "").suffix.lower()
+    if normalized in {"application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"}:
+        return normalized
+    if ext == ".pdf":
+        return "application/pdf"
+    if ext == ".docx":
+        return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    return normalized
+
+
+def _blob_persist_jd(*, job_id: str, jd_content: str) -> dict[str, str] | None:
     """Persist JD markdown content to blob storage as backup.
     This is a best-effort operation - failures are logged but not propagated.
     """
@@ -98,14 +148,21 @@ def _blob_persist_jd(*, job_id: str, jd_content: str) -> None:
         svc = _blob_service()
         if svc is None:
             _mgmt_logger.info("Blob persistence skipped (blob not configured) for job %s", job_id)
-            return
+            return None
         container = (os.getenv("CAREERS_JD_BLOB_CONTAINER") or "careers-jd-container").strip()
         blob_path = f"jd/{job_id}.md"
-        blob_client = svc.get_blob_client(container=container, blob=blob_path)
-        blob_client.upload_blob(jd_content.encode("utf-8"), overwrite=True)
+        _upload_blob_bytes(
+            service=svc,
+            container_name=container,
+            blob_path=blob_path,
+            content_bytes=jd_content.encode("utf-8"),
+            content_type="text/markdown",
+        )
         _mgmt_logger.info("JD content persisted to blob: %s/%s", container, blob_path)
+        return {"container": container, "path": blob_path}
     except Exception as exc:
         _mgmt_logger.warning("JD blob persistence failed for job %s: %s", job_id, exc)
+        return None
 
 
 def _normalize_text(value: object) -> str:
@@ -335,21 +392,58 @@ async def _handle_save_job(req: func.HttpRequest, trace_id: str, admin: dict) ->
     title = str(body.get("title", "")).strip()
     jd_markdown = str(body.get("jd_markdown", "")).strip()
     jd_raw_text = str(body.get("jd_raw_text", "")).strip() or jd_markdown
+    jd_file_name = str(body.get("jd_file_name", "")).strip() or None
+    jd_file_content_type = _normalize_jd_content_type(jd_file_name, str(body.get("jd_file_content_type", "")))
+    jd_content_base64 = str(body.get("jd_content_base64", "")).strip()
     status = str(body.get("status", "draft")).strip().lower()
-    if not title or not jd_markdown:
-        return error_response(error_type="validation", message="Both 'title' and 'jd_markdown' are required.", trace_id=trace_id, req=req, status_code=400)
+    requested_job_id = str(body.get("id", "")).strip() or None
+    final_job_id = requested_job_id or f"job_{uuid.uuid4().hex}"
+    if not title:
+        return error_response(error_type="validation", message="'title' is required.", trace_id=trace_id, req=req, status_code=400)
+    if not jd_markdown and not jd_content_base64:
+        return error_response(error_type="validation", message="Either 'jd_markdown' or 'jd_content_base64' is required.", trace_id=trace_id, req=req, status_code=400)
     if status not in ALLOWED_JOB_STATUSES:
         return error_response(error_type="validation", message="status must be one of: draft, active, archived", trace_id=trace_id, req=req, status_code=400)
     store = get_careers_store()
     if not store.is_available:
         return error_response(error_type="infra", message="Careers store unavailable.", trace_id=trace_id, req=req, status_code=503)
+    jd_blob_meta: dict[str, str] | None = None
+    if jd_content_base64:
+        try:
+            jd_bytes = _decode_base64_content(jd_content_base64)
+        except Exception as exc:
+            return error_response(error_type="validation", message="JD file content is not valid base64.", trace_id=trace_id, req=req, status_code=400, details={"reason": str(exc)})
+        if not jd_bytes:
+            return error_response(error_type="validation", message="JD file content is empty.", trace_id=trace_id, req=req, status_code=400)
+        if not jd_markdown:
+            try:
+                jd_markdown = jd_bytes.decode("utf-8")
+                jd_raw_text = jd_markdown
+            except UnicodeDecodeError:
+                return error_response(error_type="validation", message="JD file must be UTF-8 text.", trace_id=trace_id, req=req, status_code=400)
+        try:
+            svc = _blob_service()
+            if svc is None:
+                return error_response(error_type="infra", message="Blob storage is not configured for JD uploads.", trace_id=trace_id, req=req, status_code=503)
+            container = (os.getenv("CAREERS_JD_BLOB_CONTAINER") or "careers-jd-container").strip()
+            jd_blob_meta = {"container": container, "path": f"jd/{final_job_id}.md"}
+            _upload_blob_bytes(
+                service=svc,
+                container_name=container,
+                blob_path=jd_blob_meta["path"],
+                content_bytes=jd_markdown.encode("utf-8"),
+                content_type="text/markdown",
+            )
+        except Exception as exc:
+            return error_response(error_type="infra", message="Failed to upload JD content to blob storage.", trace_id=trace_id, req=req, status_code=500, details={"reason": str(exc)})
     try:
         saved = store.upsert_job(
-            job_id=str(body.get("id", "")).strip() or None, title=title,
+            job_id=final_job_id, title=title,
             department=str(body.get("department", "")).strip() or None, location=str(body.get("location", "")).strip() or None,
             employment_type=str(body.get("employment_type", "")).strip() or None,
             jd_markdown=jd_markdown, jd_raw_text=jd_raw_text,
-            jd_blob_path=str(body.get("jd_blob_path", "")).strip() or None, jd_blob_container=str(body.get("jd_blob_container", "")).strip() or None,
+            jd_blob_path=(jd_blob_meta or {}).get("path") or str(body.get("jd_blob_path", "")).strip() or None,
+            jd_blob_container=(jd_blob_meta or {}).get("container") or str(body.get("jd_blob_container", "")).strip() or None,
             status=status, created_by=admin.get("user_name"),
         )
     except Exception as exc:
@@ -357,8 +451,9 @@ async def _handle_save_job(req: func.HttpRequest, trace_id: str, admin: dict) ->
     if not saved:
         return error_response(error_type="infra", message="Failed to save job.", trace_id=trace_id, req=req, status_code=500)
 
-    # Also persist JD content to blob storage as backup, if blob is configured
-    _blob_persist_jd(job_id=str(saved.get("id", "")), jd_content=jd_markdown)
+    # Also persist JD content to blob storage as backup, if blob is configured.
+    if not jd_blob_meta:
+        jd_blob_meta = _blob_persist_jd(job_id=str(saved.get("id", "")), jd_content=jd_markdown)
 
     store.log_admin_action(admin_user_id=admin["user_id"], action_type="upsert_job", entity_type="job", entity_id=str(saved.get("id") or ""), action_detail=f"status={saved.get('status', '')}")
     return ok_response(trace_id=trace_id, req=req, data=saved)
@@ -462,12 +557,22 @@ async def _handle_publish_from_upload(req: func.HttpRequest, trace_id: str, admi
         )
     if not service:
         return error_response(error_type="infra", message="Blob storage is not configured.", trace_id=trace_id, req=req, status_code=503)
+    jd_content_base64 = str(body.get("jd_content_base64", "")).strip()
     try:
-        blob_client = service.get_blob_client(container=container, blob=blob_path)
-        content = blob_client.download_blob().readall()
-        jd_text = content.decode("utf-8")
+        if jd_content_base64:
+            jd_bytes = _decode_base64_content(jd_content_base64)
+            if not jd_bytes:
+                return error_response(error_type="validation", message="JD file content is empty.", trace_id=trace_id, req=req, status_code=400)
+            _upload_blob_bytes(service=service, container_name=container, blob_path=blob_path, content_bytes=jd_bytes, content_type=_normalize_jd_content_type(blob_path, str(body.get("content_type", ""))))
+            jd_text = jd_bytes.decode("utf-8")
+        else:
+            blob_client = service.get_blob_client(container=container, blob=blob_path)
+            content = blob_client.download_blob().readall()
+            jd_text = content.decode("utf-8")
+    except UnicodeDecodeError:
+        return error_response(error_type="validation", message="Uploaded JD content must be UTF-8 text.", trace_id=trace_id, req=req, status_code=400)
     except Exception as exc:
-        return error_response(error_type="infra", message="Unable to read uploaded JD file from storage.", trace_id=trace_id, req=req, status_code=400, details={"reason": str(exc)})
+        return error_response(error_type="infra", message="Unable to read or upload JD file from storage.", trace_id=trace_id, req=req, status_code=400, details={"reason": str(exc)})
     store = get_careers_store()
     if not store.is_available:
         return error_response(error_type="infra", message="Careers store unavailable.", trace_id=trace_id, req=req, status_code=503)

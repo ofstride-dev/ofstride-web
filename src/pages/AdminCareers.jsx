@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import {
   adminGetApplication,
-  adminInitJdUpload,
   adminListJobs,
   adminListApplications,
-  adminPublishJobFromUpload,
   adminRunApplicationAnalysis,
   adminCleanupStaleDrafts,
   adminSendFurtherDiscussionMail,
@@ -225,35 +223,18 @@ function AdminCareers() {
     setUploadingJd(true);
     setJobMessage("");
     try {
-      const init = await adminInitJdUpload({
-        file_name: jdFile.name,
-        content_type: jdFile.type || "text/plain",
-        size_bytes: jdFile.size,
-      });
-
-      const uploadHeaders = {
-        "x-ms-blob-type": init.upload.required_headers["x-ms-blob-type"] || "BlockBlob",
-        "Content-Type": init.upload.required_headers["Content-Type"] || jdFile.type || "text/plain",
-      };
-
-      const uploadResp = await fetch(init.upload.url, {
-        method: init.upload.method || "PUT",
-        headers: uploadHeaders,
-        body: jdFile,
-      });
-      if (!uploadResp.ok) {
-        throw new Error(`JD upload failed (HTTP ${uploadResp.status})`);
-      }
-
-      await adminPublishJobFromUpload({
+      const jdContent = await jdFile.text();
+      await adminSaveJob({
         id: jobForm.id || undefined,
         title: jobForm.title,
         department: jobForm.department || undefined,
         location: jobForm.location || undefined,
         employment_type: jobForm.employment_type || undefined,
         status: jobForm.status,
-        blob_path: init.blob.path,
-        blob_container: init.blob.container,
+        jd_markdown: jdContent || jobForm.jd_markdown,
+        jd_raw_text: jdContent || jobForm.jd_markdown,
+        jd_file_name: jdFile.name,
+        jd_file_content_type: jdFile.type || "text/plain",
       });
 
       setJobMessage("JD uploaded to JD container and role published.");

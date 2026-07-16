@@ -1,3 +1,4 @@
+import base64
 import os
 import sys
 import uuid
@@ -72,6 +73,43 @@ def _get_blob_config() -> tuple | None:
     return service, container_name, account_name, account_key, shared_sas
 
 
+def _ensure_container(service, container_name: str) -> None:
+    try:
+        container_client = service.get_container_client(container_name)
+        container_client.create_container()
+    except Exception:
+        pass
+
+
+def _decode_base64_content(value: str) -> bytes:
+    raw = (value or "").strip()
+    if not raw:
+        return b""
+    if raw.startswith("data:") and "," in raw:
+        raw = raw.split(",", 1)[1]
+    return base64.b64decode(raw)
+
+
+def _content_type_for_resume(file_name: str, content_type: str) -> str:
+    normalized = (content_type or "").strip().lower()
+    ext = _extract_extension(file_name)
+    if normalized in ALLOWED_CONTENT_TYPES:
+        return normalized
+    if ext == ".pdf":
+        return "application/pdf"
+    if ext == ".docx":
+        return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    return normalized or "application/octet-stream"
+
+
+def _upload_bytes_to_blob(service, container_name: str, blob_path: str, content_bytes: bytes, content_type: str) -> None:
+    from azure.storage.blob import ContentSettings
+
+    _ensure_container(service, container_name)
+    blob_client = service.get_blob_client(container=container_name, blob=blob_path)
+    blob_client.upload_blob(content_bytes, overwrite=True, content_settings=ContentSettings(content_type=content_type))
+
+
 def _extract_extension(filename: str) -> str:
     return Path(filename or "").suffix.lower().strip()
 
@@ -139,6 +177,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
     resume_original_name = str(body.get("resume_original_name", "")).strip()
     resume_content_type = str(body.get("resume_content_type", "")).strip().lower()
     resume_size_bytes = body.get("resume_size_bytes")
+    resume_content_base64 = str(body.get("resume_content_base64", "")).strip()
 
     if not job_id or not full_name or not email or not resume_original_name:
         return error_response(
@@ -179,6 +218,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
         )
 
     extension = _extract_extension(resume_original_name)
+    resume_content_type = _content_type_for_resume(resume_original_name, resume_content_type)
     if extension not in ALLOWED_EXTENSIONS or resume_content_type not in ALLOWED_CONTENT_TYPES:
         return error_response(
             error_type="validation",
@@ -311,6 +351,40 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
         # Container likely already exists; ignore creation errors for idempotency.
         pass
 
+    uploaded = False
+    if resume_content_base64:
+        try:
+            resume_bytes = _decode_base64_content(resume_content_base64)
+        except Exception as exc:
+            return error_response(
+                error_type="validation",
+                message="Resume file content is not valid base64.",
+                trace_id=trace_id,
+                req=req,
+                status_code=400,
+                details={"reason": str(exc)},
+            )
+        if not resume_bytes:
+            return error_response(
+                error_type="validation",
+                message="Resume file content is empty.",
+                trace_id=trace_id,
+                req=req,
+                status_code=400,
+            )
+        try:
+            _upload_bytes_to_blob(service_client, container_name, blob_path, resume_bytes, resume_content_type)
+            uploaded = True
+        except Exception as exc:
+            return error_response(
+                error_type="infra",
+                message="Failed to upload resume content to blob storage.",
+                trace_id=trace_id,
+                req=req,
+                status_code=500,
+                details={"reason": str(exc)},
+            )
+
     if account_key:
         from azure.storage.blob import BlobSasPermissions, generate_blob_sas  # lazy import
         expires_at = datetime.now(timezone.utc) + timedelta(minutes=10)
@@ -340,6 +414,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
                 "method": "PUT",
                 "url": upload_url,
                 "expires_in_seconds": expires_in_seconds,
+                "uploaded": uploaded,
                 "required_headers": {
                     "x-ms-blob-type": "BlockBlob",
                     "Content-Type": resume_content_type,

@@ -136,6 +136,7 @@ export interface CareersInitUploadRequest {
   resume_original_name: string;
   resume_content_type: string;
   resume_size_bytes: number;
+  resume_content_base64?: string;
 }
 
 export interface CareersInitUploadResponse {
@@ -146,6 +147,7 @@ export interface CareersInitUploadResponse {
     url: string;
     expires_in_seconds: number;
     required_headers: Record<string, string>;
+    uploaded?: boolean;
   };
 }
 

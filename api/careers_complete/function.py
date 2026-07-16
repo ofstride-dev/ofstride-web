@@ -1,3 +1,4 @@
+import base64
 import os
 import sys
 import json
@@ -80,6 +81,21 @@ def _get_blob_client(blob_path: str):
     return service.get_blob_client(container=container_name, blob=blob_path)
 
 
+def _decode_base64_content(value: str) -> bytes:
+    raw = (value or "").strip()
+    if not raw:
+        return b""
+    if raw.startswith("data:") and "," in raw:
+        raw = raw.split(",", 1)[1]
+    return base64.b64decode(raw)
+
+
+def _upload_blob_content(blob_client, content_bytes: bytes, content_type: str) -> None:
+    from azure.storage.blob import ContentSettings
+
+    blob_client.upload_blob(content_bytes, overwrite=True, content_settings=ContentSettings(content_type=content_type))
+
+
 async def main(req: func.HttpRequest) -> func.HttpResponse:
     trace_id = get_trace_id(req)
     if req.method == "OPTIONS":
@@ -119,6 +135,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
         )
 
     application_id = str(body.get("application_id", "")).strip()
+    resume_content_base64 = str(body.get("resume_content_base64", "")).strip()
     if not application_id:
         return error_response(
             error_type="validation",
@@ -177,6 +194,38 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
             req=req,
             status_code=503,
         )
+
+    if resume_content_base64:
+        try:
+            resume_bytes = _decode_base64_content(resume_content_base64)
+        except Exception as exc:
+            return error_response(
+                error_type="validation",
+                message="Resume file content is not valid base64.",
+                trace_id=trace_id,
+                req=req,
+                status_code=400,
+                details={"reason": str(exc)},
+            )
+        if not resume_bytes:
+            return error_response(
+                error_type="validation",
+                message="Resume file content is empty.",
+                trace_id=trace_id,
+                req=req,
+                status_code=400,
+            )
+        try:
+            _upload_blob_content(blob_client, resume_bytes, str(app.get("resume_content_type") or "application/octet-stream"))
+        except Exception as exc:
+            return error_response(
+                error_type="infra",
+                message="Failed to upload resume content to blob storage.",
+                trace_id=trace_id,
+                req=req,
+                status_code=500,
+                details={"reason": str(exc)},
+            )
 
     try:
         blob_props = blob_client.get_blob_properties()
