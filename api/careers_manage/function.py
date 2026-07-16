@@ -332,6 +332,7 @@ async def _handle_run_analysis(req: func.HttpRequest, trace_id: str, admin: dict
         "ai_summary": agentic.get("ai_summary"),
         "ai_used": agentic.get("ai_used"),
         "ai_provider": agentic.get("ai_provider"),
+        "structured_report": agentic.get("structured_report"),
     })
 
 

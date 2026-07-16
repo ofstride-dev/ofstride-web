@@ -84,6 +84,18 @@ def analyze_application(*, job: dict[str, Any], application: dict[str, Any]) -> 
 
     strengths = f"Matched {len(matched)} of {len(required)} key skills" + (f": {', '.join(matched)}." if matched else ".")
     gaps = f"Missing {len(missing)} skills" + (f": {', '.join(missing)}." if missing else ".")
+    fit_band = "high" if score >= 75 else ("medium" if score >= 60 else "low")
+
+    structured_report = {
+        "summary": f"Candidate fit is {fit_band} with score {score:.1f}/100.",
+        "fit_band": fit_band,
+        "score_breakdown": {
+            "experience_years": years,
+            "matched_skills_count": len(matched),
+            "missing_skills_count": len(missing),
+        },
+        "recommendation_rationale": f"Recommendation '{recommendation}' based on skills and experience alignment.",
+    }
 
     return {
         "match_score": score,
@@ -94,11 +106,12 @@ def analyze_application(*, job: dict[str, Any], application: dict[str, Any]) -> 
         "gaps_summary": gaps,
         "suggested_status": _score_to_status(score),
         "admin_summary": {
-            "fit_band": "high" if score >= 75 else ("medium" if score >= 60 else "low"),
+            "fit_band": fit_band,
             "years_experience": years,
             "top_matched": matched[:5],
             "top_gaps": missing[:5],
         },
+        "structured_report": structured_report,
     }
 
 
@@ -138,6 +151,7 @@ async def ai_revalidate_analysis(*, job: dict[str, Any], application: dict[str, 
                     "summary": "short paragraph <= 240 chars",
                     "strengths_summary": "short sentence",
                     "gaps_summary": "short sentence",
+                    "recommendation_rationale": "short sentence",
                 },
             },
             ensure_ascii=True,
@@ -157,20 +171,37 @@ async def ai_revalidate_analysis(*, job: dict[str, Any], application: dict[str, 
         if ai_reco not in {"shortlist", "review", "hold"}:
             ai_reco = str(base_result["recommendation"])
 
+        fit_band = "high" if ai_score >= 75 else ("medium" if ai_score >= 60 else "low")
+        structured_report = {
+            "summary": str(data.get("summary") or base_result.get("structured_report", {}).get("summary") or "").strip(),
+            "fit_band": fit_band,
+            "score_breakdown": {
+                "experience_years": base_result.get("admin_summary", {}).get("years_experience", 0.0),
+                "matched_skills_count": len(base_result.get("matched_skills", [])),
+                "missing_skills_count": len(base_result.get("missing_skills", [])),
+            },
+            "recommendation_rationale": str(
+                data.get("recommendation_rationale")
+                or base_result.get("structured_report", {}).get("recommendation_rationale")
+                or "AI-reviewed recommendation based on job and profile alignment."
+            ).strip(),
+        }
+
         return {
             **base_result,
             "match_score": ai_score,
             "recommendation": ai_reco,
             "strengths_summary": str(data.get("strengths_summary") or base_result["strengths_summary"]),
             "gaps_summary": str(data.get("gaps_summary") or base_result["gaps_summary"]),
-            "ai_summary": str(data.get("summary") or "").strip(),
+            "ai_summary": structured_report["summary"],
             "ai_used": True,
             "ai_provider": selection.provider.value,
+            "structured_report": structured_report,
         }
     except Exception:
         return {
             **base_result,
-            "ai_summary": "",
+            "ai_summary": str(base_result.get("structured_report", {}).get("summary") or "").strip(),
             "ai_used": False,
             "ai_provider": None,
         }

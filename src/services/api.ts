@@ -340,6 +340,19 @@ export async function adminRunApplicationAnalysis(
     top_matched?: string[];
     top_gaps?: string[];
   };
+  ai_summary?: string;
+  ai_used?: boolean;
+  ai_provider?: string | null;
+  structured_report?: {
+    summary?: string;
+    fit_band?: string;
+    score_breakdown?: {
+      experience_years?: number;
+      matched_skills_count?: number;
+      missing_skills_count?: number;
+    };
+    recommendation_rationale?: string;
+  };
 }> {
   const query = new URLSearchParams({ _path: `applications/${encodeURIComponent(applicationId)}/analysis` });
   const response = await fetch(`${CAREER_API_BASE}/careers/manage?${query.toString()}`, {
@@ -363,6 +376,19 @@ export async function adminRunApplicationAnalysis(
       years_experience?: number;
       top_matched?: string[];
       top_gaps?: string[];
+    };
+    ai_summary?: string;
+    ai_used?: boolean;
+    ai_provider?: string | null;
+    structured_report?: {
+      summary?: string;
+      fit_band?: string;
+      score_breakdown?: {
+        experience_years?: number;
+        matched_skills_count?: number;
+        missing_skills_count?: number;
+      };
+      recommendation_rationale?: string;
     };
   }>(response);
 }

@@ -273,6 +273,7 @@ function AdminCareers() {
         setAnalysisMessage("Analysis completed.");
       }
       await loadDetail(selectedId);
+      setDetail((prev) => (prev ? { ...prev, ...result } : prev));
       await loadList();
     } catch (e) {
       if (e instanceof ApiClientError) {
@@ -573,11 +574,11 @@ function AdminCareers() {
   // ── Render: Dashboard ─────────────────────────────────────────────────
 
   return (
-    <div className="pt-16 sm:pt-20 min-h-screen bg-surface">
+    <div className="pt-16 sm:pt-20 min-h-screen bg-surface overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
           <h1 className="text-3xl font-bold text-primary">Admin Careers Dashboard</h1>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <a
               href="/careers/jobs"
               className="px-3 py-1.5 rounded-lg border border-secondary text-secondary text-xs bg-white hover:bg-blue-50 transition-colors"
@@ -806,7 +807,7 @@ function AdminCareers() {
               <div>
                 <h2 className="font-semibold text-primary">Applied Resumes</h2>
                 <p className="text-xs text-muted">
-                  {selectedJobId ? `Showing applications for selected JD (${selectedJobId}).` : "Select a JD to view related applications."}
+                  {selectedJobId ? `Showing applications for selected JD.` : "Select a JD to view related applications."}
                 </p>
               </div>
               <button className="text-sm text-secondary" onClick={() => loadList(selectedJobId)}>Refresh</button>
@@ -872,6 +873,16 @@ function AdminCareers() {
                 <div><strong>Recommendation:</strong> {String(detail.recommendation || "-")}</div>
                 <div><strong>Strengths:</strong> {String(detail.strengths_summary || "-")}</div>
                 <div><strong>Gaps:</strong> {String(detail.gaps_summary || "-")}</div>
+                {detail.structured_report?.summary && (
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                    <div className="text-xs font-semibold text-slate-700">Structured Summary</div>
+                    <div className="text-sm text-slate-800 mt-1 break-words">{String(detail.structured_report.summary || "-")}</div>
+                    <div className="text-xs text-slate-600 mt-1">
+                      Fit: {String(detail.structured_report?.fit_band || "-")} | Exp: {String(detail.structured_report?.score_breakdown?.experience_years ?? "-")} yrs | Matched: {String(detail.structured_report?.score_breakdown?.matched_skills_count ?? "-")} | Missing: {String(detail.structured_report?.score_breakdown?.missing_skills_count ?? "-")}
+                    </div>
+                    <div className="text-xs text-slate-600 mt-1 break-words">{String(detail.structured_report?.recommendation_rationale || "")}</div>
+                  </div>
+                )}
 
                 <div className="pt-3 border-t border-slate-200 space-y-2">
                   <div className="flex items-center justify-between">
@@ -916,8 +927,8 @@ function AdminCareers() {
       </div>
 
       {jdPreview && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 p-4 sm:p-6 flex items-center justify-center">
-          <div className="w-full max-w-6xl bg-white rounded-xl shadow-xl overflow-hidden">
+        <div className="fixed inset-0 z-50 bg-slate-900/50 p-2 sm:p-6 flex items-center justify-center overflow-y-auto">
+          <div className="w-full max-w-6xl bg-white rounded-xl shadow-xl overflow-hidden my-4">
             <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-semibold text-primary">JD Enhancement Preview</h3>
@@ -939,11 +950,11 @@ function AdminCareers() {
             <div className="grid md:grid-cols-2 gap-0">
               <div className="border-r border-slate-200 p-3">
                 <h4 className="text-xs font-semibold text-slate-700 mb-2">Current JD</h4>
-                <pre className="text-xs leading-5 whitespace-pre-wrap bg-slate-50 rounded-lg p-3 max-h-[52vh] overflow-auto">{jdPreview.original || "(empty)"}</pre>
+                <pre className="text-xs leading-5 whitespace-pre-wrap break-words bg-slate-50 rounded-lg p-3 max-h-[52vh] overflow-auto">{jdPreview.original || "(empty)"}</pre>
               </div>
               <div className="p-3">
                 <h4 className="text-xs font-semibold text-slate-700 mb-2">Proposed JD</h4>
-                <pre className="text-xs leading-5 whitespace-pre-wrap bg-emerald-50 rounded-lg p-3 max-h-[52vh] overflow-auto">{jdPreview.enhanced || "(empty)"}</pre>
+                <pre className="text-xs leading-5 whitespace-pre-wrap break-words bg-emerald-50 rounded-lg p-3 max-h-[52vh] overflow-auto">{jdPreview.enhanced || "(empty)"}</pre>
               </div>
             </div>
 
