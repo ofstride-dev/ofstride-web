@@ -17,6 +17,7 @@ if shared_path not in sys.path:
     sys.path.insert(0, shared_path)
 
 from core.api_contract import error_response, get_trace_id, ok_response, options_response
+from core.blob_rest import blob_config_from_connection_string, upload_blob
 from persistence.careers_store import get_careers_store
 
 import logging as _lg
@@ -145,19 +146,13 @@ def _blob_persist_jd(*, job_id: str, jd_content: str) -> dict[str, str] | None:
     This is a best-effort operation - failures are logged but not propagated.
     """
     try:
-        svc = _blob_service()
-        if svc is None:
+        config = blob_config_from_connection_string((os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip())
+        if config is None:
             _mgmt_logger.info("Blob persistence skipped (blob not configured) for job %s", job_id)
             return None
         container = (os.getenv("CAREERS_JD_BLOB_CONTAINER") or "careers-jd-container").strip()
         blob_path = f"jd/{job_id}.md"
-        _upload_blob_bytes(
-            service=svc,
-            container_name=container,
-            blob_path=blob_path,
-            content_bytes=jd_content.encode("utf-8"),
-            content_type="text/markdown",
-        )
+        upload_blob(config, container=container, blob_path=blob_path, content=jd_content.encode("utf-8"), content_type="text/markdown")
         _mgmt_logger.info("JD content persisted to blob: %s/%s", container, blob_path)
         return {"container": container, "path": blob_path}
     except Exception as exc:
@@ -422,18 +417,12 @@ async def _handle_save_job(req: func.HttpRequest, trace_id: str, admin: dict) ->
             except UnicodeDecodeError:
                 return error_response(error_type="validation", message="JD file must be UTF-8 text.", trace_id=trace_id, req=req, status_code=400)
         try:
-            svc = _blob_service()
-            if svc is None:
+            config = blob_config_from_connection_string((os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip())
+            if config is None:
                 return error_response(error_type="infra", message="Blob storage is not configured for JD uploads.", trace_id=trace_id, req=req, status_code=503)
             container = (os.getenv("CAREERS_JD_BLOB_CONTAINER") or "careers-jd-container").strip()
             jd_blob_meta = {"container": container, "path": f"jd/{final_job_id}.md"}
-            _upload_blob_bytes(
-                service=svc,
-                container_name=container,
-                blob_path=jd_blob_meta["path"],
-                content_bytes=jd_markdown.encode("utf-8"),
-                content_type="text/markdown",
-            )
+            upload_blob(config, container=container, blob_path=jd_blob_meta["path"], content=jd_markdown.encode("utf-8"), content_type="text/markdown")
         except Exception as exc:
             return error_response(error_type="infra", message="Failed to upload JD content to blob storage.", trace_id=trace_id, req=req, status_code=500, details={"reason": str(exc)})
     try:
@@ -563,7 +552,10 @@ async def _handle_publish_from_upload(req: func.HttpRequest, trace_id: str, admi
             jd_bytes = _decode_base64_content(jd_content_base64)
             if not jd_bytes:
                 return error_response(error_type="validation", message="JD file content is empty.", trace_id=trace_id, req=req, status_code=400)
-            _upload_blob_bytes(service=service, container_name=container, blob_path=blob_path, content_bytes=jd_bytes, content_type=_normalize_jd_content_type(blob_path, str(body.get("content_type", ""))))
+            config = blob_config_from_connection_string((os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip())
+            if config is None:
+                return error_response(error_type="infra", message="Blob storage is not configured.", trace_id=trace_id, req=req, status_code=503)
+            upload_blob(config, container=container, blob_path=blob_path, content=jd_bytes, content_type=_normalize_jd_content_type(blob_path, str(body.get("content_type", ""))))
             jd_text = jd_bytes.decode("utf-8")
         else:
             blob_client = service.get_blob_client(container=container, blob=blob_path)

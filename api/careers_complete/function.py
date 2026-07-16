@@ -14,6 +14,7 @@ if shared_path not in sys.path:
     sys.path.insert(0, shared_path)
 
 from core.api_contract import error_response, get_trace_id, ok_response, options_response
+from core.blob_rest import blob_config_from_connection_string, get_blob_properties, upload_blob
 from persistence.careers_store import get_careers_store
 from security.rate_limiter import enforce_rate_limit, get_client_key
 
@@ -55,30 +56,17 @@ def _send_hr_notification(payload: dict[str, object]) -> tuple[bool, str | None]
         return False, str(exc)
 
 
-def _get_blob_client(blob_path: str):
-    try:
-        from azure.storage.blob import BlobServiceClient  # lazy import
-    except ImportError as exc:
-        _comp_logger.error(
-            "Blob SDK import failed -- sys.path[0:3]=%s AZ_ENV=%s",
-            sys.path[:3] if hasattr(sys, 'path') else 'N/A',
-            os.getenv("AZURE_FUNCTIONS_ENVIRONMENT", "local"),
-        )
-        raise RuntimeError(
-            "azure-storage-blob SDK is not installed in the deployment. "
-            "Ensure requirements.txt is built during deployment."
-        ) from exc
+def _get_blob_config():
     connection_string = (os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip()
     container_name = (
         (os.getenv("CAREERS_RESUME_BLOB_CONTAINER") or "").strip()
         or (os.getenv("CAREERS_BLOB_CONTAINER") or "").strip()
         or "careers-resumes"
     )
-    if not connection_string:
+    config = blob_config_from_connection_string(connection_string)
+    if not config:
         return None
-
-    service = BlobServiceClient.from_connection_string(connection_string)
-    return service.get_blob_client(container=container_name, blob=blob_path)
+    return config, container_name
 
 
 def _decode_base64_content(value: str) -> bytes:
@@ -90,10 +78,8 @@ def _decode_base64_content(value: str) -> bytes:
     return base64.b64decode(raw)
 
 
-def _upload_blob_content(blob_client, content_bytes: bytes, content_type: str) -> None:
-    from azure.storage.blob import ContentSettings
-
-    blob_client.upload_blob(content_bytes, overwrite=True, content_settings=ContentSettings(content_type=content_type))
+def _upload_blob_content(config, container_name: str, blob_path: str, content_bytes: bytes, content_type: str) -> None:
+    upload_blob(config, container=container_name, blob_path=blob_path, content=content_bytes, content_type=content_type)
 
 
 async def main(req: func.HttpRequest) -> func.HttpResponse:
@@ -175,18 +161,8 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
         )
 
     blob_path = str(app.get("resume_blob_path", "")).strip()
-    try:
-        blob_client = _get_blob_client(blob_path)
-    except Exception as exc:
-        return error_response(
-            error_type="infra",
-            message="Blob storage SDK is unavailable in the deployment.",
-            trace_id=trace_id,
-            req=req,
-            status_code=503,
-            details={"reason": str(exc)},
-        )
-    if not blob_client:
+    blob_config = _get_blob_config()
+    if not blob_config:
         return error_response(
             error_type="infra",
             message="Blob storage is not configured. Set CAREERS_BLOB_CONNECTION_STRING and CAREERS_RESUME_BLOB_CONTAINER.",
@@ -194,6 +170,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
             req=req,
             status_code=503,
         )
+    config, container_name = blob_config
 
     if resume_content_base64:
         try:
@@ -216,7 +193,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
                 status_code=400,
             )
         try:
-            _upload_blob_content(blob_client, resume_bytes, str(app.get("resume_content_type") or "application/octet-stream"))
+            _upload_blob_content(config, container_name, blob_path, resume_bytes, str(app.get("resume_content_type") or "application/octet-stream"))
         except Exception as exc:
             return error_response(
                 error_type="infra",
@@ -228,7 +205,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
             )
 
     try:
-        blob_props = blob_client.get_blob_properties()
+        blob_props = get_blob_properties(config, container=container_name, blob_path=blob_path)
     except Exception as exc:
         return error_response(
             error_type="validation",
@@ -238,9 +215,17 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
             status_code=400,
             details={"reason": str(exc)},
         )
+    if not blob_props:
+        return error_response(
+            error_type="validation",
+            message="Uploaded resume not found in blob storage.",
+            trace_id=trace_id,
+            req=req,
+            status_code=400,
+        )
 
     expected_size = int(app.get("resume_size_bytes") or 0)
-    actual_size = int(getattr(blob_props, "size", 0) or 0)
+    actual_size = int(blob_props.get("Content-Length") or blob_props.get("content-length") or 0)
     if expected_size != actual_size:
         return error_response(
             error_type="validation",
@@ -251,7 +236,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
             details={"expected": expected_size, "actual": actual_size},
         )
 
-    actual_content_type = str((blob_props.content_settings.content_type or "")).lower().strip()
+    actual_content_type = str(blob_props.get("Content-Type") or blob_props.get("content-type") or "").lower().strip()
     expected_content_type = str(app.get("resume_content_type") or "").lower().strip()
     if expected_content_type not in ALLOWED_CONTENT_TYPES or actual_content_type != expected_content_type:
         return error_response(

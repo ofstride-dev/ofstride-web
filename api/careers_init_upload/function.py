@@ -13,6 +13,7 @@ if shared_path not in sys.path:
     sys.path.insert(0, shared_path)
 
 from core.api_contract import error_response, get_trace_id, ok_response, options_response
+from core.blob_rest import blob_config_from_connection_string, blob_url, upload_blob
 from persistence.careers_store import get_careers_store
 from security.rate_limiter import enforce_rate_limit, get_client_key
 
@@ -39,46 +40,16 @@ def _parse_connection_string(raw: str) -> dict[str, str]:
 
 
 def _get_blob_config() -> tuple | None:
-    try:
-        from azure.storage.blob import BlobServiceClient  # lazy import
-    except ImportError as exc:
-        _init_logger.error(
-            "Blob SDK import failed -- sys.path[0:3]=%s AZ_ENV=%s",
-            sys.path[:3] if hasattr(sys, 'path') else 'N/A',
-            os.getenv("AZURE_FUNCTIONS_ENVIRONMENT", "local"),
-        )
-        raise RuntimeError(
-            "azure-storage-blob SDK is not installed in the deployment. "
-            "Ensure requirements.txt is built during deployment."
-        ) from exc
     connection_string = (os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip()
     container_name = (
         (os.getenv("CAREERS_RESUME_BLOB_CONTAINER") or "").strip()
         or (os.getenv("CAREERS_BLOB_CONTAINER") or "").strip()
         or "careers-resumes"
     )
-    if not connection_string:
+    config = blob_config_from_connection_string(connection_string)
+    if not config:
         return None
-
-    parsed = _parse_connection_string(connection_string)
-    account_name = parsed.get("AccountName", "")
-    account_key = parsed.get("AccountKey")
-    shared_sas = parsed.get("SharedAccessSignature")
-    if not account_name:
-        return None
-    if not account_key and not shared_sas:
-        return None
-
-    service = BlobServiceClient.from_connection_string(connection_string)
-    return service, container_name, account_name, account_key, shared_sas
-
-
-def _ensure_container(service, container_name: str) -> None:
-    try:
-        container_client = service.get_container_client(container_name)
-        container_client.create_container()
-    except Exception:
-        pass
+    return config, container_name
 
 
 def _decode_base64_content(value: str) -> bytes:
@@ -102,12 +73,8 @@ def _content_type_for_resume(file_name: str, content_type: str) -> str:
     return normalized or "application/octet-stream"
 
 
-def _upload_bytes_to_blob(service, container_name: str, blob_path: str, content_bytes: bytes, content_type: str) -> None:
-    from azure.storage.blob import ContentSettings
-
-    _ensure_container(service, container_name)
-    blob_client = service.get_blob_client(container=container_name, blob=blob_path)
-    blob_client.upload_blob(content_bytes, overwrite=True, content_settings=ContentSettings(content_type=content_type))
+def _upload_bytes_to_blob(config, container_name: str, blob_path: str, content_bytes: bytes, content_type: str) -> None:
+    upload_blob(config, container=container_name, blob_path=blob_path, content=content_bytes, content_type=content_type)
 
 
 def _extract_extension(filename: str) -> str:
@@ -228,17 +195,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
             status_code=400,
         )
 
-    try:
-        blob_config = _get_blob_config()
-    except Exception as exc:
-        return error_response(
-            error_type="infra",
-            message="Blob storage SDK is unavailable in the deployment.",
-            trace_id=trace_id,
-            req=req,
-            status_code=503,
-            details={"reason": str(exc)},
-        )
+    blob_config = _get_blob_config()
     if not blob_config:
         return error_response(
             error_type="infra",
@@ -343,13 +300,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
             status_code=500,
         )
 
-    service_client, container_name, account_name, account_key, shared_sas = blob_config
-    container_client = service_client.get_container_client(container_name)
-    try:
-        container_client.create_container()
-    except Exception:
-        # Container likely already exists; ignore creation errors for idempotency.
-        pass
+    config, container_name = blob_config
 
     uploaded = False
     if resume_content_base64:
@@ -373,7 +324,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
                 status_code=400,
             )
         try:
-            _upload_bytes_to_blob(service_client, container_name, blob_path, resume_bytes, resume_content_type)
+            _upload_bytes_to_blob(config, container_name, blob_path, resume_bytes, resume_content_type)
             uploaded = True
         except Exception as exc:
             return error_response(
@@ -385,24 +336,12 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
                 details={"reason": str(exc)},
             )
 
-    if account_key:
-        from azure.storage.blob import BlobSasPermissions, generate_blob_sas  # lazy import
-        expires_at = datetime.now(timezone.utc) + timedelta(minutes=10)
-        sas_token = generate_blob_sas(
-            account_name=account_name,
-            container_name=container_name,
-            blob_name=blob_path,
-            account_key=account_key,
-            permission=BlobSasPermissions(write=True, create=True),
-            expiry=expires_at,
-            content_type=resume_content_type,
-        )
-        expires_in_seconds = 600
+    if uploaded:
+        upload_url = ""
+        expires_in_seconds = 0
     else:
-        sas_token = str(shared_sas or "").lstrip("?")
+        upload_url = blob_url(config, container_name, blob_path=blob_path)
         expires_in_seconds = 3600
-
-    upload_url = f"{service_client.primary_endpoint}/{container_name}/{blob_path}?{sas_token}"
 
     return ok_response(
         trace_id=trace_id,
