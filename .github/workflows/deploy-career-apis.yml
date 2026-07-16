@@ -49,7 +49,11 @@ jobs:
       - name: Ensure Oryx Build Settings
         shell: bash
         run: |
-          RG=$(az functionapp show --name func-ofs-carrer-001 --query resourceGroup -o tsv)
+          RG=$(az resource list --name func-ofs-carrer-001 --resource-type Microsoft.Web/sites --query "[0].resourceGroup" -o tsv)
+          if [ -z "$RG" ]; then
+            echo "ERROR: Could not resolve resource group for Function App func-ofs-carrer-001"
+            exit 1
+          fi
           # Ensure the Function App has Oryx build enabled so requirements.txt is processed
           az functionapp config appsettings set \
             --name func-ofs-carrer-001 \
@@ -74,7 +78,11 @@ jobs:
           GEMINI_MODEL: ${{ secrets.CAREERS_GEMINI_MODEL }}
           ALLOW_MOCK_PROVIDER: ${{ secrets.CAREERS_ALLOW_MOCK_PROVIDER }}
         run: |
-          RG=$(az functionapp show --name func-ofs-carrer-001 --query resourceGroup -o tsv)
+          RG=$(az resource list --name func-ofs-carrer-001 --resource-type Microsoft.Web/sites --query "[0].resourceGroup" -o tsv)
+          if [ -z "$RG" ]; then
+            echo "ERROR: Could not resolve resource group for Function App func-ofs-carrer-001"
+            exit 1
+          fi
           SETTINGS=()
 
           add_setting() {
