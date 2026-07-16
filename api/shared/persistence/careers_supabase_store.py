@@ -559,14 +559,11 @@ class CareersSupabaseStore:
             return False
 
         now_iso = _now_iso()
-        analysis_id = f"ana_{uuid.uuid4().hex}"
+        normalized_application_id = application_id.strip()
 
-        # Upsert analysis row
         body: dict[str, Any] = {
-            "id": analysis_id,
-            "application_id": application_id.strip(),
+            "application_id": normalized_application_id,
             "analysis_status": analysis_status.strip(),
-            "created_at": now_iso,
             "updated_at": now_iso,
         }
         if analyzed_by:
@@ -585,11 +582,39 @@ class CareersSupabaseStore:
             body["gaps_summary"] = gaps_summary
         body["analyzed_at"] = now_iso
 
+        existing = self._request(
+            "GET",
+            "careers_application_analysis",
+            params={
+                "select": "id",
+                "application_id": f"eq.{normalized_application_id}",
+                "limit": "1",
+            },
+        )
+
+        if isinstance(existing, list) and existing:
+            existing_id = str(existing[0].get("id") or "").strip()
+            if not existing_id:
+                return False
+            self._request(
+                "PATCH",
+                "careers_application_analysis",
+                body=body,
+                params={"id": f"eq.{existing_id}"},
+                prefer="return=representation",
+            )
+            return True
+
+        insert_body = {
+            **body,
+            "id": f"ana_{uuid.uuid4().hex}",
+            "created_at": now_iso,
+        }
         self._request(
             "POST",
             "careers_application_analysis",
-            body=body,
-            prefer="resolution=merge-duplicates,return=representation",
+            body=insert_body,
+            prefer="return=representation",
         )
         return True
 
