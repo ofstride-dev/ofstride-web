@@ -870,6 +870,14 @@ function AdminCareers() {
                 <div><strong>Status:</strong> {String(detail.submission_status || "-")}</div>
                 <div><strong>Analysis Status:</strong> {String(detail.analysis_status || "not_started")}</div>
                 <div><strong>Match Score:</strong> {detail.match_score == null ? "-" : String(detail.match_score)}</div>
+                <div>
+                  <strong>Score Gate ({">50%"}):</strong>{" "}
+                  {detail.match_score == null
+                    ? "Pending"
+                    : Number(detail.match_score) > 50
+                      ? "Passed"
+                      : "Below threshold"}
+                </div>
                 <div><strong>Recommendation:</strong> {String(detail.recommendation || "-")}</div>
                 <div><strong>Strengths:</strong> {String(detail.strengths_summary || "-")}</div>
                 <div><strong>Gaps:</strong> {String(detail.gaps_summary || "-")}</div>
@@ -885,6 +893,25 @@ function AdminCareers() {
                 )}
 
                 <div className="pt-3 border-t border-slate-200 space-y-2">
+                  <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
+                    <div className="text-xs font-semibold text-blue-900">Analyzer {"->"} Revalidator</div>
+                    <div className="text-xs text-blue-800 mt-1">
+                      Run AI analysis and revalidation to generate score, summary, and recommendation for this resume.
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <button onClick={onRunAnalysis} className="px-3 py-2 rounded-lg bg-primary text-white text-sm">
+                        Run Analyzer + Revalidator
+                      </button>
+                      <span className="text-xs text-blue-900">
+                        {detail.match_score == null
+                          ? "No score yet"
+                          : Number(detail.match_score) > 50
+                            ? "Current score is above 50%"
+                            : "Current score is 50% or below"}
+                      </span>
+                    </div>
+                  </div>
+
                   <div className="flex items-center justify-between">
                     <label className="inline-flex items-center gap-2 px-2 py-2 rounded-lg border border-slate-200 text-xs">
                       <input
