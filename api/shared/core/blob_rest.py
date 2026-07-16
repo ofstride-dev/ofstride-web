@@ -44,27 +44,51 @@ def parse_connection_string(raw: str) -> dict[str, str]:
 
 
 def blob_config_from_connection_string(raw: str) -> BlobRestConfig | None:
+    config, _ = blob_config_with_reason(raw)
+    return config
+
+
+def blob_config_with_reason(raw: str) -> tuple[BlobRestConfig | None, str | None]:
+    raw = (raw or "").strip()
+    if not raw:
+        return None, "missing_connection_string"
+
     parsed = parse_connection_string(raw)
     account_name = (parsed.get("AccountName") or "").strip()
-    if not account_name:
-        return None
-
     endpoint = (parsed.get("BlobEndpoint") or "").strip()
+    account_key = (parsed.get("AccountKey") or "").strip() or None
+    shared_sas = (parsed.get("SharedAccessSignature") or "").strip().lstrip("?") or None
+
+    # Support direct SAS URL in app setting value.
+    if not parsed and raw.startswith("https://") and "?" in raw:
+        parsed_url = url_parse.urlparse(raw)
+        endpoint = f"{parsed_url.scheme}://{parsed_url.netloc}"
+        path_parts = [part for part in parsed_url.path.split("/") if part]
+        host_parts = parsed_url.netloc.split(".")
+        account_name = host_parts[0] if host_parts else ""
+        shared_sas = parsed_url.query.lstrip("?") or None
+
+    if endpoint and not account_name:
+        host = url_parse.urlparse(endpoint).netloc
+        host_parts = host.split(".")
+        account_name = host_parts[0] if host_parts else ""
+
+    if not account_name:
+        return None, "missing_account_name"
+
     if not endpoint:
         suffix = (parsed.get("EndpointSuffix") or "core.windows.net").strip()
         endpoint = f"https://{account_name}.blob.{suffix}"
 
-    account_key = (parsed.get("AccountKey") or "").strip() or None
-    shared_sas = (parsed.get("SharedAccessSignature") or "").strip().lstrip("?") or None
     if not account_key and not shared_sas:
-        return None
+        return None, "missing_account_auth"
 
     return BlobRestConfig(
         account_name=account_name,
         account_key=account_key,
         shared_sas=shared_sas,
         blob_endpoint=endpoint.rstrip("/"),
-    )
+    ), None
 
 
 def blob_url(config: BlobRestConfig, container: str, blob_path: str | None = None, query: dict[str, str] | None = None) -> str:
