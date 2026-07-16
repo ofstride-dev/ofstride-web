@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import logging
 from urllib import error as url_error
 from urllib import request as url_request
 
@@ -14,6 +15,8 @@ if shared_path not in sys.path:
 from core.api_contract import error_response, get_trace_id, ok_response, options_response
 from persistence.careers_store import get_careers_store
 from security.rate_limiter import enforce_rate_limit, get_client_key
+
+_comp_logger = logging.getLogger("ofstride.careers_complete")
 
 ALLOWED_CONTENT_TYPES = {
     "application/pdf",
@@ -65,7 +68,11 @@ def _get_blob_client(blob_path: str):
             "Ensure requirements.txt is built during deployment."
         ) from exc
     connection_string = (os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip()
-    container_name = (os.getenv("CAREERS_BLOB_CONTAINER") or "careers-resume-container").strip()
+    container_name = (
+        (os.getenv("CAREERS_RESUME_BLOB_CONTAINER") or "").strip()
+        or (os.getenv("CAREERS_BLOB_CONTAINER") or "").strip()
+        or "careers-resumes"
+    )
     if not connection_string:
         return None
 
@@ -165,7 +172,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
     if not blob_client:
         return error_response(
             error_type="infra",
-            message="Blob storage is not configured. Set CAREERS_BLOB_CONNECTION_STRING and CAREERS_BLOB_CONTAINER.",
+            message="Blob storage is not configured. Set CAREERS_BLOB_CONNECTION_STRING and CAREERS_RESUME_BLOB_CONTAINER.",
             trace_id=trace_id,
             req=req,
             status_code=503,

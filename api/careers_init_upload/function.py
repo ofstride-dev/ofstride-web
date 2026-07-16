@@ -51,7 +51,11 @@ def _get_blob_config() -> tuple | None:
             "Ensure requirements.txt is built during deployment."
         ) from exc
     connection_string = (os.getenv("CAREERS_BLOB_CONNECTION_STRING") or "").strip()
-    container_name = (os.getenv("CAREERS_BLOB_CONTAINER") or "careers-resume-container").strip()
+    container_name = (
+        (os.getenv("CAREERS_RESUME_BLOB_CONTAINER") or "").strip()
+        or (os.getenv("CAREERS_BLOB_CONTAINER") or "").strip()
+        or "careers-resumes"
+    )
     if not connection_string:
         return None
 
@@ -198,7 +202,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
     if not blob_config:
         return error_response(
             error_type="infra",
-            message="Blob storage is not configured. Set CAREERS_BLOB_CONNECTION_STRING and CAREERS_BLOB_CONTAINER.",
+            message="Blob storage is not configured. Set CAREERS_BLOB_CONNECTION_STRING and CAREERS_RESUME_BLOB_CONTAINER.",
             trace_id=trace_id,
             req=req,
             status_code=503,

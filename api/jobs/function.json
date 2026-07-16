@@ -1,18 +1,21 @@
 {
-  "scriptFile": "function.py",
   "bindings": [
     {
       "authLevel": "anonymous",
-      "type": "httpTrigger",
       "direction": "in",
+      "methods": [
+        "get",
+        "options"
+      ],
       "name": "req",
-      "methods": ["get", "options"],
-      "route": "jobs"
+      "route": "jobs",
+      "type": "httpTrigger"
     },
     {
-      "type": "http",
       "direction": "out",
-      "name": "$return"
+      "name": "$return",
+      "type": "http"
     }
-  ]
+  ],
+  "scriptFile": "function.py"
 }

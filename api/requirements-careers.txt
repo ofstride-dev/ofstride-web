@@ -1,0 +1,6 @@
+# Minimal requirements for the Career Function App (func-ofs-carrer-001)
+# Only packages actually imported by career endpoints are listed here.
+# This reduces build time and eliminates failures from unused heavy deps.
+azure-functions>=1.20.0
+azure-storage-blob>=12.22.0
+pyjwt[crypto]>=2.8.0

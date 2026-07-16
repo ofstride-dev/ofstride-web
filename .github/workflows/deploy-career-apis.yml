@@ -10,6 +10,7 @@ on:
       - 'api/jobs/**'
       - 'api/shared/**'
       - 'api/requirements.txt'
+      - 'api/requirements-careers.txt'
       - 'api/host.json'
       - '.github/workflows/deploy-career-apis.yml'
   workflow_dispatch:
@@ -33,17 +34,42 @@ jobs:
           cp -r api/jobs __staged_careers/
           cp -r api/shared __staged_careers/
           cp api/host.json __staged_careers/
-          cp api/requirements.txt __staged_careers/
+          # Use the minimal career-only requirements to reduce build failures
+          cp api/requirements-careers.txt __staged_careers/requirements.txt
           cp api/.python-version __staged_careers/ 2>/dev/null || true
+          # Verify the staged requirements.txt has azure-storage-blob
+          echo "=== Staged requirements.txt ==="
+          cat __staged_careers/requirements.txt
       - name: Login to Azure
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_EED27B738214446BB01573AD4107388D }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_233886A9334C42A7B361D9577C76190C }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D79D86DAA64341A6AD251FEC74A6333C }}
+      - name: Ensure Oryx Build Settings
+        shell: bash
+        run: |
+          # Ensure the Function App has Oryx build enabled so requirements.txt is processed
+          az functionapp config appsettings set \
+            --name func-ofs-carrer-001 \
+            --resource-group rg-ofstride-careers \
+            --settings \
+              ENABLE_ORYX_BUILD=true \
+              SCM_DO_BUILD_DURING_DEPLOYMENT=true \
+              PYTHON_IS_WORKER_IN_VENV=true \
+            || echo "WARN: could not set appsettings (may already be configured)"
       - name: Deploy to Azure Functions
         uses: Azure/functions-action@v1
         with:
           app-name: func-ofs-carrer-001
           package: __staged_careers
           scm-do-build-during-deployment: true
+      - name: Verify Deployment Health
+        shell: bash
+        run: |
+          sleep 15
+          BASE="https://func-ofs-carrer-001-dzd4h9andncbhfha.southindia-01.azurewebsites.net/api"
+          echo "=== Health check: /jobs ==="
+          curl -sS -m 30 "${BASE}/jobs?_t=$(date +%s)" | head -c 500 || echo "jobs endpoint not ready yet"
+          echo ""
+          echo "=== Deployment complete ==="

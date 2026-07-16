@@ -58,6 +58,7 @@
     "CAREERS_BLOB_CONNECTION_STRING": "",
     "CAREERS_JD_BLOB_CONTAINER": "careers-jd",
     "CAREERS_RESUME_BLOB_CONTAINER": "careers-resumes",
+    "CAREERS_BLOB_CONTAINER": "careers-resumes",
     "CAREERS_HR_EMAIL": "hr@ofstrideservices.com",
     "CAREERS_HR_WEBHOOK_URL": ""
   }
