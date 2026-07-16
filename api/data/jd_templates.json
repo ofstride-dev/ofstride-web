@@ -1,0 +1,74 @@
+[
+  {
+    "id": "template-tech-ai",
+    "title_hint": "AI Engineer Machine Learning Engineer Data Scientist",
+    "department_hint": "IT Technology Engineering",
+    "responsibilities": [
+      "Design and implement production-ready AI/ML workflows.",
+      "Build and optimize model training and inference pipelines.",
+      "Collaborate with product and engineering for delivery milestones.",
+      "Monitor model quality and continuously improve accuracy.",
+      "Document architecture, assumptions, and operational runbooks."
+    ],
+    "must_have": [
+      "Strong Python and applied ML fundamentals.",
+      "Hands-on experience with model deployment and monitoring.",
+      "Data preprocessing and feature engineering experience.",
+      "API and system integration experience.",
+      "Clear written and verbal communication."
+    ],
+    "preferred": [
+      "Cloud exposure (Azure/AWS/GCP).",
+      "MLOps and CI/CD familiarity.",
+      "Experience with vector search or retrieval systems."
+    ]
+  },
+  {
+    "id": "template-finance-operations",
+    "title_hint": "Financial Analyst Operations Analyst",
+    "department_hint": "Finance Operations",
+    "responsibilities": [
+      "Own periodic reporting and performance tracking.",
+      "Analyze trends and provide actionable insights.",
+      "Improve process controls and operational efficiency.",
+      "Coordinate with cross-functional teams for execution.",
+      "Maintain documentation and audit-ready records."
+    ],
+    "must_have": [
+      "Strong analytical and spreadsheet capabilities.",
+      "Experience in structured reporting workflows.",
+      "Attention to detail and process discipline.",
+      "Stakeholder communication and follow-through.",
+      "Problem solving with business context."
+    ],
+    "preferred": [
+      "Power BI/Tableau reporting exposure.",
+      "Compliance or audit process familiarity.",
+      "Experience with SQL for reporting."
+    ]
+  },
+  {
+    "id": "template-hr-recruitment",
+    "title_hint": "HR Recruiter Talent Acquisition",
+    "department_hint": "HR Recruitment",
+    "responsibilities": [
+      "Manage end-to-end candidate lifecycle for assigned roles.",
+      "Coordinate hiring manager alignment and interview scheduling.",
+      "Maintain candidate communication and hiring funnel health.",
+      "Track hiring metrics and improve time-to-close.",
+      "Ensure compliant and consistent hiring process execution."
+    ],
+    "must_have": [
+      "Hands-on recruitment operations experience.",
+      "Strong communication and stakeholder management.",
+      "Structured interview and screening practices.",
+      "Ability to manage multiple open requisitions.",
+      "Data-driven approach to hiring outcomes."
+    ],
+    "preferred": [
+      "Experience with ATS systems.",
+      "Employer branding exposure.",
+      "Regional hiring market knowledge."
+    ]
+  }
+]

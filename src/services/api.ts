@@ -321,7 +321,8 @@ export async function adminUpdateApplicationStatus(
 }
 
 export async function adminRunApplicationAnalysis(
-  applicationId: string
+  applicationId: string,
+  options?: { auto_apply?: boolean }
 ): Promise<{
   application_id: string;
   analysis_status: string;
@@ -331,11 +332,20 @@ export async function adminRunApplicationAnalysis(
   missing_skills: string[];
   strengths_summary: string;
   gaps_summary: string;
+  suggested_status?: string;
+  auto_applied?: boolean;
+  admin_summary?: {
+    fit_band?: string;
+    years_experience?: number;
+    top_matched?: string[];
+    top_gaps?: string[];
+  };
 }> {
   const query = new URLSearchParams({ _path: `applications/${encodeURIComponent(applicationId)}/analysis` });
   const response = await fetch(`${CAREER_API_BASE}/careers/manage?${query.toString()}`, {
     method: "POST",
     headers: await authHeaders(),
+    body: JSON.stringify({ auto_apply: Boolean(options?.auto_apply) }),
   });
   return parseEnvelope<{
     application_id: string;
@@ -346,6 +356,39 @@ export async function adminRunApplicationAnalysis(
     missing_skills: string[];
     strengths_summary: string;
     gaps_summary: string;
+    suggested_status?: string;
+    auto_applied?: boolean;
+    admin_summary?: {
+      fit_band?: string;
+      years_experience?: number;
+      top_matched?: string[];
+      top_gaps?: string[];
+    };
+  }>(response);
+}
+
+export async function adminEnhanceJobDescription(payload: {
+  id?: string;
+  title: string;
+  department?: string;
+  location?: string;
+  employment_type?: string;
+  jd_markdown?: string;
+}): Promise<{
+  enhanced_jd_markdown: string;
+  template_id: string;
+  has_template_match: boolean;
+}> {
+  const query = new URLSearchParams({ _path: "jd/enhance" });
+  const response = await fetch(`${CAREER_API_BASE}/careers/manage?${query.toString()}`, {
+    method: "POST",
+    headers: await authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  return parseEnvelope<{
+    enhanced_jd_markdown: string;
+    template_id: string;
+    has_template_match: boolean;
   }>(response);
 }
 

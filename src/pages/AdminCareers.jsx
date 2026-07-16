@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  adminEnhanceJobDescription,
   adminGetApplication,
   adminListJobs,
   adminListApplications,
@@ -48,6 +49,10 @@ function AdminCareers() {
   const [jdFile, setJdFile] = useState(null);
   const [uploadingJd, setUploadingJd] = useState(false);
   const [notifyMessage, setNotifyMessage] = useState("");
+  const [enhancingJd, setEnhancingJd] = useState(false);
+  const [enhanceMessage, setEnhanceMessage] = useState("");
+  const [analysisMessage, setAnalysisMessage] = useState("");
+  const [autoApplyStatus, setAutoApplyStatus] = useState(false);
 
   // ── Auth ──────────────────────────────────────────────────────────────
 
@@ -140,9 +145,25 @@ function AdminCareers() {
 
   const onRunAnalysis = async () => {
     if (!selectedId) return;
-    await adminRunApplicationAnalysis(selectedId);
-    await loadDetail(selectedId);
-    await loadList();
+    setAnalysisMessage("");
+    try {
+      const result = await adminRunApplicationAnalysis(selectedId, { auto_apply: autoApplyStatus });
+      if (result.auto_applied) {
+        setAnalysisMessage(`Analysis completed. Status auto-updated to ${result.suggested_status}.`);
+      } else if (autoApplyStatus && result.suggested_status) {
+        setAnalysisMessage(`Analysis completed. Suggested status: ${result.suggested_status}.`);
+      } else {
+        setAnalysisMessage("Analysis completed.");
+      }
+      await loadDetail(selectedId);
+      await loadList();
+    } catch (e) {
+      if (e instanceof ApiClientError) {
+        setAnalysisMessage(e.message);
+      } else {
+        setAnalysisMessage("Failed to run analysis.");
+      }
+    }
   };
 
   const onSetStatus = async (status) => {
@@ -249,6 +270,39 @@ function AdminCareers() {
       }
     } finally {
       setUploadingJd(false);
+    }
+  };
+
+  const onEnhanceJd = async () => {
+    if (!jobForm.title.trim()) {
+      setEnhanceMessage("Enter a job title first.");
+      return;
+    }
+    setEnhancingJd(true);
+    setEnhanceMessage("");
+    try {
+      const result = await adminEnhanceJobDescription({
+        id: jobForm.id || undefined,
+        title: jobForm.title,
+        department: jobForm.department || undefined,
+        location: jobForm.location || undefined,
+        employment_type: jobForm.employment_type || undefined,
+        jd_markdown: jobForm.jd_markdown || undefined,
+      });
+      setJobForm((prev) => ({ ...prev, jd_markdown: result.enhanced_jd_markdown }));
+      setEnhanceMessage(
+        result.has_template_match
+          ? `JD enhanced using template ${result.template_id}.`
+          : "JD enhanced using fallback template."
+      );
+    } catch (e) {
+      if (e instanceof ApiClientError) {
+        setEnhanceMessage(e.message);
+      } else {
+        setEnhanceMessage("Failed to enhance JD.");
+      }
+    } finally {
+      setEnhancingJd(false);
     }
   };
 
@@ -486,7 +540,18 @@ function AdminCareers() {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-primary mb-1">Job Description (Markdown) *</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium text-primary">Job Description (Markdown) *</label>
+                  <button
+                    type="button"
+                    onClick={onEnhanceJd}
+                    disabled={enhancingJd}
+                    className="px-2 py-1 rounded border border-indigo-300 text-indigo-700 text-xs bg-indigo-50"
+                    title="Enhance JD using AI template"
+                  >
+                    {enhancingJd ? "Enhancing..." : "Enhance JD"}
+                  </button>
+                </div>
                 <textarea
                   rows={8}
                   placeholder={"# Job Title\n\n## Responsibilities\n- ...\n\n## Requirements\n- ..."}
@@ -495,6 +560,7 @@ function AdminCareers() {
                   className="w-full px-3 py-2 rounded-lg border border-slate-200 font-mono text-sm"
                   required
                 />
+                {enhanceMessage && <p className="text-xs text-muted mt-1">{enhanceMessage}</p>}
               </div>
               <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-3">
                 <label className="block text-xs font-medium text-primary mb-2">Or upload a JD file (.md or .txt)</label>
@@ -576,6 +642,14 @@ function AdminCareers() {
 
                 <div className="pt-3 border-t border-slate-200 flex flex-wrap gap-2">
                   <button onClick={onRunAnalysis} className="px-3 py-2 rounded-lg bg-primary text-white text-sm">Run Analysis</button>
+                  <label className="inline-flex items-center gap-2 px-2 py-2 rounded-lg border border-slate-200 text-xs">
+                    <input
+                      type="checkbox"
+                      checked={autoApplyStatus}
+                      onChange={(e) => setAutoApplyStatus(Boolean(e.target.checked))}
+                    />
+                    Auto-apply suggested status
+                  </label>
                   <button onClick={() => onSetStatus("under_review")} className="px-3 py-2 rounded-lg border border-slate-300 text-sm">Mark Under Review</button>
                   <button onClick={() => onSetStatus("shortlisted")} className="px-3 py-2 rounded-lg border border-emerald-400 text-emerald-700 text-sm">Shortlist</button>
                   <button onClick={() => onSetStatus("rejected")} className="px-3 py-2 rounded-lg border border-rose-400 text-rose-700 text-sm">Reject</button>
@@ -586,6 +660,7 @@ function AdminCareers() {
                     Send further discussion mail
                   </button>
                 </div>
+                {analysisMessage && <div className="text-xs text-muted">{analysisMessage}</div>}
                 {notifyMessage && <div className="text-xs text-muted">{notifyMessage}</div>}
               </div>
             )}

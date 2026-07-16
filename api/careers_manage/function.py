@@ -18,6 +18,8 @@ if shared_path not in sys.path:
 
 from core.api_contract import error_response, get_trace_id, ok_response, options_response
 from core.blob_rest import resolve_blob_config_with_reason, upload_blob
+from careers_agentic.jd_enhancer import enhance_jd_markdown
+from careers_agentic.resume_analyzer import analyze_application
 from persistence.careers_store import get_careers_store
 
 import logging as _lg
@@ -259,36 +261,21 @@ async def _handle_run_analysis(req: func.HttpRequest, trace_id: str, admin: dict
     if not detail:
         return error_response(error_type="validation", message="Application not found.", trace_id=trace_id, req=req, status_code=404)
 
+    try:
+        body = req.get_json()
+        auto_apply = bool((body or {}).get("auto_apply", False))
+    except ValueError:
+        auto_apply = False
+
     job = store.get_job_by_id(job_id=str(detail.get("job_id") or "")) or {}
-    jd_text = _normalize_text(job.get("title"))
-    jd_text = f"{jd_text} {_normalize_text(detail.get('job_title'))} {_normalize_text(job.get('department'))} {_normalize_text(job.get('employment_type'))}"
-    jd_text = f"{jd_text} {_normalize_text(job.get('jd_markdown'))} {_normalize_text(job.get('jd_raw_text'))}"
-    candidate_text = f"{_normalize_text(detail.get('cover_note'))} {_normalize_text(detail.get('linkedin_url'))}"
-
-    required_skills = _extract_present_skills(jd_text)
-    candidate_skills = _extract_present_skills(candidate_text)
-    if not required_skills:
-        required_skills = ["communication", "operations", "strategy"]
-
-    matched_skills = sorted({skill for skill in required_skills if skill in candidate_skills})
-    missing_skills = sorted({skill for skill in required_skills if skill not in candidate_skills})
-
-    years = float(detail.get("years_experience") or 0)
-    base = 40.0
-    experience_boost = min(years, 15.0) * 2.0
-    match_ratio = (len(matched_skills) / len(required_skills)) if required_skills else 0.0
-    skill_boost = match_ratio * 40.0
-    score = round(min(97.0, base + experience_boost + skill_boost), 1)
-
-    if score >= 75:
-        recommendation = "shortlist"
-    elif score >= 60:
-        recommendation = "review"
-    else:
-        recommendation = "hold"
-
-    strengths_summary = f"Matched {len(matched_skills)} of {len(required_skills)} key skills" + (f": {', '.join(matched_skills)}." if matched_skills else ".")
-    gaps_summary = f"Missing {len(missing_skills)} skills" + (f": {', '.join(missing_skills)}." if missing_skills else ".")
+    agentic = analyze_application(job=job, application=detail)
+    matched_skills = agentic["matched_skills"]
+    missing_skills = agentic["missing_skills"]
+    strengths_summary = agentic["strengths_summary"]
+    gaps_summary = agentic["gaps_summary"]
+    score = float(agentic["match_score"])
+    recommendation = str(agentic["recommendation"])
+    suggested_status = str(agentic["suggested_status"])
 
     updated = store.update_analysis_status(
         application_id=application_id, analysis_status="completed",
@@ -301,11 +288,58 @@ async def _handle_run_analysis(req: func.HttpRequest, trace_id: str, admin: dict
         return error_response(error_type="infra", message="Failed to update analysis status.", trace_id=trace_id, req=req, status_code=500)
 
     store.log_admin_action(admin_user_id=admin["user_id"], action_type="run_analysis", entity_type="application", entity_id=application_id, action_detail=f"score={score:.1f};recommendation={recommendation}")
+
+    auto_applied = False
+    if auto_apply and suggested_status in ALLOWED_APPLICATION_STATUSES:
+        auto_applied = bool(store.update_application_status(application_id=application_id, status=suggested_status))
+        if auto_applied:
+            store.log_admin_action(
+                admin_user_id=admin["user_id"],
+                action_type="auto_apply_analysis_status",
+                entity_type="application",
+                entity_id=application_id,
+                action_detail=f"status={suggested_status}",
+            )
+
     return ok_response(trace_id=trace_id, req=req, data={
         "application_id": application_id, "analysis_status": "completed", "match_score": score,
         "recommendation": recommendation, "matched_skills": matched_skills,
         "missing_skills": missing_skills, "strengths_summary": strengths_summary, "gaps_summary": gaps_summary,
+        "suggested_status": suggested_status,
+        "auto_applied": auto_applied,
+        "admin_summary": agentic.get("admin_summary"),
     })
+
+
+async def _handle_enhance_jd(req: func.HttpRequest, trace_id: str, admin: dict) -> func.HttpResponse:
+    try:
+        body = req.get_json()
+    except ValueError:
+        return error_response(error_type="validation", message="Request body must be valid JSON.", trace_id=trace_id, req=req, status_code=400)
+    if not isinstance(body, dict):
+        return error_response(error_type="validation", message="Request body must be a JSON object.", trace_id=trace_id, req=req, status_code=400)
+
+    title = str(body.get("title") or "").strip()
+    if not title:
+        return error_response(error_type="validation", message="title is required for JD enhancement.", trace_id=trace_id, req=req, status_code=400)
+
+    enhanced = enhance_jd_markdown(
+        title=title,
+        department=str(body.get("department") or "").strip(),
+        location=str(body.get("location") or "").strip(),
+        employment_type=str(body.get("employment_type") or "").strip(),
+        jd_markdown=str(body.get("jd_markdown") or "").strip(),
+    )
+    store = get_careers_store()
+    if store.is_available:
+        store.log_admin_action(
+            admin_user_id=admin["user_id"],
+            action_type="enhance_jd",
+            entity_type="job",
+            entity_id=str(body.get("id") or "adhoc"),
+            action_detail=f"template_id={enhanced.get('template_id')}",
+        )
+    return ok_response(trace_id=trace_id, req=req, data=enhanced)
 
 
 async def _handle_notify_application(req: func.HttpRequest, trace_id: str, admin: dict, application_id: str) -> func.HttpResponse:
@@ -635,6 +669,10 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
     # ── POST /jd-upload/init (init JD upload) ─────────────────────────────
     if req.method == "POST" and primary == "jd-upload" and len(segments) == 2 and segments[1] == "init":
         return await _handle_init_jd_upload(req, trace_id)
+
+    # ── POST /jd/enhance (enhance JD content) ──────────────────────────────
+    if req.method == "POST" and primary == "jd" and len(segments) == 2 and segments[1] == "enhance":
+        return await _handle_enhance_jd(req, trace_id, admin)
 
     # ── POST /jobs/from-upload (publish from uploaded JD) ─────────────────
     if req.method == "POST" and primary == "jobs" and len(segments) == 2 and segments[1] == "from-upload":
