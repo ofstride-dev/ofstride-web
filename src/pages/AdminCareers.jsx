@@ -129,7 +129,6 @@ function AdminCareers() {
   const [enhancingJd, setEnhancingJd] = useState(false);
   const [enhanceMessage, setEnhanceMessage] = useState("");
   const [analysisMessage, setAnalysisMessage] = useState("");
-  const [autoApplyStatus, setAutoApplyStatus] = useState(false);
   const [jdPreview, setJdPreview] = useState(null);
   const [showJobEditor, setShowJobEditor] = useState(false);
   const [workspaceView, setWorkspaceView] = useState("triage"); // triage | jobs
@@ -258,16 +257,13 @@ function AdminCareers() {
     if (!selectedId) return;
     setAnalysisMessage("");
     try {
-      const result = await adminRunApplicationAnalysis(selectedId, { auto_apply: autoApplyStatus });
-      if (result.auto_applied) {
-        setAnalysisMessage(`Analysis completed. Status auto-updated to ${result.suggested_status}.`);
-      } else if (autoApplyStatus && result.suggested_status) {
-        setAnalysisMessage(`Analysis completed. Suggested status: ${result.suggested_status}.`);
-      } else {
-        setAnalysisMessage("Analysis completed.");
-      }
+      const result = await adminRunApplicationAnalysis(selectedId, { auto_apply: false });
+      const scoreLabel = result.match_score == null ? "-" : String(result.match_score);
+      const recommendationLabel = String(result.recommendation || "-");
+      setAnalysisMessage(`Analysis completed. Score: ${scoreLabel}. Recommendation: ${recommendationLabel}.`);
+      setDetailTab("review");
       await loadDetail(selectedId);
-      setDetail((prev) => (prev ? { ...prev, ...result } : prev));
+      setDetail((prev) => ({ ...(prev || {}), ...result }));
       await loadList();
     } catch (e) {
       if (e instanceof ApiClientError) {
@@ -705,7 +701,7 @@ function AdminCareers() {
                           <div className="text-xs font-semibold text-indigo-900">Suggested Next Action</div>
                           <div className="text-sm font-semibold text-indigo-900 mt-1">{suggested.title}</div>
                           <div className="text-xs text-indigo-800 mt-1">{suggested.description}</div>
-                          {suggested.key !== "none" && (
+                          {suggested.key !== "none" && suggested.key !== "run-analysis" && (
                             <button
                               onClick={onRunSuggestedAction}
                               className="mt-2 px-3 py-1.5 rounded-lg bg-indigo-700 text-white text-xs hover:opacity-95 transition-opacity"
@@ -773,14 +769,6 @@ function AdminCareers() {
                             <button onClick={onRunAnalysis} className="px-3 py-2 rounded-lg bg-primary text-white text-sm hover:opacity-95 transition-opacity">
                               Generate Recommendation
                             </button>
-                            <label className="inline-flex items-center gap-2 px-2 py-2 rounded-lg border border-blue-200 text-xs bg-white">
-                              <input
-                                type="checkbox"
-                                checked={autoApplyStatus}
-                                onChange={(e) => setAutoApplyStatus(Boolean(e.target.checked))}
-                              />
-                              Auto-apply suggested decision
-                            </label>
                           </div>
                         </div>
                         <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
