@@ -128,6 +128,25 @@ function Services() {
           </div>
         </section>
 
+        {/* How AI is built in */}
+        <section className="pb-8 sm:pb-10 bg-surface">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="bg-white rounded-2xl border border-slate-100 p-6 sm:p-8">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
+                  <Cpu className="w-5 h-5 text-secondary" />
+                </div>
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-primary mb-2">How AI is built into every service</h2>
+                  <p className="text-text text-sm leading-relaxed">
+                    At Ofstride, AI is not a feature — it's the foundation. Every service runs on predictive models that alert you before problems arise, automation that handles repetitive work without human bottlenecks, and intelligent systems that learn from your data over time. The result: decisions backed by real-time insight, faster turnaround, fewer errors, and a business that gets smarter the longer you work with us.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Grouped Services */}
         <section className="py-14 sm:py-20 lg:py-28">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -147,8 +166,8 @@ function Services() {
                     </div>
                   </summary>
                   <div className="px-5 sm:px-8 pb-6 sm:pb-8 grid sm:grid-cols-2 gap-4 sm:gap-6">
-                    {group.services.map((service) => (
-                      <div key={service.slug} className="border border-slate-100 rounded-xl p-5">
+                    {group.services.map((service, si) => (
+                      <div key={service.slug} className="border border-slate-100 rounded-xl p-5 card-hover" style={{ transitionDelay: `${si * 0.07}s` }}>
                         <div className="flex items-center gap-3 mb-3">
                           <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
                             <service.icon className="w-5 h-5 text-secondary" />

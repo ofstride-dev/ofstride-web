@@ -140,6 +140,28 @@ function Layout() {
           isScrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-transparent'
         }`}
       >
+        {/* Top contact bar — hidden on scroll */}
+        <div className={`transition-all duration-300 overflow-hidden ${isScrolled ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-12 opacity-100'}`}>
+          <div className="bg-primary text-white py-1.5 px-4 flex items-center justify-center flex-wrap gap-x-6 gap-y-1 text-xs">
+            <a href="tel:+918951606862" className="flex items-center gap-1.5 hover:text-blue-200 transition-colors whitespace-nowrap">
+              <Phone className="w-3 h-3" />
+              +91 89516 06862
+            </a>
+            <a href="mailto:support@ofstrideservices.com" className="hidden sm:flex items-center gap-1.5 hover:text-blue-200 transition-colors">
+              <Mail className="w-3 h-3" />
+              support@ofstrideservices.com
+            </a>
+            <a
+              href="https://wa.me/918951606862?text=Hi%2C+I%27d+like+to+know+more+about+Ofstride%27s+services"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-emerald-300 hover:text-emerald-200 transition-colors whitespace-nowrap"
+            >
+              <MessageCircle className="w-3 h-3" />
+              WhatsApp Us
+            </a>
+          </div>
+        </div>
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20 gap-2">
             {/* Logo */}
@@ -328,6 +350,15 @@ function Layout() {
                 >
                   <Calendar className="w-4 h-4" /> Book a Free Call
                 </Link>
+                <a
+                  href="https://wa.me/918951606862?text=Hi%2C+I%27d+like+to+know+more+about+Ofstride%27s+services"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={closeAllMenus}
+                  className="flex items-center justify-center gap-2 w-full bg-emerald-600 text-white px-5 py-3 rounded-lg font-medium"
+                >
+                  <MessageCircle className="w-4 h-4" /> Chat on WhatsApp
+                </a>
                 <Link
                   to="/contact-form"
                   onClick={closeAllMenus}
@@ -407,6 +438,17 @@ function Layout() {
                   <Phone className="w-4 h-4 shrink-0" />
                   <a href="tel:+918951606862" className="hover:text-white transition-colors">
                     +91 89516 06862
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://wa.me/918951606862?text=Hi%2C+I%27d+like+to+know+more+about+Ofstride%27s+services"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300 text-sm transition-colors"
+                  >
+                    <MessageCircle className="w-4 h-4 shrink-0" />
+                    Chat on WhatsApp
                   </a>
                 </li>
               </ul>
