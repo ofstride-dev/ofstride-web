@@ -17,6 +17,7 @@ from ingestion.codebase_kb_pipeline import get_codebase_kb_status
 from core.llm_factory import get_llm_factory
 from core.embedding_factory import get_embedding_factory
 from observability.langfuse_tracer import get_tracer
+from observability.quality_counters import get_quality_counters
 from retrieval.qdrant_store import QdrantStore
 
 
@@ -86,6 +87,15 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
     except Exception as e:
         checks["codebase_kb"] = {"status": "error", "detail": str(e)}
     
+    # Quality counters (non-blocking, in-memory)
+    try:
+        checks["quality"] = {
+            "status": "ok",
+            **get_quality_counters().snapshot(),
+        }
+    except Exception as e:
+        checks["quality"] = {"status": "error", "detail": str(e)}
+
     data = {
         "status": "ready" if status_code == 200 else "not_ready",
         "timestamp": __import__("datetime").datetime.utcnow().isoformat(),

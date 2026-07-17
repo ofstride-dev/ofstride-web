@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Send, X } from "lucide-react";
+import { Brain, Calendar, Send, X } from "lucide-react";
 import { useChat } from "../../hooks/useChat";
 import { getChatSessionId, notifyChatEnded } from "../../services/api";
 import { ConsultantCards } from "./ConsultantCards";
+import { CitationChips } from "./CitationChips";
 import { LeadCaptureInlineForm } from "./LeadCaptureInlineForm";
 import { AssessmentFocusReport } from "./AssessmentFocusReport";
+import { MarkdownMessage } from "./MarkdownMessage";
 import { QuickReplyChips } from "./QuickReplyChips";
 import { TypingIndicator } from "./TypingIndicator";
 
@@ -114,8 +116,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
         <div className="chat-header-left">
           <span className="chat-live-dot" aria-hidden="true" />
           <div>
-            <h2 className="chat-title">Ofstride Services Assistant</h2>
-            <p className="chat-subtitle">Personalized recommendations in a few steps</p>
+            <h2 className="chat-title">
+              <Brain className="inline-block w-3.5 h-3.5 mr-1 opacity-80" aria-hidden="true" />
+              Ofstride AI Consultant
+            </h2>
+            <p className="chat-subtitle">AI-Powered Business Consulting · Available Now</p>
           </div>
         </div>
         <div className="chat-header-actions">
@@ -168,13 +173,16 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
                 />
               ) : (
                 <div className="chat-message-content">
-                  <div className="whitespace-pre-wrap">{msg.content}</div>
+                  <MarkdownMessage content={msg.content} />
                 </div>
               )}
             </div>
 
             {!msg.isLoading && msg.sources && msg.sources.length > 0 && (
-              <ConsultantCards sources={msg.sources} />
+              <>
+                <ConsultantCards sources={msg.sources} />
+                <CitationChips sources={msg.sources} />
+              </>
             )}
           </article>
         ))}

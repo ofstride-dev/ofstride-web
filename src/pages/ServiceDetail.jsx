@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom'
-import { ArrowRight, ArrowLeft, CheckCircle2, Users, Search, FileCheck, Landmark, Receipt, Gavel, Monitor, Cpu, Target, Globe, Phone, Mail, Calendar } from 'lucide-react'
+import { ArrowRight, ArrowLeft, CheckCircle2, Users, Search, FileCheck, Landmark, Receipt, Gavel, Monitor, Cpu, Target, Globe, Phone, Mail, Calendar, MessageCircle } from 'lucide-react'
 
 function ServiceDetail() {
   const { slug } = useParams()
@@ -15,6 +15,11 @@ function ServiceDetail() {
         'Org structures designed for growth, not just today',
         'Culture frameworks backed by data, not guesswork',
         'Employee engagement strategies with measurable impact'
+      ],
+      tasksWeHandle: [
+        'HR policy drafting', 'Attrition risk analysis', 'Org structure review',
+        'Skill-gap assessment', 'Workforce planning', 'Culture surveys',
+        'Employee handbook preparation', 'Performance framework design'
       ],
       howAIHelps: [
         { title: 'Predictive Attrition Modelling', desc: 'Know who is at risk before they leave' },
@@ -37,6 +42,11 @@ function ServiceDetail() {
         'Cultural-fit assessment beyond the resume',
         'End-to-end hiring process management'
       ],
+      tasksWeHandle: [
+        'Job description writing', 'Candidate sourcing', 'Resume screening',
+        'Interview coordination', 'Offer management', 'Background verification',
+        'Talent market mapping', 'Onboarding support'
+      ],
       howAIHelps: [
         { title: 'AI-Candidate Matching', desc: 'Instant shortlisting across databases' },
         { title: 'Automated Resume Parsing', desc: 'Skill scoring without manual sorting' },
@@ -57,6 +67,11 @@ function ServiceDetail() {
         'Statutory compliance across all Indian states',
         'PF, ESI, PT, and TDS management',
         'Audit-ready documentation'
+      ],
+      tasksWeHandle: [
+        'Monthly payroll runs', 'PF / ESI filings', 'TDS computation',
+        'Payslip distribution', 'Full & final settlement', 'Audit preparation',
+        'Statutory return submissions', 'Compliance calendar management'
       ],
       howAIHelps: [
         { title: 'Automated Payroll with Anomaly Detection', desc: 'Catch errors before they happen' },
@@ -79,6 +94,11 @@ function ServiceDetail() {
         'Budgeting, MIS, and management reporting',
         'Fundraising readiness and investor presentations'
       ],
+      tasksWeHandle: [
+        'Cash flow forecasting', 'MIS reporting', 'Budget preparation',
+        'P&L analysis', 'Board-ready financials', 'Investor readiness',
+        'Cost optimisation review', 'Working capital management'
+      ],
       howAIHelps: [
         { title: 'Automated Financial Forecasting', desc: 'Scenario modelling in seconds' },
         { title: 'AI-Driven Cash-Flow Optimisation', desc: 'Alerts before problems arise' },
@@ -99,6 +119,11 @@ function ServiceDetail() {
         'Tax planning and optimisation',
         'Litigation support and representation',
         'Regulatory change monitoring'
+      ],
+      tasksWeHandle: [
+        'GST returns filing', 'Tax planning', 'GSTR reconciliation',
+        'Advance tax estimates', 'Regulatory change alerts', 'TDS return filing',
+        'Input tax credit optimisation', 'Litigation support'
       ],
       howAIHelps: [
         { title: 'Automated GST Reconciliation', desc: 'Mismatch detection in real time' },
@@ -121,6 +146,11 @@ function ServiceDetail() {
         'Civil litigation and arbitration support',
         'Regulatory compliance monitoring'
       ],
+      tasksWeHandle: [
+        'Contract drafting & review', 'Labour law compliance', 'Corporate documentation',
+        'Regulatory monitoring', 'Litigation support', 'Risk assessment',
+        'Policy and handbook review', 'NDA and vendor agreement drafting'
+      ],
       howAIHelps: [
         { title: 'AI-Powered Contract Review', desc: 'Risk flags in seconds' },
         { title: 'Automated Regulatory Change Alerts', desc: 'Never miss an update' },
@@ -142,6 +172,11 @@ function ServiceDetail() {
         'Enterprise system implementation',
         'Digital workflow automation'
       ],
+      tasksWeHandle: [
+        'Infrastructure audit', 'Cloud migration planning', 'System monitoring setup',
+        'Workflow automation', 'Digital strategy roadmap', 'Vendor evaluation',
+        'Security & compliance review', 'Tech stack optimisation'
+      ],
       howAIHelps: [
         { title: 'AI-Driven Infrastructure Optimisation', desc: 'Right-size your stack' },
         { title: 'Automated System Monitoring', desc: 'Predictive maintenance' },
@@ -162,6 +197,11 @@ function ServiceDetail() {
         'Custom AI agent development for business workflows',
         'Predictive analytics and machine learning models',
         'Natural language processing and document intelligence'
+      ],
+      tasksWeHandle: [
+        'AI readiness assessment', 'ML model development', 'Process automation design',
+        'Data pipeline setup', 'NLP solutions', 'Custom AI agent development',
+        'Predictive analytics', 'AI integration into existing systems'
       ],
       howAIHelps: [
         { title: 'Agentic AI Workflows', desc: 'Systems that act, not just analyse' },
@@ -185,6 +225,11 @@ function ServiceDetail() {
         'Innovation consulting and product strategy',
         'Sustainability and ESG advisory'
       ],
+      tasksWeHandle: [
+        'Market entry planning', 'OKR framework setup', 'Process redesign',
+        'Competitor analysis', 'Scenario planning', 'Operational audit',
+        'KPI dashboard design', 'Strategic roadmap development'
+      ],
       howAIHelps: [
         { title: 'AI-Powered Market Intelligence', desc: 'Real-time insights' },
         { title: 'Automated Process Mapping', desc: 'Bottleneck detection instantly' },
@@ -205,6 +250,11 @@ function ServiceDetail() {
         'Contract, payroll, and compliance management',
         'Onboarding and offboarding workflows',
         'Workforce scaling on demand'
+      ],
+      tasksWeHandle: [
+        'Entity-free hiring', 'Multi-state compliance', 'Contractor management',
+        'Onboarding workflow setup', 'Benefits administration', 'Payroll under EOR',
+        'Offboarding & documentation', 'Workforce headcount planning'
       ],
       howAIHelps: [
         { title: 'Automated Multi-State Compliance', desc: 'Always current' },
@@ -316,6 +366,57 @@ function ServiceDetail() {
         </div>
       </section>
 
+      {/* Tasks We Handle */}
+      {service.tasksWeHandle && (
+        <section className="py-10 sm:py-14">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <span className="text-secondary text-sm font-semibold uppercase tracking-wider">
+              Tasks We Handle
+            </span>
+            <h2 className="text-xl sm:text-2xl font-bold text-primary mt-2 mb-5">
+              Day-to-day work we take off your plate.
+            </h2>
+            <div className="flex flex-wrap gap-2.5">
+              {service.tasksWeHandle.map((task, i) => (
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-1.5 bg-blue-50 text-secondary px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium border border-blue-100"
+                >
+                  <span className="w-1.5 h-1.5 bg-secondary rounded-full shrink-0"></span>
+                  {task}
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* How We Work */}
+      <section className="py-10 sm:py-14 bg-surface">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8 sm:mb-10">
+            <span className="text-secondary text-sm font-semibold uppercase tracking-wider">How We Work</span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-primary mt-2">
+              From first call to ongoing results.
+            </h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[
+              { step: '01', title: 'Discovery Call', desc: '30-minute free session to understand your needs, gaps, and goals — no obligation.' },
+              { step: '02', title: 'Scoping', desc: 'We define deliverables, timelines, and measurable success metrics together.' },
+              { step: '03', title: 'Delivery', desc: 'Our team executes with weekly progress updates and full transparency.' },
+              { step: '04', title: 'Ongoing Support', desc: 'Continuous monitoring, reporting, and refinement as your business grows.' },
+            ].map((step) => (
+              <div key={step.step} className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-100 card-hover">
+                <div className="text-4xl font-bold text-blue-50 leading-none mb-3">{step.step}</div>
+                <h3 className="font-bold text-primary mb-2">{step.title}</h3>
+                <p className="text-sm text-text leading-relaxed">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* For Whom + Outcome */}
       <section className="py-12 sm:py-16 lg:py-20 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -416,6 +517,15 @@ function ServiceDetail() {
               <Calendar className="w-4 h-4" />
               Book a Free Call
             </Link>
+            <a
+              href="https://wa.me/918951606862?text=Hi%2C+I%27d+like+to+know+more+about+Ofstride%27s+services"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-xl font-semibold btn-primary"
+            >
+              <MessageCircle className="w-4 h-4" />
+              Chat on WhatsApp
+            </a>
             <Link to="/contact-form"
               className="inline-flex items-center justify-center gap-2 border-2 border-slate-200 text-primary px-6 py-3 rounded-xl font-semibold btn-secondary"
             >

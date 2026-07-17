@@ -577,7 +577,8 @@
 
     .animate-fade-up,
     .animate-float,
-    .ai-badge {
+    .ai-badge,
+    .ticker-track {
       animation: none !important;
     }
 
@@ -602,6 +603,20 @@
       transform: translateY(-4px);
       opacity: 1;
     }
+  }
+
+  /* Auto-scroll client ticker */
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  .ticker-track {
+    display: flex;
+    width: max-content;
+    animation: ticker 26s linear infinite;
+  }
+  .ticker-track:hover {
+    animation-play-state: paused;
   }
 
   @keyframes chatMessageIn {
