@@ -789,6 +789,15 @@ function AdminCareers() {
                           <div><strong>Fallback reason:</strong> {String(detail.ai_fallback_reason || "-")}</div>
                           <div><strong>AI error:</strong> {String(detail.ai_error || "-")}</div>
                         </div>
+                        {(detail.match_score !== undefined || detail.recommendation || detail.structured_report?.summary) && (
+                          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-900 space-y-1">
+                            <div className="font-semibold text-emerald-950">Review Outcome</div>
+                            {detail.match_score !== undefined && <div><strong>Score:</strong> {String(detail.match_score)}</div>}
+                            {detail.recommendation && <div><strong>Recommendation:</strong> {String(detail.recommendation)}</div>}
+                            {detail.structured_report?.summary && <div><strong>Summary:</strong> {String(detail.structured_report.summary)}</div>}
+                            {detail.structured_report?.recommendation_rationale && <div><strong>Why:</strong> {String(detail.structured_report.recommendation_rationale)}</div>}
+                          </div>
+                        )}
                         <div className="flex flex-wrap gap-2">
                           <button onClick={() => onSetStatus("under_review")} className="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white hover:bg-slate-50 transition-colors">Mark Under Review</button>
                           <button onClick={() => onSetStatus("shortlisted")} className="px-3 py-2 rounded-lg border border-emerald-400 text-emerald-700 text-sm bg-white hover:bg-emerald-50 transition-colors">Shortlist</button>
