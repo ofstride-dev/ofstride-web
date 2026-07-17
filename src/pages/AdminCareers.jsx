@@ -133,7 +133,7 @@ function AdminCareers() {
   const [jdPreview, setJdPreview] = useState(null);
   const [showJobEditor, setShowJobEditor] = useState(false);
   const [workspaceView, setWorkspaceView] = useState("triage"); // triage | jobs
-  const [detailTab, setDetailTab] = useState("overview"); // overview | ai | actions
+  const [detailTab, setDetailTab] = useState("profile"); // profile | review
 
   // ── Auth ──────────────────────────────────────────────────────────────
 
@@ -415,7 +415,7 @@ function AdminCareers() {
         llmProvider: result.llm_provider || "",
         hasTemplateMatch: Boolean(result.has_template_match),
       });
-      setEnhanceMessage("Preview generated. Review diff and apply changes if approved.");
+      setEnhanceMessage("AI draft generated. Review and accept or reject.");
     } catch (e) {
       if (e instanceof ApiClientError) {
         setEnhanceMessage(e.message);
@@ -432,8 +432,8 @@ function AdminCareers() {
     setJobForm((prev) => ({ ...prev, jd_markdown: jdPreview.enhanced }));
     setEnhanceMessage(
       jdPreview.usedLlm
-        ? `JD updated using ${jdPreview.llmProvider || "existing LLM"}.`
-        : `JD updated using template ${jdPreview.templateId || "fallback"}.`
+        ? `JD accepted from AI assistant (${jdPreview.llmProvider || "configured provider"}).`
+        : `JD accepted from template draft (${jdPreview.templateId || "fallback"}).`
     );
     setJdPreview(null);
   };
@@ -575,7 +575,7 @@ function AdminCareers() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-primary">Admin Careers Workspace</h1>
-            <p className="text-sm text-text mt-1">Focused workflow for candidate triage and job design.</p>
+            <p className="text-sm text-text mt-1">Three-step flow: create JD, receive applications, review with AI recommendation.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <span className="text-xs text-muted">
@@ -602,15 +602,32 @@ function AdminCareers() {
             className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${workspaceView === "triage" ? "border-secondary bg-blue-50 text-secondary" : "border-slate-300 bg-white hover:bg-slate-50"}`}
             onClick={() => setWorkspaceView("triage")}
           >
-            Candidate Triage
+            Resume Review
           </button>
           <button
             type="button"
             className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${workspaceView === "jobs" ? "border-secondary bg-blue-50 text-secondary" : "border-slate-300 bg-white hover:bg-slate-50"}`}
             onClick={() => setWorkspaceView("jobs")}
           >
-            Job Designer
+            JD Studio
           </button>
+        </div>
+
+        <div className="rounded-xl border border-slate-200 bg-white p-3">
+          <div className="grid md:grid-cols-3 gap-2 text-xs">
+            <div className="rounded-lg border border-slate-200 px-3 py-2">
+              <div className="font-semibold text-primary">1) JD Creation</div>
+              <div className="text-muted mt-1">Admin/Employer creates JD. AI can draft or enhance for acceptance/rejection.</div>
+            </div>
+            <div className="rounded-lg border border-slate-200 px-3 py-2">
+              <div className="font-semibold text-primary">2) Candidate Application</div>
+              <div className="text-muted mt-1">Jobseeker views published JD and applies with resume.</div>
+            </div>
+            <div className="rounded-lg border border-slate-200 px-3 py-2">
+              <div className="font-semibold text-primary">3) Resume Review</div>
+              <div className="text-muted mt-1">Reviewer agent generates recommendation, then employer takes final decision.</div>
+            </div>
+          </div>
         </div>
 
         {error && <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-amber-800 text-sm">{error}</div>}
@@ -648,7 +665,7 @@ function AdminCareers() {
             <div className="grid xl:grid-cols-[340px_1fr] gap-6">
               <section className="bg-white rounded-xl shadow-sm p-4 border border-slate-100">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="font-semibold text-primary">Applications Queue</h2>
+                  <h2 className="font-semibold text-primary">Resume Queue</h2>
                   <span className="text-xs text-muted">{items.length} items</span>
                 </div>
                 {loading ? (
@@ -674,11 +691,11 @@ function AdminCareers() {
               </section>
 
               <section className="bg-white rounded-xl shadow-sm p-4 border border-slate-100">
-                <h2 className="font-semibold text-primary mb-3">Candidate Workspace</h2>
+                <h2 className="font-semibold text-primary mb-3">Reviewer Workspace</h2>
                 {detailLoading ? (
                   <p className="text-sm text-muted">Loading detail...</p>
                 ) : !detail ? (
-                  <p className="text-sm text-muted">Select an application to start review.</p>
+                  <p className="text-sm text-muted">Select a candidate resume to start review.</p>
                 ) : (
                   <div className="space-y-4">
                     {(() => {
@@ -712,28 +729,21 @@ function AdminCareers() {
                     <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-2">
                       <button
                         type="button"
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${detailTab === "overview" ? "border-secondary bg-blue-50 text-secondary" : "border-slate-300 bg-white hover:bg-slate-50"}`}
-                        onClick={() => setDetailTab("overview")}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${detailTab === "profile" ? "border-secondary bg-blue-50 text-secondary" : "border-slate-300 bg-white hover:bg-slate-50"}`}
+                        onClick={() => setDetailTab("profile")}
                       >
-                        Overview
+                        Candidate Profile
                       </button>
                       <button
                         type="button"
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${detailTab === "ai" ? "border-secondary bg-blue-50 text-secondary" : "border-slate-300 bg-white hover:bg-slate-50"}`}
-                        onClick={() => setDetailTab("ai")}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${detailTab === "review" ? "border-secondary bg-blue-50 text-secondary" : "border-slate-300 bg-white hover:bg-slate-50"}`}
+                        onClick={() => setDetailTab("review")}
                       >
-                        Review Analyzer
-                      </button>
-                      <button
-                        type="button"
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${detailTab === "actions" ? "border-secondary bg-blue-50 text-secondary" : "border-slate-300 bg-white hover:bg-slate-50"}`}
-                        onClick={() => setDetailTab("actions")}
-                      >
-                        Actions
+                        AI Recommendation
                       </button>
                     </div>
 
-                    {detailTab === "overview" && (
+                    {detailTab === "profile" && (
                       <div className="space-y-2 text-sm">
                         <div><strong>Job:</strong> {String(detail.job_title || detail.job_id || "-")}</div>
                         <div><strong>Phone:</strong> {String(detail.phone || "-")}</div>
@@ -752,16 +762,16 @@ function AdminCareers() {
                       </div>
                     )}
 
-                    {detailTab === "ai" && (
+                    {detailTab === "review" && (
                       <div className="space-y-3">
                         <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
-                          <div className="text-xs font-semibold text-blue-900">Analyzer {"->"} Revalidator</div>
+                          <div className="text-xs font-semibold text-blue-900">AI Candidate Review</div>
                           <div className="text-xs text-blue-800 mt-1">
-                            Run AI analysis and revalidation to generate score, summary, and recommendation.
+                            Generate one recommendation based on JD fit, evidence, and resume quality.
                           </div>
                           <div className="mt-2 flex flex-wrap items-center gap-2">
                             <button onClick={onRunAnalysis} className="px-3 py-2 rounded-lg bg-primary text-white text-sm hover:opacity-95 transition-opacity">
-                              Run Analyzer + Revalidator
+                              Generate Recommendation
                             </button>
                             <label className="inline-flex items-center gap-2 px-2 py-2 rounded-lg border border-blue-200 text-xs bg-white">
                               <input
@@ -769,7 +779,7 @@ function AdminCareers() {
                                 checked={autoApplyStatus}
                                 onChange={(e) => setAutoApplyStatus(Boolean(e.target.checked))}
                               />
-                              Auto-apply suggested status
+                              Auto-apply suggested decision
                             </label>
                           </div>
                         </div>
@@ -779,11 +789,6 @@ function AdminCareers() {
                           <div><strong>Fallback reason:</strong> {String(detail.ai_fallback_reason || "-")}</div>
                           <div><strong>AI error:</strong> {String(detail.ai_error || "-")}</div>
                         </div>
-                      </div>
-                    )}
-
-                    {detailTab === "actions" && (
-                      <div className="space-y-3">
                         <div className="flex flex-wrap gap-2">
                           <button onClick={() => onSetStatus("under_review")} className="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white hover:bg-slate-50 transition-colors">Mark Under Review</button>
                           <button onClick={() => onSetStatus("shortlisted")} className="px-3 py-2 rounded-lg border border-emerald-400 text-emerald-700 text-sm bg-white hover:bg-emerald-50 transition-colors">Shortlist</button>
@@ -809,7 +814,7 @@ function AdminCareers() {
           <div className="grid xl:grid-cols-[320px_1fr] gap-6">
             <section className="bg-white rounded-xl shadow-sm p-4 border border-slate-100">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-semibold text-primary">Job Profiles</h2>
+                <h2 className="font-semibold text-primary">Job Description Studio</h2>
                 <button className="text-sm text-secondary" onClick={loadJobs}>Refresh</button>
               </div>
 
@@ -821,7 +826,7 @@ function AdminCareers() {
                   setShowJobEditor(true);
                 }}
               >
-                + Create New Job
+                + Create New JD
               </button>
 
               <div className="space-y-2 max-h-[65vh] overflow-auto pr-1">
@@ -850,7 +855,7 @@ function AdminCareers() {
                   <p className="text-xs font-medium text-slate-700">
                     {selectedJob ? `Editing: ${selectedJob.title || "Untitled"}` : "No JD selected"}
                   </p>
-                  <p className="text-xs text-muted">Use JD Enhancer and publish from this focused workspace.</p>
+                  <p className="text-xs text-muted">Use AI assist to draft/enhance JD, then accept or reject before publishing.</p>
                 </div>
                 <button
                   type="button"
@@ -933,9 +938,10 @@ function AdminCareers() {
                     onClick={onEnhanceJd}
                     disabled={enhancingJd}
                     className="px-2 py-1 rounded border border-indigo-300 text-indigo-700 text-xs bg-indigo-50"
-                    title="Enhance JD using AI template"
+                    title="AI assist can draft or enhance JD"
                   >
-                    {enhancingJd ? "Enhancing..." : "Enhance JD"}
+                    <span className="mr-1 inline-flex items-center rounded border border-indigo-300 px-1">AI</span>
+                    {enhancingJd ? "Drafting..." : "AI Draft Assist"}
                   </button>
                 </div>
                 <textarea
@@ -963,7 +969,7 @@ function AdminCareers() {
                   onClick={onPublishUploadedJd}
                   className="mt-3 px-3 py-2 rounded-lg border border-primary text-primary text-sm bg-white"
                 >
-                  {uploadingJd ? "Uploading JD..." : "Upload JD & Publish Role"}
+                  {uploadingJd ? "Uploading JD..." : "Upload JD & Publish"}
                 </button>
               </div>
               <div className="flex gap-2">
@@ -987,10 +993,10 @@ function AdminCareers() {
           <div className="w-full max-w-6xl bg-white rounded-xl shadow-xl overflow-hidden my-4">
             <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-semibold text-primary">JD Enhancement Preview</h3>
+                <h3 className="text-sm font-semibold text-primary">JD AI Draft Review</h3>
                 <p className="text-xs text-muted">
                   {jdPreview.usedLlm
-                    ? `Generated via existing LLM (${jdPreview.llmProvider || "configured provider"}).`
+                    ? `Generated by AI assistant (${jdPreview.llmProvider || "configured provider"}).`
                     : `Generated via template mode (${jdPreview.templateId || "fallback"}).`}
                 </p>
               </div>
@@ -1009,7 +1015,7 @@ function AdminCareers() {
                 <pre className="text-xs leading-5 whitespace-pre-wrap break-words bg-slate-50 rounded-lg p-3 max-h-[52vh] overflow-auto">{jdPreview.original || "(empty)"}</pre>
               </div>
               <div className="p-3">
-                <h4 className="text-xs font-semibold text-slate-700 mb-2">Proposed JD</h4>
+                <h4 className="text-xs font-semibold text-slate-700 mb-2">AI Drafted JD</h4>
                 <pre className="text-xs leading-5 whitespace-pre-wrap break-words bg-emerald-50 rounded-lg p-3 max-h-[52vh] overflow-auto">{jdPreview.enhanced || "(empty)"}</pre>
               </div>
             </div>
@@ -1037,14 +1043,14 @@ function AdminCareers() {
                 onClick={() => setJdPreview(null)}
                 className="px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white"
               >
-                Discard
+                Reject Draft
               </button>
               <button
                 type="button"
                 onClick={onApplyEnhancedJd}
                 className="px-3 py-2 rounded-lg bg-primary text-white text-xs"
               >
-                Apply Enhanced JD
+                Accept Draft
               </button>
             </div>
           </div>

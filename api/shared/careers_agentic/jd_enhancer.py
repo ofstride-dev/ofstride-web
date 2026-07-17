@@ -68,6 +68,42 @@ def _pick_best_template(*, title: str, department: str, jd_text: str, templates:
     return best[1] if best else None
 
 
+def _build_requirement_brief(*, title: str, department: str, location: str, employment_type: str, jd_markdown: str, template: JdTemplate | None) -> str:
+    bullets: list[str] = [
+        f"Role title: {title or 'Role'}",
+        f"Department: {department or 'General'}",
+        f"Location: {location or 'As discussed'}",
+        f"Employment type: {employment_type or 'Full-time'}",
+    ]
+    if template:
+        bullets.append(f"Template fit: {template.template_id}")
+        if template.title_hint:
+            bullets.append(f"Title hint: {template.title_hint}")
+        if template.department_hint:
+            bullets.append(f"Department hint: {template.department_hint}")
+        if template.responsibilities:
+            bullets.append("Template responsibilities: " + "; ".join(template.responsibilities[:5]))
+        if template.must_have:
+            bullets.append("Template must-haves: " + "; ".join(template.must_have[:5]))
+        if template.preferred:
+            bullets.append("Template preferred skills: " + "; ".join(template.preferred[:5]))
+    if jd_markdown:
+        bullets.append("Source JD excerpt: " + jd_markdown[:1200])
+    return "\n".join(f"- {item}" for item in bullets)
+
+
+def _specificity_notes(text: str) -> list[str]:
+    normalized = _normalize(text)
+    notes: list[str] = []
+    if any(token in normalized for token in ["dynamic environment", "fast-paced environment", "team player", "self-starter"]):
+        notes.append("Replace generic hiring language with role-specific outcomes.")
+    if len(_tokenize(normalized)) < 60:
+        notes.append("Add more concrete responsibilities, tools, or business outcomes.")
+    if "must-have" not in normalized and "preferred" not in normalized:
+        notes.append("Keep the structure explicit so candidates can scan it quickly.")
+    return notes
+
+
 def enhance_jd_markdown(*, title: str, department: str | None, location: str | None, employment_type: str | None, jd_markdown: str) -> dict[str, Any]:
     title = str(title or "").strip() or "Role"
     department = str(department or "").strip()
@@ -157,49 +193,103 @@ async def enhance_jd_with_existing_llm(*, title: str, department: str | None, lo
         from core.llm_factory import get_llm_factory
         llm_factory = get_llm_factory()
         selection = await llm_factory.get_healthy_llm_with_metadata()
-        system_prompt = (
-            "You are a senior hiring specialist. Rewrite job descriptions into a concise, structured, and practical format. "
-            "Keep facts grounded in the provided content and avoid inventing compensation, legal terms, or company policies."
+        requirement_brief = _build_requirement_brief(
+            title=title,
+            department=str(department or "").strip(),
+            location=str(location or "").strip(),
+            employment_type=str(employment_type or "").strip(),
+            jd_markdown=jd_markdown or baseline["enhanced_jd_markdown"],
+            template=_pick_best_template(title=title, department=str(department or "").strip(), jd_text=jd_markdown, templates=_load_templates()),
         )
-        user_prompt = "\n".join(
+        draft_system_prompt = (
+            "You are a senior hiring specialist. Draft a concise job description from structured intake. "
+            "Stay grounded in the provided facts, do not invent compensation or policies, and make the role specific enough that a candidate can tell what success looks like."
+        )
+        draft_user_prompt = "\n".join(
             [
-                f"Job title: {title}",
-                f"Department: {department or 'General'}",
-                f"Location: {location or 'As discussed'}",
-                f"Employment type: {employment_type or 'Full-time'}",
+                "Structured intake:",
+                requirement_brief,
                 "",
-                "Current JD markdown:",
-                jd_markdown or baseline["enhanced_jd_markdown"],
-                "",
-                "Return markdown only with sections:",
+                "Write markdown only with these sections:",
                 "1) Snapshot",
                 "2) Role Summary",
-                "3) Key Responsibilities (5 bullets)",
-                "4) Must-Have Skills (5-7 bullets)",
-                "5) Preferred Skills (3-5 bullets)",
-                "6) Interview Focus (4 bullets)",
+                "3) Key Responsibilities",
+                "4) Must-Have Skills",
+                "5) Preferred Skills",
+                "6) Interview Focus",
+                "",
+                "Keep the wording specific, practical, and business-facing.",
             ]
         )
-        content = await selection.client.agenerate(
-            system_prompt=system_prompt,
-            user_prompt=user_prompt,
-            temperature=0.2,
+        draft_content = await selection.client.agenerate(
+            system_prompt=draft_system_prompt,
+            user_prompt=draft_user_prompt,
+            temperature=0.25,
             max_tokens=900,
         )
-        markdown = str(content or "").strip()
-        if len(markdown) < 80:
+        draft_markdown = str(draft_content or "").strip()
+        if len(draft_markdown) < 80:
             return {
                 **baseline,
                 "used_llm": False,
                 "llm_provider": None,
                 "llm_reason": "llm_response_too_short",
             }
+        review_system_prompt = (
+            "You are a skeptical hiring reviewer. Check whether the job description sounds generic, vague, or repetitive. "
+            "If it does, rewrite it once so the final version is more specific and grounded in the intake. Return markdown only."
+        )
+        review_user_prompt = "\n".join(
+            [
+                "Structured intake:",
+                requirement_brief,
+                "",
+                "Draft job description:",
+                draft_markdown,
+                "",
+                "Review checklist:",
+                "- Replace generic wording with role-specific outcomes",
+                "- Keep responsibilities concrete",
+                "- Keep the document concise and business-facing",
+                "- Preserve only facts supported by the intake",
+            ]
+        )
+        reviewed_content = await selection.client.agenerate(
+            system_prompt=review_system_prompt,
+            user_prompt=review_user_prompt,
+            temperature=0.15,
+            max_tokens=1000,
+        )
+        reviewed_markdown = str(reviewed_content or "").strip()
+        final_markdown = reviewed_markdown if len(reviewed_markdown) >= len(draft_markdown) * 0.8 else draft_markdown
+        notes = _specificity_notes(final_markdown)
+        if notes and final_markdown == draft_markdown:
+            followup = await selection.client.agenerate(
+                system_prompt="You are a precision editor for job descriptions. Improve specificity without adding unsupported facts.",
+                user_prompt="\n".join([
+                    "Structured intake:",
+                    requirement_brief,
+                    "",
+                    "Current markdown:",
+                    final_markdown,
+                    "",
+                    "Apply these fixes:",
+                    *[f"- {note}" for note in notes],
+                ]),
+                temperature=0.1,
+                max_tokens=1000,
+            )
+            improved_markdown = str(followup or "").strip()
+            if len(improved_markdown) > 80:
+                final_markdown = improved_markdown
         return {
             **baseline,
-            "enhanced_jd_markdown": markdown,
+            "enhanced_jd_markdown": final_markdown,
             "used_llm": True,
             "llm_provider": selection.provider.value,
             "llm_reason": selection.fallback_reason,
+            "jd_review_notes": notes,
+            "jd_intake_specificity": "high" if not notes else "needs_review",
         }
     except Exception as exc:
         return {
@@ -207,4 +297,5 @@ async def enhance_jd_with_existing_llm(*, title: str, department: str | None, lo
             "used_llm": False,
             "llm_provider": None,
             "llm_reason": str(exc),
+            "jd_review_notes": _specificity_notes(baseline["enhanced_jd_markdown"]),
         }

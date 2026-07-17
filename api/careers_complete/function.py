@@ -312,7 +312,7 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
         "job_title": str(job.get("title") or ""),
         "candidate_name": str(app_after.get("full_name") or ""),
         "application_status": "submitted",
-        "message_hint": "Your application has been received. Our team will review and get back with next steps.",
+        "message_hint": "Thank you for applying to OfStride. We have received your application and our team is reviewing your resume. We will keep you posted on the next steps.",
     }
 
     hr_sent, hr_error = _send_hr_notification(hr_payload)
