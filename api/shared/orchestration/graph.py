@@ -5,12 +5,14 @@ import time
 
 from core.llm_factory import get_llm_factory
 from core.settings import get_settings
+from engagement.event_service import get_chat_event_service
 from guardrails.topic_guard import TopicGuard
 from ingestion.codebase_kb_pipeline import ensure_codebase_kb_seeded
 from knowledge.company_profile import get_company_profile_context
 from knowledge.service_catalog import get_service_catalog
 from memory.session_store import get_session_store
 from observability.langfuse_tracer import get_tracer
+from observability.quality_counters import get_quality_counters
 from orchestration.intake_flow import (
     append_cta_options,
     build_domain_search_query,
@@ -34,6 +36,7 @@ from orchestration.intake_flow import (
     STATE_CONVERSATION,
 )
 from orchestration.assessment_flow import handle_assessment_turn, get_active_assessment_prompt
+from orchestration.intent_templates import detect_intent, render_intent, INTENT_HUMAN_HANDOFF
 from orchestration.session_profile import (
     build_profile_summary,
     extract_profile_updates,
@@ -447,8 +450,85 @@ class RAGGraph:
         )
         profile_updates = extract_profile_updates(query, allow_plain_name=allow_plain_name_capture)
         profile = self.session_store.upsert_profile(session_id, profile_updates)
+
+        # Fire funnel analytics events for newly-captured required fields (first capture only)
+        _event_svc = get_chat_event_service()
+        _missing_after = missing_required_fields(profile)
+        for _field in missing_before:
+            if _field not in _missing_after:
+                _evt_type = {"email": "email_captured", "phone": "phone_captured"}.get(_field)
+                if _evt_type:
+                    try:
+                        _event_svc.record_event(
+                            event_type=_evt_type,
+                            session_id=session_id,
+                            payload={"field": _field},
+                            trace_id=trace_id,
+                        )
+                    except Exception as _evt_exc:
+                        _logger.debug(
+                            "funnel_event_skipped event=%s trace_id=%s reason=%s",
+                            _evt_type, trace_id, str(_evt_exc)[:80],
+                        )
         
-        # 3. USE STATE MACHINE TO DETERMINE NEXT STATE AND RESPONSE
+        # 3. DETERMINISTIC INTENT TEMPLATES (bypass LLM for high-frequency / safety-critical queries)
+        #    Run AFTER profile extraction so the profile is up to date (e.g. human handoff can use name).
+        #    Skip during active intake flow so we don't interrupt slot-filling.
+        if current_state not in [STATE_INTAKE_FIELDS]:
+            _det_intent = detect_intent(query)
+            if _det_intent is not None:
+                _det_response = render_intent(_det_intent, profile)
+                if _det_response:
+                    _det_route = "deterministic_template"
+                    _det_actions = self._build_actions(
+                        ["Book a free call", "Send a message", "Explore our services"]
+                    )
+                    if _det_intent == INTENT_HUMAN_HANDOFF:
+                        _det_route = "human_handoff"
+                        # Fire escalation event so webhook/email can be triggered downstream
+                        _logger.info(
+                            "human_handoff_triggered session_id=%s name=%s email=%s phone=%s trace_id=%s",
+                            session_id,
+                            profile.get("name", ""),
+                            profile.get("email", ""),
+                            profile.get("phone", ""),
+                            trace_id,
+                        )
+                        try:
+                            get_chat_event_service().record_event(
+                                event_type="human_handoff_triggered",
+                                session_id=session_id,
+                                payload={
+                                    "name": profile.get("name", ""),
+                                    "email": profile.get("email", ""),
+                                    "phone": profile.get("phone", ""),
+                                    "service_needed": profile.get("service_needed", ""),
+                                    "area_of_interest": profile.get("area_of_interest", ""),
+                                },
+                                trace_id=trace_id,
+                            )
+                        except Exception as _he_exc:
+                            _logger.debug("handoff_event_failed trace_id=%s reason=%s", trace_id, str(_he_exc)[:80])
+                    return {
+                        "response": self._normalize_response_text(_det_response),
+                        "session_id": session_id,
+                        "state": current_state,
+                        "route_decision": _det_route,
+                        "confidence": 1.0,
+                        "sources": [],
+                        "provider_used": "template",
+                        "fallback_reason": None,
+                        "trace_id": trace_id,
+                        "ui_hints": {
+                            "actions": _det_actions,
+                            "next_required_field": missing_required_fields(profile)[0] if missing_required_fields(profile) else None,
+                        },
+                        "debug": {
+                            "intent": _det_intent,
+                        },
+                    }
+
+        # 4. USE STATE MACHINE TO DETERMINE NEXT STATE AND RESPONSE
         next_state, response_text, actions = get_next_state(current_state, profile, query)
 
         # Ensure provider/fallback always have defaults (prevents NameError in non-LLM states)
@@ -465,7 +545,7 @@ class RAGGraph:
         # Save state
         profile = self.session_store.upsert_profile(session_id, {"state": next_state})
         
-        # 4. HANDLE DOMAIN-SELECTED STATE (retrieve consultants)
+        # 5. HANDLE DOMAIN-SELECTED STATE (retrieve consultants)
         if next_state == STATE_DOMAIN_SELECTED:
             # Use domain from current query OR stored domain from profile
             domain = detect_domain_interest(query) or profile.get("service_type")
@@ -647,16 +727,21 @@ class RAGGraph:
         confidence = 0.95 if next_state in [STATE_INTAKE_FIELDS, STATE_INTAKE_SUBMITTED] else 0.85
 
         _logger.info(
-            "chat_turn session=%s state=%s route=%s docs=%d provider=%s fallback=%s",
-            session_id, next_state, route_decision,
+            "chat_turn session=%s trace=%s state=%s route=%s docs=%d provider=%s fallback=%s",
+            session_id, trace_id, next_state, route_decision,
             len(sources) if sources else 0,
             provider.value if provider else "state_machine",
             fallback_reason or "none",
+        )
+        get_quality_counters().record(
+            route_decision=route_decision,
+            doc_count=len(sources) if sources else 0,
         )
 
         return {
             "response": response_text,
             "session_id": session_id,
+            "trace_id": trace_id,
             "state": next_state,
             "route_decision": route_decision,
             "confidence": confidence,

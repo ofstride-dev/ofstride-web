@@ -60,7 +60,9 @@ export interface ChatResponse {
     | "conversational"
     | "conversational_action"
     | "blocked"
-    | "fallback";
+    | "fallback"
+    | "deterministic_template"
+    | "human_handoff";
   confidence: number;
   sources: ConsultantSource[];
   provider_used: string;
@@ -78,7 +80,10 @@ export type ChatEventType =
   | "response_generated"
   | "session_exit"
   | "off_topic_query"
-  | "cta_selected";
+  | "cta_selected"
+  | "email_captured"
+  | "phone_captured"
+  | "human_handoff_triggered";
 
 export interface ChatEventRequest {
   event_type: ChatEventType;

@@ -23,6 +23,9 @@ ALLOWED_EVENT_TYPES = {
     "session_exit",
     "off_topic_query",
     "cta_selected",
+    "email_captured",
+    "phone_captured",
+    "human_handoff_triggered",
 }
 
 
