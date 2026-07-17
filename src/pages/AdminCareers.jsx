@@ -44,13 +44,6 @@ function computeSimpleDiff(originalText, enhancedText) {
   return rows;
 }
 
-function scrollToSection(sectionId) {
-  const node = document.getElementById(sectionId);
-  if (node) {
-    node.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-}
-
 function getSuggestedAction(detail) {
   const status = String(detail?.submission_status || "").toLowerCase();
   const analysisStatus = String(detail?.analysis_status || "").toLowerCase();
@@ -138,8 +131,9 @@ function AdminCareers() {
   const [analysisMessage, setAnalysisMessage] = useState("");
   const [autoApplyStatus, setAutoApplyStatus] = useState(false);
   const [jdPreview, setJdPreview] = useState(null);
-  const [showManualActions, setShowManualActions] = useState(false);
   const [showJobEditor, setShowJobEditor] = useState(false);
+  const [workspaceView, setWorkspaceView] = useState("triage"); // triage | jobs
+  const [detailTab, setDetailTab] = useState("overview"); // overview | ai | actions
 
   // ── Auth ──────────────────────────────────────────────────────────────
 
@@ -488,6 +482,8 @@ function AdminCareers() {
     }
   };
 
+  const selectedJob = jobs.find((job) => String(job.id || "") === selectedJobId) || null;
+
   // ── Render: Auth Screen ───────────────────────────────────────────────
 
   if (auth.loading) {
@@ -575,117 +571,298 @@ function AdminCareers() {
 
   return (
     <div className="pt-16 sm:pt-20 min-h-screen bg-surface overflow-x-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
-          <h1 className="text-3xl font-bold text-primary">Admin Careers Dashboard</h1>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-primary">Admin Careers Workspace</h1>
+            <p className="text-sm text-text mt-1">Focused workflow for candidate triage and job design.</p>
+          </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <span className="text-xs text-muted">
+              {auth.user?.email} ({auth.role})
+            </span>
             <a
               href="/careers/jobs"
               className="px-3 py-1.5 rounded-lg border border-secondary text-secondary text-xs bg-white hover:bg-blue-50 transition-colors"
             >
-              View Job Seeker Page
+              View Public Jobs
             </a>
-            <a
-              href="/employer"
-              className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white hover:bg-slate-50 transition-colors"
-            >
-              Employer Portal
-            </a>
-            <span className="text-xs text-muted">
-              {auth.user?.email} ({auth.role})
-            </span>
             <button
               onClick={handleSignOut}
-              className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
+              className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white hover:bg-slate-50 transition-colors"
             >
               Sign Out
             </button>
           </div>
         </div>
-        <p className="text-text mb-3">Manage published job descriptions, review applicants, and run AI-assisted analysis.</p>
-        <div className="mb-4 flex flex-wrap items-center gap-2">
+
+        <div className="sticky top-[68px] sm:top-[84px] z-20 rounded-xl border border-slate-200 bg-white/95 backdrop-blur p-2 flex flex-wrap items-center gap-2 shadow-sm">
           <button
             type="button"
-            className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
-            onClick={() => scrollToSection("jobs-panel")}
+            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${workspaceView === "triage" ? "border-secondary bg-blue-50 text-secondary" : "border-slate-300 bg-white hover:bg-slate-50"}`}
+            onClick={() => setWorkspaceView("triage")}
           >
-            Jump to Jobs
+            Candidate Triage
           </button>
           <button
             type="button"
-            className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
-            onClick={() => scrollToSection("applications-panel")}
+            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${workspaceView === "jobs" ? "border-secondary bg-blue-50 text-secondary" : "border-slate-300 bg-white hover:bg-slate-50"}`}
+            onClick={() => setWorkspaceView("jobs")}
           >
-            Jump to Applications
-          </button>
-          <button
-            type="button"
-            className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
-            onClick={() => scrollToSection("details-panel")}
-          >
-            Jump to Detail Actions
+            Job Designer
           </button>
         </div>
 
         {error && <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-amber-800 text-sm">{error}</div>}
 
-        <div className="grid xl:grid-cols-3 gap-6">
-          <section id="jobs-panel" className="bg-white rounded-xl shadow-sm p-4 xl:col-span-1 scroll-mt-24">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-primary">Job Profiles (JD)</h2>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  className="text-xs text-secondary border border-slate-200 rounded-lg px-2 py-1"
-                  onClick={() => {
-                    setJobForm({ id: "", title: "", department: "", location: "", employment_type: "", status: "draft", jd_markdown: "" });
-                    setShowJobEditor(true);
-                  }}
-                >
-                  + New
+        {workspaceView === "triage" ? (
+          <div className="space-y-4">
+            <div className="bg-white rounded-xl shadow-sm p-4 border border-slate-100">
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="min-w-[240px] flex-1">
+                  <label className="block text-xs font-medium text-primary mb-1">Filter by Job</label>
+                  <select
+                    value={selectedJobId}
+                    onChange={async (e) => {
+                      const nextJobId = String(e.target.value || "");
+                      setSelectedJobId(nextJobId);
+                      setSelectedId("");
+                      await loadList(nextJobId || undefined);
+                    }}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white"
+                  >
+                    <option value="">All jobs</option>
+                    {jobs.map((job) => (
+                      <option key={String(job.id)} value={String(job.id)}>
+                        {String(job.title || "Untitled")} ({String(job.status || "draft")})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <button className="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white hover:bg-slate-50 transition-colors" onClick={() => loadList(selectedJobId || undefined)}>
+                  Refresh Queue
                 </button>
+              </div>
+            </div>
+
+            <div className="grid xl:grid-cols-[340px_1fr] gap-6">
+              <section className="bg-white rounded-xl shadow-sm p-4 border border-slate-100">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="font-semibold text-primary">Applications Queue</h2>
+                  <span className="text-xs text-muted">{items.length} items</span>
+                </div>
+                {loading ? (
+                  <p className="text-sm text-muted">Loading...</p>
+                ) : (
+                  <div className="space-y-2 max-h-[70vh] overflow-auto pr-1">
+                    {items.map((item) => (
+                      <button
+                        key={String(item.id)}
+                        className={`w-full text-left border rounded-lg px-3 py-2 transition-colors ${selectedId === String(item.id) ? "border-secondary bg-blue-50" : "border-slate-200 hover:border-secondary hover:bg-slate-50"}`}
+                        onClick={() => setSelectedId(String(item.id))}
+                      >
+                        <div className="font-medium text-primary truncate">{String(item.full_name || "Unnamed")}</div>
+                        <div className="text-xs text-muted">{String(item.job_title || item.job_id || "")}</div>
+                        <div className="text-xs mt-1 text-slate-700">
+                          {String(item.submission_status || "-")} • {String(item.analysis_status || "not_started")}
+                        </div>
+                      </button>
+                    ))}
+                    {items.length === 0 && <p className="text-sm text-muted">No applications found.</p>}
+                  </div>
+                )}
+              </section>
+
+              <section className="bg-white rounded-xl shadow-sm p-4 border border-slate-100">
+                <h2 className="font-semibold text-primary mb-3">Candidate Workspace</h2>
+                {detailLoading ? (
+                  <p className="text-sm text-muted">Loading detail...</p>
+                ) : !detail ? (
+                  <p className="text-sm text-muted">Select an application to start review.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {(() => {
+                      const suggested = getSuggestedAction(detail);
+                      return (
+                        <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3">
+                          <div className="text-xs font-semibold text-indigo-900">Suggested Next Action</div>
+                          <div className="text-sm font-semibold text-indigo-900 mt-1">{suggested.title}</div>
+                          <div className="text-xs text-indigo-800 mt-1">{suggested.description}</div>
+                          {suggested.key !== "none" && (
+                            <button
+                              onClick={onRunSuggestedAction}
+                              className="mt-2 px-3 py-1.5 rounded-lg bg-indigo-700 text-white text-xs hover:opacity-95 transition-opacity"
+                            >
+                              Proceed
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })()}
+
+                    <div className="grid sm:grid-cols-2 gap-2 text-xs">
+                      <div className="rounded border border-slate-200 px-2 py-1.5"><strong>Name:</strong> {String(detail.full_name || "-")}</div>
+                      <div className="rounded border border-slate-200 px-2 py-1.5"><strong>Reference:</strong> {String(detail.reference_id || "-")}</div>
+                      <div className="rounded border border-slate-200 px-2 py-1.5"><strong>Email:</strong> {String(detail.email || "-")}</div>
+                      <div className="rounded border border-slate-200 px-2 py-1.5"><strong>Status:</strong> {String(detail.submission_status || "-")}</div>
+                      <div className="rounded border border-slate-200 px-2 py-1.5"><strong>Analysis:</strong> {String(detail.analysis_status || "not_started")}</div>
+                      <div className="rounded border border-slate-200 px-2 py-1.5"><strong>Score:</strong> {detail.match_score == null ? "-" : String(detail.match_score)}</div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-2">
+                      <button
+                        type="button"
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${detailTab === "overview" ? "border-secondary bg-blue-50 text-secondary" : "border-slate-300 bg-white hover:bg-slate-50"}`}
+                        onClick={() => setDetailTab("overview")}
+                      >
+                        Overview
+                      </button>
+                      <button
+                        type="button"
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${detailTab === "ai" ? "border-secondary bg-blue-50 text-secondary" : "border-slate-300 bg-white hover:bg-slate-50"}`}
+                        onClick={() => setDetailTab("ai")}
+                      >
+                        Review Analyzer
+                      </button>
+                      <button
+                        type="button"
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${detailTab === "actions" ? "border-secondary bg-blue-50 text-secondary" : "border-slate-300 bg-white hover:bg-slate-50"}`}
+                        onClick={() => setDetailTab("actions")}
+                      >
+                        Actions
+                      </button>
+                    </div>
+
+                    {detailTab === "overview" && (
+                      <div className="space-y-2 text-sm">
+                        <div><strong>Job:</strong> {String(detail.job_title || detail.job_id || "-")}</div>
+                        <div><strong>Phone:</strong> {String(detail.phone || "-")}</div>
+                        <div><strong>Recommendation:</strong> {String(detail.recommendation || "-")}</div>
+                        <div><strong>Strengths:</strong> {String(detail.strengths_summary || "-")}</div>
+                        <div><strong>Gaps:</strong> {String(detail.gaps_summary || "-")}</div>
+                        {detail.structured_report?.summary && (
+                          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                            <div className="text-xs font-semibold text-slate-700">Structured Summary</div>
+                            <div className="text-sm text-slate-800 mt-1 break-words">{String(detail.structured_report.summary || "-")}</div>
+                            <div className="text-xs text-slate-600 mt-1">
+                              Fit: {String(detail.structured_report?.fit_band || "-")} | Exp: {String(detail.structured_report?.score_breakdown?.experience_years ?? "-")} yrs | Matched: {String(detail.structured_report?.score_breakdown?.matched_skills_count ?? "-")} | Missing: {String(detail.structured_report?.score_breakdown?.missing_skills_count ?? "-")}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {detailTab === "ai" && (
+                      <div className="space-y-3">
+                        <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
+                          <div className="text-xs font-semibold text-blue-900">Analyzer {"->"} Revalidator</div>
+                          <div className="text-xs text-blue-800 mt-1">
+                            Run AI analysis and revalidation to generate score, summary, and recommendation.
+                          </div>
+                          <div className="mt-2 flex flex-wrap items-center gap-2">
+                            <button onClick={onRunAnalysis} className="px-3 py-2 rounded-lg bg-primary text-white text-sm hover:opacity-95 transition-opacity">
+                              Run Analyzer + Revalidator
+                            </button>
+                            <label className="inline-flex items-center gap-2 px-2 py-2 rounded-lg border border-blue-200 text-xs bg-white">
+                              <input
+                                type="checkbox"
+                                checked={autoApplyStatus}
+                                onChange={(e) => setAutoApplyStatus(Boolean(e.target.checked))}
+                              />
+                              Auto-apply suggested status
+                            </label>
+                          </div>
+                        </div>
+                        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
+                          <div><strong>AI used:</strong> {String(Boolean(detail.ai_used))}</div>
+                          <div><strong>AI provider:</strong> {String(detail.ai_provider || "-")}</div>
+                          <div><strong>Fallback reason:</strong> {String(detail.ai_fallback_reason || "-")}</div>
+                          <div><strong>AI error:</strong> {String(detail.ai_error || "-")}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {detailTab === "actions" && (
+                      <div className="space-y-3">
+                        <div className="flex flex-wrap gap-2">
+                          <button onClick={() => onSetStatus("under_review")} className="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white hover:bg-slate-50 transition-colors">Mark Under Review</button>
+                          <button onClick={() => onSetStatus("shortlisted")} className="px-3 py-2 rounded-lg border border-emerald-400 text-emerald-700 text-sm bg-white hover:bg-emerald-50 transition-colors">Shortlist</button>
+                          <button onClick={() => onSetStatus("rejected")} className="px-3 py-2 rounded-lg border border-rose-400 text-rose-700 text-sm bg-white hover:bg-rose-50 transition-colors">Reject</button>
+                        </div>
+                        <button
+                          onClick={onSendFurtherDiscussionMail}
+                          className="px-3 py-2 rounded-lg border border-indigo-400 text-indigo-700 text-sm bg-white hover:bg-indigo-50 transition-colors"
+                        >
+                          Send confirmation mail
+                        </button>
+                      </div>
+                    )}
+
+                    {analysisMessage && <div className="text-xs text-muted">{analysisMessage}</div>}
+                    {notifyMessage && <div className="text-xs text-muted">{notifyMessage}</div>}
+                  </div>
+                )}
+              </section>
+            </div>
+          </div>
+        ) : (
+          <div className="grid xl:grid-cols-[320px_1fr] gap-6">
+            <section className="bg-white rounded-xl shadow-sm p-4 border border-slate-100">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold text-primary">Job Profiles</h2>
                 <button className="text-sm text-secondary" onClick={loadJobs}>Refresh</button>
               </div>
-            </div>
 
-            <div className="mb-2 text-xs font-semibold text-emerald-700">Active JDs</div>
-            <div className="space-y-2 max-h-56 overflow-auto mb-3 pr-1">
-              {jobs.filter((job) => String(job.status || "").toLowerCase() === "active").map((job) => (
-                <button
-                  key={String(job.id)}
-                  className={`w-full text-left border rounded-lg px-3 py-2 ${selectedJobId === String(job.id) ? "border-secondary bg-blue-50" : "border-slate-200 hover:border-secondary"}`}
-                  onClick={() => onPickJob(job)}
-                >
-                  <div className="font-medium text-primary">{String(job.title || "Untitled")}</div>
-                  <div className="text-xs text-muted">
-                    {String(job.department || "")} {job.department && job.location ? "•" : ""} {String(job.location || "")} • {String(job.status || "draft")}
-                  </div>
-                  <div className="mt-1 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-700">
-                    {Number(jobApplicationCounts[String(job.id)] || 0)} applied
-                  </div>
-                </button>
-              ))}
-              {jobs.filter((job) => String(job.status || "").toLowerCase() === "active").length === 0 && <p className="text-sm text-muted">No active jobs yet.</p>}
-            </div>
-
-            <div className="mb-3 flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-              <div>
-                <p className="text-xs font-medium text-slate-700">
-                  {jobForm.id ? `Selected JD: ${jobForm.title || "Untitled"}` : "No JD selected"}
-                </p>
-                <p className="text-xs text-muted">Edit only when needed; keep list and applications in focus.</p>
-              </div>
               <button
                 type="button"
-                onClick={() => setShowJobEditor((prev) => !prev)}
-                className="px-2 py-1 rounded border border-slate-300 text-xs bg-white"
+                className="w-full mb-3 text-xs text-secondary border border-slate-200 rounded-lg px-2 py-2 bg-white hover:bg-slate-50 transition-colors"
+                onClick={() => {
+                  setJobForm({ id: "", title: "", department: "", location: "", employment_type: "", status: "draft", jd_markdown: "" });
+                  setShowJobEditor(true);
+                }}
               >
-                {showJobEditor ? "Hide JD Form" : "Open JD Form"}
+                + Create New Job
               </button>
-            </div>
 
-            {showJobEditor && (
-            <form onSubmit={onSaveJob} className="space-y-3">
+              <div className="space-y-2 max-h-[65vh] overflow-auto pr-1">
+                {jobs.map((job) => (
+                  <button
+                    key={String(job.id)}
+                    className={`w-full text-left border rounded-lg px-3 py-2 transition-colors ${selectedJobId === String(job.id) ? "border-secondary bg-blue-50" : "border-slate-200 hover:border-secondary hover:bg-slate-50"}`}
+                    onClick={() => onPickJob(job)}
+                  >
+                    <div className="font-medium text-primary">{String(job.title || "Untitled")}</div>
+                    <div className="text-xs text-muted">
+                      {String(job.department || "")} {job.department && job.location ? "•" : ""} {String(job.location || "")} • {String(job.status || "draft")}
+                    </div>
+                    <div className="mt-1 inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-700">
+                      {Number(jobApplicationCounts[String(job.id)] || 0)} applied
+                    </div>
+                  </button>
+                ))}
+                {jobs.length === 0 && <p className="text-sm text-muted">No jobs found.</p>}
+              </div>
+            </section>
+
+            <section className="bg-white rounded-xl shadow-sm p-4 border border-slate-100">
+              <div className="mb-3 flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                <div>
+                  <p className="text-xs font-medium text-slate-700">
+                    {selectedJob ? `Editing: ${selectedJob.title || "Untitled"}` : "No JD selected"}
+                  </p>
+                  <p className="text-xs text-muted">Use JD Enhancer and publish from this focused workspace.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowJobEditor((prev) => !prev)}
+                  className="px-2 py-1 rounded border border-slate-300 text-xs bg-white hover:bg-slate-50 transition-colors"
+                >
+                  {showJobEditor ? "Hide Editor" : "Open Editor"}
+                </button>
+              </div>
+
+              {showJobEditor && (
+              <form onSubmit={onSaveJob} className="space-y-3">
               <div>
                 <label className="block text-xs font-medium text-primary mb-1">Job Title *</label>
                 <input
@@ -799,158 +976,10 @@ function AdminCareers() {
               </div>
               {jobMessage && <p className={`text-xs ${jobMessage.includes("success") ? "text-emerald-600" : "text-muted"}`}>{jobMessage}</p>}
             </form>
-            )}
-          </section>
-
-          <section id="applications-panel" className="bg-white rounded-xl shadow-sm p-4 xl:col-span-1 scroll-mt-24">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="font-semibold text-primary">Applied Resumes</h2>
-                <p className="text-xs text-muted">
-                  {selectedJobId ? `Showing applications for selected JD.` : "Select a JD to view related applications."}
-                </p>
-              </div>
-              <button className="text-sm text-secondary" onClick={() => loadList(selectedJobId)}>Refresh</button>
-            </div>
-            {loading ? (
-              <p className="text-sm text-muted">Loading...</p>
-            ) : (
-              <div className="space-y-2 max-h-[70vh] overflow-auto">
-                {items.map((item) => (
-                  <button
-                    key={String(item.id)}
-                    className={`w-full text-left border rounded-lg px-3 py-2 ${selectedId === String(item.id) ? "border-secondary bg-blue-50" : "border-slate-200"}`}
-                    onClick={() => setSelectedId(String(item.id))}
-                  >
-                    <div className="font-medium text-primary">{String(item.full_name || "Unnamed")}</div>
-                    <div className="text-xs text-muted">{String(item.job_title || item.job_id || "")}</div>
-                    <div className="text-xs mt-1">
-                      <span className="mr-2">Status: {String(item.submission_status || "-")}</span>
-                      <span>Analysis: {String(item.analysis_status || "not_started")}</span>
-                    </div>
-                  </button>
-                ))}
-                {items.length === 0 && <p className="text-sm text-muted">No applications found.</p>}
-              </div>
-            )}
-          </section>
-
-          <section id="details-panel" className="bg-white rounded-xl shadow-sm p-4 xl:col-span-1 scroll-mt-24">
-            <h2 className="font-semibold text-primary mb-4">Application Detail</h2>
-            {detailLoading ? (
-              <p className="text-sm text-muted">Loading detail...</p>
-            ) : !detail ? (
-              <p className="text-sm text-muted">Select an application to view details.</p>
-            ) : (
-              <div className="space-y-3 text-sm">
-                {(() => {
-                  const suggested = getSuggestedAction(detail);
-                  return (
-                    <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3">
-                      <div className="text-xs font-semibold text-indigo-900">Suggested Next Action</div>
-                      <div className="text-sm font-medium text-indigo-900 mt-1">{suggested.title}</div>
-                      <div className="text-xs text-indigo-800 mt-1">{suggested.description}</div>
-                      {suggested.key !== "none" && (
-                        <button
-                          onClick={onRunSuggestedAction}
-                          className="mt-2 px-3 py-1.5 rounded-lg bg-indigo-700 text-white text-xs"
-                        >
-                          Proceed
-                        </button>
-                      )}
-                    </div>
-                  );
-                })()}
-
-                <div><strong>Reference:</strong> {String(detail.reference_id || "-")}</div>
-                <div><strong>Name:</strong> {String(detail.full_name || "-")}</div>
-                <div><strong>Email:</strong> {String(detail.email || "-")}</div>
-                <div><strong>Phone:</strong> {String(detail.phone || "-")}</div>
-                <div><strong>Job:</strong> {String(detail.job_title || detail.job_id || "-")}</div>
-                <div><strong>Status:</strong> {String(detail.submission_status || "-")}</div>
-                <div><strong>Analysis Status:</strong> {String(detail.analysis_status || "not_started")}</div>
-                <div><strong>Match Score:</strong> {detail.match_score == null ? "-" : String(detail.match_score)}</div>
-                <div>
-                  <strong>Score Gate ({">50%"}):</strong>{" "}
-                  {detail.match_score == null
-                    ? "Pending"
-                    : Number(detail.match_score) > 50
-                      ? "Passed"
-                      : "Below threshold"}
-                </div>
-                <div><strong>Recommendation:</strong> {String(detail.recommendation || "-")}</div>
-                <div><strong>Strengths:</strong> {String(detail.strengths_summary || "-")}</div>
-                <div><strong>Gaps:</strong> {String(detail.gaps_summary || "-")}</div>
-                {detail.structured_report?.summary && (
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <div className="text-xs font-semibold text-slate-700">Structured Summary</div>
-                    <div className="text-sm text-slate-800 mt-1 break-words">{String(detail.structured_report.summary || "-")}</div>
-                    <div className="text-xs text-slate-600 mt-1">
-                      Fit: {String(detail.structured_report?.fit_band || "-")} | Exp: {String(detail.structured_report?.score_breakdown?.experience_years ?? "-")} yrs | Matched: {String(detail.structured_report?.score_breakdown?.matched_skills_count ?? "-")} | Missing: {String(detail.structured_report?.score_breakdown?.missing_skills_count ?? "-")}
-                    </div>
-                    <div className="text-xs text-slate-600 mt-1 break-words">{String(detail.structured_report?.recommendation_rationale || "")}</div>
-                  </div>
-                )}
-
-                <div className="pt-3 border-t border-slate-200 space-y-2">
-                  <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
-                    <div className="text-xs font-semibold text-blue-900">Analyzer {"->"} Revalidator</div>
-                    <div className="text-xs text-blue-800 mt-1">
-                      Run AI analysis and revalidation to generate score, summary, and recommendation for this resume.
-                    </div>
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <button onClick={onRunAnalysis} className="px-3 py-2 rounded-lg bg-primary text-white text-sm">
-                        Run Analyzer + Revalidator
-                      </button>
-                      <span className="text-xs text-blue-900">
-                        {detail.match_score == null
-                          ? "No score yet"
-                          : Number(detail.match_score) > 50
-                            ? "Current score is above 50%"
-                            : "Current score is 50% or below"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <label className="inline-flex items-center gap-2 px-2 py-2 rounded-lg border border-slate-200 text-xs">
-                      <input
-                        type="checkbox"
-                        checked={autoApplyStatus}
-                        onChange={(e) => setAutoApplyStatus(Boolean(e.target.checked))}
-                      />
-                      Auto-apply suggested status during analysis
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setShowManualActions((prev) => !prev)}
-                      className="px-2 py-1 rounded border border-slate-300 text-xs bg-white"
-                    >
-                      {showManualActions ? "Hide Manual Actions" : "Show Manual Actions"}
-                    </button>
-                  </div>
-
-                  {showManualActions && (
-                    <div className="flex flex-wrap gap-2">
-                      <button onClick={onRunAnalysis} className="px-3 py-2 rounded-lg bg-primary text-white text-sm">Run Analysis</button>
-                      <button onClick={() => onSetStatus("under_review")} className="px-3 py-2 rounded-lg border border-slate-300 text-sm">Mark Under Review</button>
-                      <button onClick={() => onSetStatus("shortlisted")} className="px-3 py-2 rounded-lg border border-emerald-400 text-emerald-700 text-sm">Shortlist</button>
-                      <button onClick={() => onSetStatus("rejected")} className="px-3 py-2 rounded-lg border border-rose-400 text-rose-700 text-sm">Reject</button>
-                      <button
-                        onClick={onSendFurtherDiscussionMail}
-                        className="px-3 py-2 rounded-lg border border-indigo-400 text-indigo-700 text-sm"
-                      >
-                        Send confirmation mail
-                      </button>
-                    </div>
-                  )}
-                </div>
-                {analysisMessage && <div className="text-xs text-muted">{analysisMessage}</div>}
-                {notifyMessage && <div className="text-xs text-muted">{notifyMessage}</div>}
-              </div>
-            )}
-          </section>
-        </div>
+              )}
+            </section>
+          </div>
+        )}
       </div>
 
       {jdPreview && (
