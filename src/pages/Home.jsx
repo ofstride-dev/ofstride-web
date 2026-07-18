@@ -352,7 +352,6 @@ function Home() {
                     <img src="/logo-dark.png" alt="Ofstride Services LLP" />
                   </div>
                 </div>
-                </div>
               </div>
             </div>
           </div>
