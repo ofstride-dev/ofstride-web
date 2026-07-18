@@ -34,7 +34,7 @@ function ServiceDetail() {
     'executive-search-recruitment': {
       icon: Search,
       title: 'Executive Search & Recruitment',
-      tagline: 'Find Leaders Before Your Competitors Do.',
+      tagline: 'Find the Right Leaders. At the Right Time.',
       heroDesc: 'AI-powered talent intelligence across India. The right person, the right role, the right time.',
       whatYouGet: [
         'Leadership hiring with precision and speed',
@@ -60,7 +60,7 @@ function ServiceDetail() {
     'payroll-hr-compliance': {
       icon: FileCheck,
       title: 'Payroll & HR Compliance',
-      tagline: 'Compliance on Autopilot.',
+      tagline: 'Compliance, Handled Completely.',
       heroDesc: 'Zero-error payroll, real-time statutory monitoring, and AI-generated filings — across every state.',
       whatYouGet: [
         'Accurate payroll processing, every cycle',
@@ -138,7 +138,7 @@ function ServiceDetail() {
     'legal-regulatory-compliance': {
       icon: Gavel,
       title: 'Legal & Regulatory Compliance',
-      tagline: 'Legal Protection, 24/7.',
+      tagline: 'Legal Clarity. Continuous Monitoring. Zero Surprises.',
       heroDesc: 'AI-monitored compliance, smart contract review, and proactive risk flagging — across labour, corporate, and civil law.',
       whatYouGet: [
         'Labour law and industrial dispute advisory',
@@ -217,7 +217,7 @@ function ServiceDetail() {
     'business-strategy-process-improvement': {
       icon: Target,
       title: 'Business Strategy & Process Improvement',
-      tagline: 'Strategy That Executes Itself.',
+      tagline: 'Strategy Built to Execute — With Clarity and Speed',
       heroDesc: 'AI-powered market intelligence, process optimisation, and scenario planning — your roadmap, continuously updated.',
       whatYouGet: [
         'Growth strategy and market entry planning',

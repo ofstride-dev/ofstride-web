@@ -18,7 +18,7 @@ function Services() {
         {
           icon: Search,
           title: 'Executive Search & Recruitment',
-          tagline: 'Find Leaders Before Your Competitors Do.',
+          tagline: 'Find the Right Leaders. At the Right Time.',
           desc: 'AI-powered talent intelligence across India. The right person, the right role, the right time.',
           slug: 'executive-search-recruitment',
           features: ['AI-candidate matching', 'Automated resume parsing', 'Predictive cultural-fit analysis', 'Intelligent interview scheduling']
@@ -26,7 +26,7 @@ function Services() {
         {
           icon: FileCheck,
           title: 'Payroll & HR Compliance',
-          tagline: 'Compliance on Autopilot.',
+          tagline: 'Compliance, Handled Completely.',
           desc: 'Zero-error payroll, real-time statutory monitoring, and AI-generated filings — across every state.',
           slug: 'payroll-hr-compliance',
           features: ['Automated payroll with anomaly detection', 'Real-time compliance monitoring', 'AI-generated PF/ESI/PT filings', 'Predictive audit-risk alerts']
@@ -64,7 +64,7 @@ function Services() {
         {
           icon: Gavel,
           title: 'Legal & Regulatory Compliance',
-          tagline: 'Legal Protection, 24/7.',
+          tagline: 'Legal Clarity. Continuous Monitoring. Zero Surprises.',
           desc: 'AI-monitored compliance, smart contract review, and proactive risk flagging — across labour, corporate, and civil law.',
           slug: 'legal-regulatory-compliance',
           features: ['AI-powered contract review', 'Automated regulatory alerts', 'Intelligent case-law research', 'Smart document drafting']
@@ -101,7 +101,7 @@ function Services() {
         {
           icon: Target,
           title: 'Business Strategy & Process Improvement',
-          tagline: 'Strategy That Executes Itself.',
+          tagline: 'Strategy Built to Execute — With Clarity and Speed',
           desc: 'AI-powered market intelligence, process optimisation, and scenario planning — your roadmap, continuously updated.',
           slug: 'business-strategy-process-improvement',
           features: ['AI-powered market intelligence', 'Automated process mapping', 'Predictive performance dashboards', 'Intelligent scenario planning']

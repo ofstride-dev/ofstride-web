@@ -46,6 +46,54 @@ const practiceScenarios = [
   },
 ]
 
+const backOfficeServices = [
+  {
+    icon: FileText,
+    title: 'Finance, GST & Compliance',
+    desc: 'GST registration and periodic filings, bookkeeping, TDS, ITR, ROC filings and audit preparedness — run on a compliance calendar so deadlines and penalty notices never surprise you.',
+    slug: 'finance-gst-compliance'
+  },
+  {
+    icon: Landmark,
+    title: 'Udyam, Credit & Government Schemes',
+    desc: 'Udyam registration, bank-ready project reports, working-capital and term-loan advisory, and eligibility assessment for CGTMSE, PMEGP and state subsidy schemes.',
+    slug: 'udyam-credit-government-schemes'
+  },
+  {
+    icon: Users,
+    title: 'HR & Labour Compliance',
+    desc: 'Employment documentation, payroll structuring, PF, ESI and Shops & Establishments compliance, plus recruitment support through a pan-India talent network.',
+    slug: 'hr-labour-compliance'
+  },
+  {
+    icon: Gavel,
+    title: 'Legal & Contracts',
+    desc: 'Vendor, customer and partnership agreements, labour-law and industrial dispute advisory, trademark protection, and recovery of delayed receivables under the MSMED Act.',
+    slug: 'legal-contracts'
+  },
+  {
+    icon: Target,
+    title: 'Growth Strategy',
+    desc: 'Pricing and margin analysis, market expansion, GeM and e-commerce onboarding, export readiness and process optimisation — actionable plans, not presentations.',
+    slug: 'growth-strategy'
+  },
+  {
+    icon: Cpu,
+    title: 'Technology & AI Adoption',
+    desc: 'Right-sized billing, inventory and CRM systems, workflow automation, custom AI agents and predictive models — built for lean teams and measured returns.',
+    slug: 'technology-ai-adoption'
+  },
+]
+
+const orbitServices = [
+  { icon: FileText, label: 'Finance', sublabel: 'GST & Tax', angle: 0 },
+  { icon: Landmark, label: 'Credit', sublabel: 'Udyam & Loans', angle: 60 },
+  { icon: Users, label: 'HR', sublabel: 'Payroll & PF/ESI', angle: 120 },
+  { icon: Gavel, label: 'Legal', sublabel: 'Contracts', angle: 180 },
+  { icon: Target, label: 'Growth', sublabel: 'Strategy', angle: 240 },
+  { icon: Cpu, label: 'Tech', sublabel: 'AI Systems', angle: 300 },
+]
+
 function LeadCaptureForm() {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -61,7 +109,7 @@ function LeadCaptureForm() {
         await fetch(webhookUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, source: 'ai-readiness-checklist', timestamp: new Date().toISOString() })
+          body: JSON.stringify({ email, source: 'msme-compliance-calendar', timestamp: new Date().toISOString() })
         })
       }
       setSubmitted(true)
@@ -74,10 +122,10 @@ function LeadCaptureForm() {
 
   if (submitted) {
     return (
-      <div className="flex flex-col items-center gap-2 py-2">
-        <span className="text-accent font-bold text-2xl">✓</span>
-        <p className="font-semibold text-primary">You're on the list!</p>
-        <p className="text-text text-sm">We'll send the checklist to <strong>{email}</strong> shortly.</p>
+      <div className="flex flex-col items-center gap-2 py-2 text-white">
+        <span className="text-emerald-300 font-bold text-2xl">✓</span>
+        <p className="font-semibold">You're on the list!</p>
+        <p className="text-sm text-slate-200">We'll send the calendar to <strong>{email}</strong> shortly.</p>
       </div>
     )
   }
@@ -89,15 +137,15 @@ function LeadCaptureForm() {
         required
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder="Your business email"
-        className="flex-1 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-secondary"
+        placeholder="Your work email"
+        className="flex-1 border border-white/20 bg-white/10 text-white placeholder:text-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-white/60 focus:ring-2 focus:ring-white/15"
       />
       <button
         type="submit"
         disabled={loading}
-        className="inline-flex items-center justify-center gap-2 bg-secondary text-white px-6 py-3 rounded-xl font-semibold text-sm btn-primary disabled:opacity-60"
+        className="inline-flex items-center justify-center gap-2 bg-white text-primary px-6 py-3 rounded-xl font-semibold text-sm btn-primary disabled:opacity-60"
       >
-        {loading ? 'Sending…' : 'Get Free Checklist →'}
+        {loading ? 'Sending…' : 'Get the Calendar →'}
       </button>
     </form>
   )
@@ -131,51 +179,6 @@ function Home() {
       revealRefs.current.push(el)
     }
   }
-
-  const services = [
-    {
-      icon: Users,
-      title: 'Human Resources',
-      desc: 'AI-driven workforce strategy, org design, and culture building.',
-      slug: 'human-resource-consulting',
-      ai: true
-    },
-    {
-      icon: Landmark,
-      title: 'Finance & Tax',
-      desc: 'Predictive forecasting, virtual CFO, and AI-tracked tax strategy.',
-      slug: 'financial-consulting-virtual-cfo',
-      ai: true
-    },
-    {
-      icon: Gavel,
-      title: 'Legal Advisory',
-      desc: 'Smart compliance monitoring and proactive risk flagging.',
-      slug: 'legal-regulatory-compliance',
-      ai: false
-    },
-    {
-      icon: Monitor,
-      title: 'IT & Digital',
-      desc: 'Cloud, automation, and AI-integrated systems that adapt.',
-      slug: 'it-consulting-digital-transformation',
-      ai: false
-    },
-    {
-      icon: Cpu,
-      title: 'AI & Data Science',
-      desc: 'Custom AI agents, predictive models, and automation frameworks.',
-      slug: 'ai-data-science-consulting',
-      ai: true
-    },
-    {
-      icon: Target,
-      title: 'Business Strategy',
-      desc: 'Market intelligence and scenario planning that executes itself.',
-      slug: 'business-strategy-process-improvement',
-      ai: false
-    },
-  ]
 
   const clients = [
     'Cherry Pick Fine Furniture',
@@ -224,30 +227,35 @@ function Home() {
             <div className="animate-fade-up">
               <div className="inline-flex items-center gap-2 bg-blue-50 text-secondary px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium mb-4 sm:mb-6">
                 <span className="w-2 h-2 bg-accent rounded-full ai-badge"></span>
-                AI-Powered Business Consulting
+                AI-Powered Compliance &amp; Back-Office for Indian MSMEs
               </div>
 
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary leading-tight mb-4 sm:mb-6">
-                Build a Business<br />
-                <span className="gradient-text">That Thinks Ahead.</span>
+                Your compliance, finance and HR — handled.<br />
+                <span className="gradient-text">Fixed fees, AI speed.</span>
               </h1>
 
               <p className="text-base sm:text-lg text-text leading-relaxed mb-6 sm:mb-8 max-w-xl">
-                AI-powered consulting for HR, finance, legal, and IT. 
-                Where human expertise meets intelligent systems.
+                Ofstride runs the back office of India's micro, small and medium enterprises: GST and tax filings, Udyam and bank credit, payroll and labour compliance, contracts and recovery — one senior team, one predictable monthly fee.
               </p>
 
               {/* Mobile Hero Visual — What We Handle */}
               <div className="lg:hidden mb-6 sm:mb-8">
-                <div className="hero-orb rounded-2xl border border-blue-100 bg-white/90 backdrop-blur-sm p-4 sm:p-5">
+                <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-primary via-slate-900 to-slate-800 text-white shadow-2xl p-4 sm:p-5">
                   <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-secondary mb-3">
                     What we handle for you
                   </p>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                    {['Payroll processing', 'GST filings', 'HR policy drafting', 'Legal contracts', 'Recruitment', 'IT systems'].map((task) => (
-                      <div key={task} className="flex items-center gap-1.5 text-[11px] sm:text-xs text-text">
-                        <span className="w-1.5 h-1.5 bg-accent rounded-full shrink-0"></span>
-                        {task}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+                    {[
+                      'GST, TDS & ITR filings',
+                      'Udyam, loans & schemes',
+                      'Payroll, PF/ESI & policies',
+                      'Contracts & MSMED recovery',
+                      'Practical AI & systems',
+                    ].map((task) => (
+                      <div key={task} className="flex items-start gap-2 text-[11px] sm:text-xs text-slate-100/90">
+                        <span className="mt-1 w-1.5 h-1.5 bg-secondary rounded-full shrink-0"></span>
+                        <span>{task}</span>
                       </div>
                     ))}
                   </div>
@@ -289,7 +297,7 @@ function Home() {
               <div className="hidden lg:block mt-6 pt-6 border-t border-slate-100">
                 <p className="text-xs font-semibold uppercase tracking-wider text-secondary mb-3">What we handle for you</p>
                 <div className="grid grid-cols-2 gap-x-8 gap-y-1.5">
-                  {['Payroll processing', 'GST filings', 'HR policy drafting', 'Legal contracts', 'Recruitment', 'IT & digital', 'Tax planning', 'Compliance alerts'].map((task) => (
+                  {['GST, TDS & ITR filings', 'Udyam, loans & schemes', 'Payroll, PF/ESI & policies', 'Contracts & MSMED recovery', 'Practical AI & systems'].map((task) => (
                     <div key={task} className="flex items-center gap-1.5 text-xs text-text">
                       <span className="w-1.5 h-1.5 bg-accent rounded-full shrink-0"></span>
                       {task}
@@ -315,60 +323,35 @@ function Home() {
             {/* Hero Visual — Service Orbit */}
             <div className="hidden lg:flex flex-col gap-5">
               <div className="relative animate-float">
-                <div className="relative w-full max-w-md mx-auto">
-                  <svg viewBox="0 0 400 400" className="w-full h-full">
-                    {/* Orbit rings */}
-                    <circle cx="200" cy="200" r="140" fill="none" stroke="#0023a0" strokeWidth="1" opacity="0.18" strokeDasharray="6 4" />
-                    <circle cx="200" cy="200" r="80" fill="none" stroke="#0023a0" strokeWidth="1" opacity="0.1" strokeDasharray="4 4" />
-
-                    {/* Spoke lines */}
-                    {[0, 60, 120, 180, 240, 300].map((angle, i) => {
-                      const rad = (angle - 90) * Math.PI / 180
-                      const x = 200 + 140 * Math.cos(rad)
-                      const y = 200 + 140 * Math.sin(rad)
-                      return <line key={i} x1="200" y1="200" x2={x} y2={y} stroke="#0023a0" strokeWidth="1" opacity="0.12" />
-                    })}
-
-                    {/* Center node */}
-                    <circle cx="200" cy="200" r="46" fill="#001150" />
-                    <text x="200" y="197" textAnchor="middle" fill="white" fontSize="9.5" fontWeight="bold" fontFamily="Inter,system-ui,sans-serif">OFSTRIDE</text>
-                    <text x="200" y="211" textAnchor="middle" fill="#10B981" fontSize="7.5" fontFamily="Inter,system-ui,sans-serif">Intelligence</text>
-
-                    {/* Pulse ring */}
-                    <circle cx="200" cy="200" r="46" fill="none" stroke="#0023a0" strokeWidth="2" opacity="0.3">
-                      <animate attributeName="r" values="46;72;46" dur="3.5s" repeatCount="indefinite" />
-                      <animate attributeName="opacity" values="0.3;0;0.3" dur="3.5s" repeatCount="indefinite" />
-                    </circle>
-
-                    {/* Service chips */}
-                    {[
-                      { label: 'HR', sub: 'People', angle: 0 },
-                      { label: 'Finance', sub: 'Virtual CFO', angle: 60 },
-                      { label: 'Legal', sub: 'Compliance', angle: 120 },
-                      { label: 'IT', sub: 'Digital', angle: 180 },
-                      { label: 'AI', sub: 'Data Science', angle: 240 },
-                      { label: 'Strategy', sub: 'Growth', angle: 300 },
-                    ].map((item, i) => {
-                      const rad = (item.angle - 90) * Math.PI / 180
-                      const x = 200 + 140 * Math.cos(rad)
-                      const y = 200 + 140 * Math.sin(rad)
+                <div className="orbit-stage">
+                  <div className="orbit-track">
+                    {orbitServices.map((item) => {
+                      const Icon = item.icon
                       return (
-                        <g key={i}>
-                          <circle cx={x} cy={y} r="30" fill="white" stroke="#0023a0" strokeWidth="1.5" opacity="0.95" />
-                          <text x={x} y={y - 1} textAnchor="middle" fill="#001150" fontSize="8.5" fontWeight="bold" fontFamily="Inter,system-ui,sans-serif">{item.label}</text>
-                          <text x={x} y={y + 11} textAnchor="middle" fill="#2563EB" fontSize="6.5" fontFamily="Inter,system-ui,sans-serif">{item.sub}</text>
-                        </g>
+                        <div
+                          key={item.label}
+                          className="orbit-item"
+                          style={{ '--orbit-angle': `${item.angle}deg`, '--orbit-radius': '138px' }}
+                        >
+                          <div className="orbit-pill">
+                            <span className="orbit-icon-wrap">
+                              <Icon className="w-4 h-4 text-secondary" />
+                            </span>
+                            <span className="orbit-label">{item.label}</span>
+                            <span className="orbit-subtitle">{item.sublabel}</span>
+                          </div>
+                        </div>
                       )
                     })}
+                  </div>
 
-                    {/* Rotating dots */}
-                    <circle cx="200" cy="60" r="5" fill="#10B981">
-                      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="18s" repeatCount="indefinite" />
-                    </circle>
-                    <circle cx="340" cy="200" r="4" fill="#2563EB" opacity="0.6">
-                      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="-360 200 200" dur="14s" repeatCount="indefinite" />
-                    </circle>
-                  </svg>
+                  <div className="orbit-ring orbit-ring-outer"></div>
+                  <div className="orbit-ring orbit-ring-inner"></div>
+
+                  <div className="orbit-center">
+                    <img src="/logo-dark.png" alt="Ofstride Services LLP" />
+                  </div>
+                </div>
                 </div>
               </div>
             </div>
@@ -399,34 +382,29 @@ function Home() {
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16 reveal">
             <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
-              What We Do
+              Our Services
             </span>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-3 sm:mb-4">
-              AI at Every Layer
+              The complete MSME back office, under one roof.
             </h2>
             <p className="text-sm sm:text-base text-text max-w-2xl mx-auto">
-              Every service is designed with intelligent systems at its core — 
-              so your business moves faster, decides smarter, and scales without friction.
+              Stop coordinating a CA, a lawyer, an HR consultant and an IT vendor. One accountable team, AI-accelerated delivery, fixed fees.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 reveal">
-            {services.map((service, index) => (
+            {backOfficeServices.map((service, index) => (
               <Link
                 key={service.slug}
-                to={`/services/${service.slug}`}
-                className="card-hover bg-white border border-slate-100 rounded-xl sm:rounded-2xl p-5 sm:p-8 group"
+                to="/services"
+                className="card-hover bg-white border border-slate-100 rounded-2xl p-5 sm:p-8 group overflow-hidden relative"
                 style={{ transitionDelay: `${index * 0.07}s` }}
               >
+                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-secondary via-sky-400 to-accent opacity-70"></div>
                 <div className="flex items-center justify-between mb-4 sm:mb-6">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
                     <service.icon className="w-5 h-5 sm:w-6 sm:h-6 text-secondary group-hover:text-white transition-colors" />
                   </div>
-                  {service.ai && (
-                    <span className="text-xs font-semibold text-accent bg-emerald-50 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full ai-badge">
-                      AI-Enabled
-                    </span>
-                  )}
                 </div>
                 <h3 className="text-lg sm:text-xl font-bold text-primary mb-2 group-hover:text-secondary transition-colors">
                   {service.title}
@@ -460,10 +438,10 @@ function Home() {
               Why Us
             </span>
             <h2 className="text-2xl sm:text-4xl font-bold text-primary mb-4">
-              Not Traditional Consulting.<br />Intelligent Consulting.
+              The Depth of Senior Expertise.<br />The Speed of Modern Tools.
             </h2>
             <p className="text-text max-w-2xl mx-auto">
-              Every solution we deliver is built with AI and agentic thinking at its core.
+              Every solution we deliver is built with senior oversight, practical execution, and tools that reduce friction.
             </p>
           </div>
 
@@ -538,36 +516,31 @@ function Home() {
         </div>
       </section>
 
-      {/* Free Services Banner */}
-      <section className="py-12 sm:py-16 bg-primary text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 bg-white/10 text-white px-4 py-2 rounded-full text-sm font-medium mb-6">
-            <Calendar className="w-4 h-4" />
-            Free Initial Consultation
-          </div>
-          <h2 className="text-2xl sm:text-4xl font-bold mb-4">
-            Start With a Free 30-Minute Call
-          </h2>
-          <p className="text-slate-300 text-base sm:text-lg mb-8 max-w-2xl mx-auto">
-            No commitment. No pitch decks. Just a conversation about your business 
-            and how we can help — completely free.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link to="/book-call"
-              className="inline-flex items-center justify-center gap-2 bg-secondary text-white px-8 py-4 rounded-xl font-semibold btn-primary"
-            >
-              <Calendar className="w-5 h-5" />
-              Book Your Free Call
-            </Link>
-            <a
-              href="https://wa.me/918951606862?text=Hi%2C+I%27d+like+to+know+more+about+Ofstride%27s+services"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 border-2 border-emerald-400/50 text-white px-8 py-4 rounded-xl font-semibold hover:bg-emerald-600/30 transition-colors"
-            >
-              <MessageCircle className="w-5 h-5 text-emerald-400" />
-              Chat on WhatsApp
-            </a>
+      {/* Lead Magnet */}
+      <section className="py-12 sm:py-16">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative overflow-hidden rounded-3xl border border-slate-900/10 bg-gradient-to-br from-primary via-slate-900 to-slate-800 text-white shadow-[0_30px_90px_-35px_rgba(0,17,80,0.7)]">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.35),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.16),transparent_30%)]"></div>
+            <div className="relative grid gap-8 lg:grid-cols-[1.1fr_0.9fr] items-center p-6 sm:p-10 lg:p-12">
+              <div>
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/8 px-3 py-1 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.24em] text-slate-200 mb-4 sm:mb-5">
+                  Free download
+                </span>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
+                  MSME Compliance Calendar FY 2026–27
+                </h2>
+                <p className="text-slate-200 text-sm sm:text-base leading-relaxed max-w-2xl">
+                  Every GST, TDS, PF/ESI and ROC deadline for the year, in one printable calendar — plus a monthly reminder email so nothing slips.
+                </p>
+                <div className="mt-5 sm:mt-6 flex items-center gap-2 text-xs sm:text-sm text-slate-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  No spam — one useful email a month. Unsubscribe anytime. (Demo form — connect your email tool.)
+                </div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 sm:p-6">
+                <LeadCaptureForm />
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -602,22 +575,6 @@ function Home() {
             >
               See Industries We Serve <ArrowRight className="w-4 h-4" />
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Lead Magnet */}
-      <section className="py-12 sm:py-16 bg-surface">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-10">
-            <span className="inline-block text-secondary text-xs font-semibold uppercase tracking-wider mb-3">Free Resource</span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-2">
-              Get Your Free AI Readiness Checklist
-            </h2>
-            <p className="text-text text-sm mb-6">
-              10 questions to assess how AI-ready your business operations are — and where to start.
-            </p>
-            <LeadCaptureForm />
           </div>
         </div>
       </section>
