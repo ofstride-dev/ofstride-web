@@ -231,8 +231,8 @@ function Home() {
               </div>
 
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary leading-tight mb-4 sm:mb-6">
-                Your compliance, finance and HR — handled.<br />
-                <span className="gradient-text">Fixed fees, AI speed.</span>
+                Build a Business<br />
+                <span className="gradient-text">That Thinks Ahead.</span>
               </h1>
 
               <p className="text-base sm:text-lg text-text leading-relaxed mb-6 sm:mb-8 max-w-xl">
@@ -241,9 +241,10 @@ function Home() {
 
               {/* Mobile Hero Visual — What We Handle */}
               <div className="lg:hidden mb-6 sm:mb-8">
-                <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-primary via-slate-900 to-slate-800 text-white shadow-2xl p-4 sm:p-5">
-                  <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-secondary mb-3">
-                    What we handle for you
+                <div className="rounded-3xl border border-blue-200/40 bg-gradient-to-br from-primary via-sky-800 to-sky-700 text-white shadow-[0_24px_60px_-30px_rgba(0,17,80,0.75)] p-4 sm:p-5">
+                  <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-sky-100 mb-3 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-sky-300 ai-badge"></span>
+                    What we take off your plate
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
                     {[
@@ -253,7 +254,7 @@ function Home() {
                       'Contracts & MSMED recovery',
                       'Practical AI & systems',
                     ].map((task) => (
-                      <div key={task} className="flex items-start gap-2 text-[11px] sm:text-xs text-slate-100/90">
+                      <div key={task} className="flex items-start gap-2 text-[11px] sm:text-xs text-slate-50/95">
                         <span className="mt-1 w-1.5 h-1.5 bg-secondary rounded-full shrink-0"></span>
                         <span>{task}</span>
                       </div>
@@ -294,15 +295,20 @@ function Home() {
               </div>
 
               {/* What We Handle — desktop sidebar */}
-              <div className="hidden lg:block mt-6 pt-6 border-t border-slate-100">
-                <p className="text-xs font-semibold uppercase tracking-wider text-secondary mb-3">What we handle for you</p>
-                <div className="grid grid-cols-2 gap-x-8 gap-y-1.5">
+              <div className="hidden lg:block mt-6">
+                <div className="rounded-[1.75rem] border border-blue-200/40 bg-gradient-to-br from-primary via-sky-800 to-sky-700 text-white shadow-[0_24px_60px_-30px_rgba(0,17,80,0.75)] p-5 sm:p-6">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-sky-100 mb-3 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-sky-300 ai-badge"></span>
+                    What we take off your plate
+                  </p>
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-2">
                   {['GST, TDS & ITR filings', 'Udyam, loans & schemes', 'Payroll, PF/ESI & policies', 'Contracts & MSMED recovery', 'Practical AI & systems'].map((task) => (
-                    <div key={task} className="flex items-center gap-1.5 text-xs text-text">
-                      <span className="w-1.5 h-1.5 bg-accent rounded-full shrink-0"></span>
+                    <div key={task} className="flex items-start gap-2 text-xs text-slate-50/95">
+                      <span className="mt-1 w-1.5 h-1.5 bg-sky-300 rounded-full shrink-0"></span>
                       {task}
                     </div>
                   ))}
+                  </div>
                 </div>
               </div>
 
