@@ -91,6 +91,7 @@ const orbitEdgePoints = [
     title: 'GST, TDS & ITR filings',
     subtitle: 'Managed compliance calendar',
     angle: 0,
+    cardPosition: { left: 50, top: 15 },
     color: '#2563EB',
     glow: 'rgba(37, 99, 235, 0.28)',
   },
@@ -99,6 +100,7 @@ const orbitEdgePoints = [
     title: 'Udyam, loans & schemes',
     subtitle: 'Bank-ready documentation',
     angle: 72,
+    cardPosition: { left: 80, top: 31 },
     color: '#0284C7',
     glow: 'rgba(2, 132, 199, 0.24)',
   },
@@ -107,6 +109,7 @@ const orbitEdgePoints = [
     title: 'Payroll, PF/ESI & policies',
     subtitle: 'From your first hire',
     angle: 144,
+    cardPosition: { left: 72, top: 73 },
     color: '#0F766E',
     glow: 'rgba(15, 118, 110, 0.24)',
   },
@@ -115,6 +118,7 @@ const orbitEdgePoints = [
     title: 'Contracts & MSMED recovery',
     subtitle: 'Get paid on time',
     angle: 216,
+    cardPosition: { left: 28, top: 73 },
     color: '#7C3AED',
     glow: 'rgba(124, 58, 237, 0.24)',
   },
@@ -123,6 +127,7 @@ const orbitEdgePoints = [
     title: 'Practical AI & systems',
     subtitle: 'Billing, inventory, automation',
     angle: 288,
+    cardPosition: { left: 20, top: 31 },
     color: '#DB2777',
     glow: 'rgba(219, 39, 119, 0.24)',
   },
@@ -341,7 +346,7 @@ function Home() {
 
                   <div className="absolute inset-0">
                     {orbitEdgePoints.map((item) => {
-                      const point = getOrbitPoint(item.angle, 140, 39)
+                      const point = getOrbitPoint(item.angle, 140)
                       const isActive = activeOrbitTitle === item.title
                       const Icon = item.icon
                       return (
@@ -350,8 +355,8 @@ function Home() {
                           type="button"
                           className={`hero-orbit-card group absolute w-[8rem] sm:w-[9.2rem] lg:w-[9.6rem] rounded-[1.35rem] px-3 py-3 text-left ${isActive ? 'is-active' : ''}`}
                           style={{
-                            left: `${point.left}%`,
-                            top: `${point.top}%`,
+                            left: `${item.cardPosition.left}%`,
+                            top: `${item.cardPosition.top}%`,
                             transform: 'translate(-50%, -50%)',
                             '--hero-card-accent': item.color,
                             '--hero-card-glow': item.glow,
