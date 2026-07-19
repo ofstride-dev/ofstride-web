@@ -128,14 +128,14 @@ const orbitEdgePoints = [
   },
 ]
 
-const getOrbitPoint = (angle, radius) => {
+const getOrbitPoint = (angle, radius, cardRadius = 44) => {
   const rad = (angle - 90) * Math.PI / 180
 
   return {
     x: 200 + radius * Math.cos(rad),
     y: 200 + radius * Math.sin(rad),
-    left: 50 + 44 * Math.cos(rad),
-    top: 50 + 44 * Math.sin(rad),
+    left: 50 + cardRadius * Math.cos(rad),
+    top: 50 + cardRadius * Math.sin(rad),
   }
 }
 
@@ -275,8 +275,8 @@ function Home() {
             {/* Hero Visual — Service Orbit */}
             <div className="flex flex-col gap-5">
               <div className="relative animate-float">
-                <div className="relative mx-auto w-full max-w-[22rem] sm:max-w-[26rem] lg:max-w-md h-[31rem] sm:h-[34rem] lg:h-[32rem]">
-                  <svg viewBox="0 0 400 400" className="hero-orbit-svg absolute left-1/2 top-[7%] h-[18.5rem] w-[18.5rem] -translate-x-1/2 sm:h-[21rem] sm:w-[21rem] lg:top-[6%] lg:h-full lg:w-full">
+                <div className="relative mx-auto w-full max-w-[22rem] sm:max-w-[25rem] lg:max-w-[30rem] h-[29rem] sm:h-[31rem] lg:h-[29rem]">
+                  <svg viewBox="0 0 400 400" className="hero-orbit-svg absolute left-1/2 top-[9%] h-[17rem] w-[17rem] -translate-x-1/2 sm:h-[19rem] sm:w-[19rem] lg:top-[7%] lg:h-full lg:w-full">
                     <defs>
                       <radialGradient id="hero-core-glow" cx="50%" cy="50%" r="50%">
                         <stop offset="0%" stopColor="#60A5FA" stopOpacity="0.55" />
@@ -341,7 +341,7 @@ function Home() {
 
                   <div className="absolute inset-0">
                     {orbitEdgePoints.map((item) => {
-                      const point = getOrbitPoint(item.angle, 140)
+                      const point = getOrbitPoint(item.angle, 140, 39)
                       const isActive = activeOrbitTitle === item.title
                       const Icon = item.icon
                       return (
