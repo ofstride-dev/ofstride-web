@@ -531,9 +531,6 @@ function Home() {
                 <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/8 px-3 py-1 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.24em] text-slate-200 mb-4 sm:mb-5">
                   Free download
                 </span>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
-                  MSME Compliance Calendar FY 2026–27
-                </h2>
                 <p className="text-slate-200 text-sm sm:text-base leading-relaxed max-w-2xl">
                   Every GST, TDS, PF/ESI and ROC deadline for the year, in one printable calendar — plus a monthly reminder email so nothing slips.
                 </p>
