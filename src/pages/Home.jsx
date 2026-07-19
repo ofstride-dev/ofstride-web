@@ -211,17 +211,17 @@ function Home() {
                 Ofstride runs the back office of India's micro, small and medium enterprises: GST and tax filings, Udyam and bank credit, payroll and labour compliance, contracts and recovery — one senior team, one predictable monthly fee.
               </p>
 
-              <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-2.5 sm:p-3 inline-block max-w-full">
+              <div className="rounded-2xl border border-slate-200 bg-white/90 backdrop-blur-sm p-2.5 sm:p-3 inline-block max-w-full shadow-sm">
                 <div className="flex flex-nowrap items-center gap-2 sm:gap-3 overflow-x-auto">
                 <Link to="/book-call"
-                  className="btn-primary inline-flex items-center justify-center gap-2 bg-emerald-600 text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm whitespace-nowrap"
+                  className="btn-primary inline-flex items-center justify-center gap-2 bg-primary text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm whitespace-nowrap"
                 >
                   <Calendar className="w-4 h-4" />
                   Book a Free Call
                 </Link>
                 <Link 
                   to="/services"
-                  className="btn-secondary inline-flex items-center justify-center gap-2 border border-emerald-300 bg-white text-emerald-700 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm whitespace-nowrap"
+                  className="btn-secondary inline-flex items-center justify-center gap-2 border border-blue-200 bg-blue-50 text-secondary px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm whitespace-nowrap"
                 >
                   Explore Services
                   <ArrowRight className="w-4 h-4" />
@@ -230,7 +230,7 @@ function Home() {
                   href="https://wa.me/918951606862?text=Hi%2C+I%27d+like+to+know+more+about+Ofstride%27s+services"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 border border-emerald-600 bg-white text-emerald-700 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm whitespace-nowrap hover:bg-emerald-100 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 border border-emerald-700 bg-emerald-600 text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm whitespace-nowrap hover:bg-emerald-700 transition-colors"
                 >
                   <MessageCircle className="w-4 h-4" />
                   WhatsApp Us
@@ -546,43 +546,53 @@ function Home() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-10 sm:py-12 bg-primary text-white" ref={addToRefs}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-3">
-            Ready to Build Smarter?
-          </h2>
-          <p className="text-slate-300 text-sm sm:text-base mb-6">
-            Book a free 30-minute consultation. No pitch decks. 
-            Just clarity on your next move.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-3 mb-6">
-            <Link to="/book-call"
-              className="inline-flex items-center justify-center gap-2 bg-secondary text-white px-6 py-3 rounded-xl font-semibold btn-primary"
-            >
-              <Calendar className="w-5 h-5" />
-              Book a Free Call
-            </Link>
-            <a
-              href="https://wa.me/918951606862?text=Hi%2C+I%27d+like+to+know+more+about+Ofstride%27s+services"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 border border-emerald-400/50 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-600/30 transition-colors"
-            >
-              <MessageCircle className="w-5 h-5 text-emerald-400" />
-              WhatsApp Us
-            </a>
-          </div>
+      <section className="py-14 sm:py-16 bg-slate-50" ref={addToRefs}>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-primary via-slate-900 to-slate-800 text-white px-6 sm:px-10 py-8 sm:py-10 shadow-[0_32px_80px_-36px_rgba(0,17,80,0.65)]">
+            <div className="text-center">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3">
+                Ready to Build Smarter?
+              </h2>
+              <p className="text-slate-200 text-sm sm:text-base mb-6 max-w-2xl mx-auto">
+                Book a free 30-minute consultation. No pitch decks. Just clarity on your next move.
+              </p>
+            </div>
 
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 text-slate-400 text-xs sm:text-sm">
-            <span className="flex items-center gap-2">
-              <Globe className="w-4 h-4" /> New Delhi | Bengaluru
-            </span>
-            <a href="mailto:support@ofstrideservices.com" className="flex items-center gap-2 hover:text-white transition-colors">
-              <Mail className="w-4 h-4" /> support@ofstrideservices.com
-            </a>
-            <a href="tel:+918951606862" className="flex items-center gap-2 hover:text-white transition-colors">
-              <Phone className="w-4 h-4" /> +91 89516 06862
-            </a>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-7 text-xs sm:text-sm">
+              <div className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-slate-100">1. Discovery call</div>
+              <div className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-slate-100">2. Priority roadmap</div>
+              <div className="rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-slate-100">3. Execution support</div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row justify-center gap-3 mb-6">
+              <Link to="/book-call"
+                className="inline-flex items-center justify-center gap-2 bg-secondary text-white px-6 py-3 rounded-xl font-semibold btn-primary"
+              >
+                <Calendar className="w-5 h-5" />
+                Book a Free Call
+              </Link>
+              <a
+                href="https://wa.me/918951606862?text=Hi%2C+I%27d+like+to+know+more+about+Ofstride%27s+services"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 border border-emerald-300/60 bg-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-colors"
+              >
+                <MessageCircle className="w-5 h-5" />
+                WhatsApp Us
+              </a>
+            </div>
+
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-4 text-slate-300 text-xs sm:text-sm">
+              <span className="flex items-center gap-2">
+                <Globe className="w-4 h-4" /> New Delhi | Bengaluru
+              </span>
+              <a href="mailto:support@ofstrideservices.com" className="flex items-center gap-2 hover:text-white transition-colors">
+                <Mail className="w-4 h-4" /> support@ofstrideservices.com
+              </a>
+              <a href="tel:+918951606862" className="flex items-center gap-2 hover:text-white transition-colors">
+                <Phone className="w-4 h-4" /> +91 89516 06862
+              </a>
+            </div>
           </div>
         </div>
       </section>
