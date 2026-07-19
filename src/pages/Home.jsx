@@ -85,15 +85,6 @@ const backOfficeServices = [
   },
 ]
 
-const orbitServices = [
-  { icon: FileText, label: 'Finance', sublabel: 'GST & Tax', angle: 0 },
-  { icon: Landmark, label: 'Credit', sublabel: 'Udyam & Loans', angle: 60 },
-  { icon: Users, label: 'HR', sublabel: 'Payroll & PF/ESI', angle: 120 },
-  { icon: Gavel, label: 'Legal', sublabel: 'Contracts', angle: 180 },
-  { icon: Target, label: 'Growth', sublabel: 'Strategy', angle: 240 },
-  { icon: Cpu, label: 'Tech', sublabel: 'AI Systems', angle: 300 },
-]
-
 function LeadCaptureForm() {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -241,12 +232,11 @@ function Home() {
 
               {/* Mobile Hero Visual — What We Handle */}
               <div className="lg:hidden mb-6 sm:mb-8">
-                <div className="rounded-3xl border border-blue-200/40 bg-gradient-to-br from-primary via-sky-800 to-sky-700 text-white shadow-[0_24px_60px_-30px_rgba(0,17,80,0.75)] p-4 sm:p-5">
-                  <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-sky-100 mb-3 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-sky-300 ai-badge"></span>
+                <div className="hero-orb rounded-2xl border border-blue-100 bg-white/90 backdrop-blur-sm p-4 sm:p-5">
+                  <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-secondary mb-3">
                     What we take off your plate
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                     {[
                       'GST, TDS & ITR filings',
                       'Udyam, loans & schemes',
@@ -254,9 +244,9 @@ function Home() {
                       'Contracts & MSMED recovery',
                       'Practical AI & systems',
                     ].map((task) => (
-                      <div key={task} className="flex items-start gap-2 text-[11px] sm:text-xs text-slate-50/95">
-                        <span className="mt-1 w-1.5 h-1.5 bg-secondary rounded-full shrink-0"></span>
-                        <span>{task}</span>
+                      <div key={task} className="flex items-center gap-1.5 text-[11px] sm:text-xs text-text">
+                        <span className="w-1.5 h-1.5 bg-accent rounded-full shrink-0"></span>
+                        {task}
                       </div>
                     ))}
                   </div>
@@ -295,20 +285,17 @@ function Home() {
               </div>
 
               {/* What We Handle — desktop sidebar */}
-              <div className="hidden lg:block mt-6">
-                <div className="rounded-[1.75rem] border border-blue-200/40 bg-gradient-to-br from-primary via-sky-800 to-sky-700 text-white shadow-[0_24px_60px_-30px_rgba(0,17,80,0.75)] p-5 sm:p-6">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-sky-100 mb-3 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-sky-300 ai-badge"></span>
+              <div className="hidden lg:block mt-6 pt-6 border-t border-slate-100">
+                <p className="text-xs font-semibold uppercase tracking-wider text-secondary mb-3">
                     What we take off your plate
-                  </p>
-                  <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                </p>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-1.5">
                   {['GST, TDS & ITR filings', 'Udyam, loans & schemes', 'Payroll, PF/ESI & policies', 'Contracts & MSMED recovery', 'Practical AI & systems'].map((task) => (
-                    <div key={task} className="flex items-start gap-2 text-xs text-slate-50/95">
-                      <span className="mt-1 w-1.5 h-1.5 bg-sky-300 rounded-full shrink-0"></span>
+                    <div key={task} className="flex items-center gap-1.5 text-xs text-text">
+                      <span className="w-1.5 h-1.5 bg-accent rounded-full shrink-0"></span>
                       {task}
                     </div>
                   ))}
-                  </div>
                 </div>
               </div>
 
@@ -329,34 +316,54 @@ function Home() {
             {/* Hero Visual — Service Orbit */}
             <div className="hidden lg:flex flex-col gap-5">
               <div className="relative animate-float">
-                <div className="orbit-stage">
-                  <div className="orbit-track">
-                    {orbitServices.map((item) => {
-                      const Icon = item.icon
+                <div className="relative w-full max-w-md mx-auto">
+                  <svg viewBox="0 0 400 400" className="w-full h-full">
+                    <circle cx="200" cy="200" r="140" fill="none" stroke="#0023a0" strokeWidth="1" opacity="0.18" strokeDasharray="6 4" />
+                    <circle cx="200" cy="200" r="80" fill="none" stroke="#0023a0" strokeWidth="1" opacity="0.1" strokeDasharray="4 4" />
+
+                    {[0, 60, 120, 180, 240, 300].map((angle, i) => {
+                      const rad = (angle - 90) * Math.PI / 180
+                      const x = 200 + 140 * Math.cos(rad)
+                      const y = 200 + 140 * Math.sin(rad)
+                      return <line key={i} x1="200" y1="200" x2={x} y2={y} stroke="#0023a0" strokeWidth="1" opacity="0.12" />
+                    })}
+
+                    <circle cx="200" cy="200" r="46" fill="#001150" />
+                    <text x="200" y="197" textAnchor="middle" fill="white" fontSize="9.5" fontWeight="bold" fontFamily="Inter,system-ui,sans-serif">OFSTRIDE</text>
+                    <text x="200" y="211" textAnchor="middle" fill="#10B981" fontSize="7.5" fontFamily="Inter,system-ui,sans-serif">Intelligence</text>
+
+                    <circle cx="200" cy="200" r="46" fill="none" stroke="#0023a0" strokeWidth="2" opacity="0.3">
+                      <animate attributeName="r" values="46;72;46" dur="3.5s" repeatCount="indefinite" />
+                      <animate attributeName="opacity" values="0.3;0;0.3" dur="3.5s" repeatCount="indefinite" />
+                    </circle>
+
+                    {[
+                      { label: 'HR', sub: 'People', angle: 0 },
+                      { label: 'Finance', sub: 'Virtual CFO', angle: 60 },
+                      { label: 'Legal', sub: 'Compliance', angle: 120 },
+                      { label: 'IT', sub: 'Digital', angle: 180 },
+                      { label: 'AI', sub: 'Data Science', angle: 240 },
+                      { label: 'Strategy', sub: 'Growth', angle: 300 },
+                    ].map((item, i) => {
+                      const rad = (item.angle - 90) * Math.PI / 180
+                      const x = 200 + 140 * Math.cos(rad)
+                      const y = 200 + 140 * Math.sin(rad)
                       return (
-                        <div
-                          key={item.label}
-                          className="orbit-item"
-                          style={{ '--orbit-angle': `${item.angle}deg`, '--orbit-radius': '138px' }}
-                        >
-                          <div className="orbit-pill">
-                            <span className="orbit-icon-wrap">
-                              <Icon className="w-4 h-4 text-secondary" />
-                            </span>
-                            <span className="orbit-label">{item.label}</span>
-                            <span className="orbit-subtitle">{item.sublabel}</span>
-                          </div>
-                        </div>
+                        <g key={i}>
+                          <circle cx={x} cy={y} r="30" fill="white" stroke="#0023a0" strokeWidth="1.5" opacity="0.95" />
+                          <text x={x} y={y - 1} textAnchor="middle" fill="#001150" fontSize="8.5" fontWeight="bold" fontFamily="Inter,system-ui,sans-serif">{item.label}</text>
+                          <text x={x} y={y + 11} textAnchor="middle" fill="#2563EB" fontSize="6.5" fontFamily="Inter,system-ui,sans-serif">{item.sub}</text>
+                        </g>
                       )
                     })}
-                  </div>
 
-                  <div className="orbit-ring orbit-ring-outer"></div>
-                  <div className="orbit-ring orbit-ring-inner"></div>
-
-                  <div className="orbit-center">
-                    <img src="/logo-dark.png" alt="Ofstride Services LLP" />
-                  </div>
+                    <circle cx="200" cy="60" r="5" fill="#10B981">
+                      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="18s" repeatCount="indefinite" />
+                    </circle>
+                    <circle cx="340" cy="200" r="4" fill="#2563EB" opacity="0.6">
+                      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="-360 200 200" dur="14s" repeatCount="indefinite" />
+                    </circle>
+                  </svg>
                 </div>
               </div>
             </div>
@@ -402,10 +409,9 @@ function Home() {
               <Link
                 key={service.slug}
                 to="/services"
-                className="card-hover bg-white border border-slate-100 rounded-2xl p-5 sm:p-8 group overflow-hidden relative"
+                className="card-hover bg-white border border-slate-100 rounded-xl sm:rounded-2xl p-5 sm:p-8 group"
                 style={{ transitionDelay: `${index * 0.07}s` }}
               >
-                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-secondary via-sky-400 to-accent opacity-70"></div>
                 <div className="flex items-center justify-between mb-4 sm:mb-6">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
                     <service.icon className="w-5 h-5 sm:w-6 sm:h-6 text-secondary group-hover:text-white transition-colors" />
