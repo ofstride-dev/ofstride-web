@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { 
   ArrowRight, 
   Brain, 
@@ -87,44 +87,61 @@ const backOfficeServices = [
 
 const orbitEdgePoints = [
   {
+    icon: FileText,
     title: 'GST, TDS & ITR filings',
     subtitle: 'Managed compliance calendar',
     angle: 0,
     color: '#2563EB',
-    tint: '#EFF6FF',
+    glow: 'rgba(37, 99, 235, 0.28)',
   },
   {
+    icon: Landmark,
     title: 'Udyam, loans & schemes',
     subtitle: 'Bank-ready documentation',
     angle: 72,
     color: '#0284C7',
-    tint: '#E0F2FE',
+    glow: 'rgba(2, 132, 199, 0.24)',
   },
   {
+    icon: Users,
     title: 'Payroll, PF/ESI & policies',
     subtitle: 'From your first hire',
     angle: 144,
     color: '#0F766E',
-    tint: '#ECFEF4',
+    glow: 'rgba(15, 118, 110, 0.24)',
   },
   {
+    icon: Gavel,
     title: 'Contracts & MSMED recovery',
     subtitle: 'Get paid on time',
     angle: 216,
     color: '#7C3AED',
-    tint: '#F3E8FF',
+    glow: 'rgba(124, 58, 237, 0.24)',
   },
   {
+    icon: Cpu,
     title: 'Practical AI & systems',
     subtitle: 'Billing, inventory, automation',
     angle: 288,
     color: '#DB2777',
-    tint: '#FCE7F3',
+    glow: 'rgba(219, 39, 119, 0.24)',
   },
 ]
 
+const getOrbitPoint = (angle, radius) => {
+  const rad = (angle - 90) * Math.PI / 180
+
+  return {
+    x: 200 + radius * Math.cos(rad),
+    y: 200 + radius * Math.sin(rad),
+    left: 50 + 44 * Math.cos(rad),
+    top: 50 + 44 * Math.sin(rad),
+  }
+}
+
 function Home() {
   const revealRefs = useRef([])
+  const [activeOrbitTitle, setActiveOrbitTitle] = useState(orbitEdgePoints[0].title)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -256,58 +273,103 @@ function Home() {
             </div>
 
             {/* Hero Visual — Service Orbit */}
-            <div className="hidden lg:flex flex-col gap-5">
+            <div className="flex flex-col gap-5">
               <div className="relative animate-float">
-                <div className="relative w-full max-w-md mx-auto aspect-square">
-                  <svg viewBox="0 0 400 400" className="absolute inset-0 w-full h-full">
-                    <circle cx="200" cy="200" r="140" fill="none" stroke="#0023a0" strokeWidth="1" opacity="0.18" strokeDasharray="6 4" />
-                    <circle cx="200" cy="200" r="80" fill="none" stroke="#0023a0" strokeWidth="1" opacity="0.1" strokeDasharray="4 4" />
+                <div className="relative mx-auto w-full max-w-[22rem] sm:max-w-[26rem] lg:max-w-md h-[31rem] sm:h-[34rem] lg:h-[32rem]">
+                  <svg viewBox="0 0 400 400" className="hero-orbit-svg absolute left-1/2 top-[7%] h-[18.5rem] w-[18.5rem] -translate-x-1/2 sm:h-[21rem] sm:w-[21rem] lg:top-[6%] lg:h-full lg:w-full">
+                    <defs>
+                      <radialGradient id="hero-core-glow" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="#60A5FA" stopOpacity="0.55" />
+                        <stop offset="55%" stopColor="#2563EB" stopOpacity="0.2" />
+                        <stop offset="100%" stopColor="#2563EB" stopOpacity="0" />
+                      </radialGradient>
+                      <linearGradient id="hero-ring-gradient" x1="80" y1="80" x2="320" y2="320">
+                        <stop offset="0%" stopColor="#93C5FD" stopOpacity="0.7" />
+                        <stop offset="45%" stopColor="#2563EB" stopOpacity="0.95" />
+                        <stop offset="100%" stopColor="#C4B5FD" stopOpacity="0.55" />
+                      </linearGradient>
+                    </defs>
 
-                    {orbitEdgePoints.map((item, i) => {
-                      const angle = item.angle
-                      const rad = (angle - 90) * Math.PI / 180
-                      const x = 200 + 140 * Math.cos(rad)
-                      const y = 200 + 140 * Math.sin(rad)
-                      return <line key={i} x1="200" y1="200" x2={x} y2={y} stroke="#0023a0" strokeWidth="1" opacity="0.12" />
+                    <g className="hero-core-pulse">
+                      <circle cx="200" cy="200" r="58" fill="url(#hero-core-glow)" />
+                    </g>
+
+                    <circle cx="200" cy="200" r="146" fill="none" stroke="rgba(0, 35, 160, 0.14)" strokeWidth="1" strokeDasharray="4 10" />
+
+                    <g className="hero-ring hero-ring--cw">
+                      <circle cx="200" cy="200" r="72" fill="none" stroke="url(#hero-ring-gradient)" strokeWidth="1.4" strokeDasharray="10 10" opacity="0.85" />
+                    </g>
+                    <g className="hero-ring hero-ring--ccw">
+                      <circle cx="200" cy="200" r="86" fill="none" stroke="rgba(147, 197, 253, 0.7)" strokeWidth="1.1" strokeDasharray="3 9" opacity="0.8" />
+                    </g>
+                    <g className="hero-ring hero-ring--cw-slow">
+                      <circle cx="200" cy="200" r="98" fill="none" stroke="rgba(196, 181, 253, 0.42)" strokeWidth="1" strokeDasharray="2 12" opacity="0.75" />
+                    </g>
+
+                    {orbitEdgePoints.map((item, index) => {
+                      const point = getOrbitPoint(item.angle, 140)
+                      const isActive = activeOrbitTitle === item.title
+                      const path = `M 200 200 L ${point.x} ${point.y}`
+                      return (
+                        <g key={item.title}>
+                          <path
+                            d={path}
+                            className={`hero-pipeline ${isActive ? 'is-active' : 'is-dimmed'}`}
+                            style={{ '--hero-pipeline-color': item.color }}
+                          />
+                          <path
+                            d={path}
+                            className={`hero-pipeline-dash ${isActive ? 'is-active' : 'is-dimmed'}`}
+                            style={{ '--hero-pipeline-color': item.color }}
+                          />
+
+                          <circle r="3.2" fill={item.color} opacity={isActive ? '0.95' : '0.55'}>
+                            <animateMotion dur={`${4.8 + index * 0.45}s`} repeatCount="indefinite" path={path} />
+                          </circle>
+                          <circle r="2.4" fill="#BFDBFE" opacity={isActive ? '0.9' : '0.45'}>
+                            <animateMotion dur={`${5.2 + index * 0.35}s`} repeatCount="indefinite" path={`M ${point.x} ${point.y} L 200 200`} />
+                          </circle>
+                        </g>
+                      )
                     })}
 
-                    <circle cx="200" cy="200" r="46" fill="#001150" />
-                    <text x="200" y="197" textAnchor="middle" fill="white" fontSize="9.5" fontWeight="bold" fontFamily="Inter,system-ui,sans-serif">OFSTRIDE</text>
-                    <text x="200" y="211" textAnchor="middle" fill="#10B981" fontSize="7.5" fontFamily="Inter,system-ui,sans-serif">Intelligence</text>
-
-                    <circle cx="200" cy="200" r="46" fill="none" stroke="#0023a0" strokeWidth="2" opacity="0.3">
-                      <animate attributeName="r" values="46;72;46" dur="3.5s" repeatCount="indefinite" />
-                      <animate attributeName="opacity" values="0.3;0;0.3" dur="3.5s" repeatCount="indefinite" />
-                    </circle>
-
-                    <circle cx="200" cy="60" r="5" fill="#10B981">
-                      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="18s" repeatCount="indefinite" />
-                    </circle>
-                    <circle cx="340" cy="200" r="4" fill="#2563EB" opacity="0.6">
-                      <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="-360 200 200" dur="14s" repeatCount="indefinite" />
-                    </circle>
+                    <circle cx="200" cy="200" r="48" fill="#03144F" className="hero-core-shell" />
+                    <circle cx="200" cy="200" r="41" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(191, 219, 254, 0.35)" strokeWidth="1" />
+                    <text x="200" y="196" textAnchor="middle" fill="white" fontSize="10.2" fontWeight="700" fontFamily="Inter,system-ui,sans-serif" letterSpacing="2.2">OFSTRIDE</text>
+                    <text x="200" y="212" textAnchor="middle" fill="#93C5FD" fontSize="8" fontFamily="Inter,system-ui,sans-serif" letterSpacing="1.4">CORE ENGINE</text>
                   </svg>
 
                   <div className="absolute inset-0">
                     {orbitEdgePoints.map((item) => {
-                      const rad = (item.angle - 90) * Math.PI / 180
-                      const x = 50 + 44 * Math.cos(rad)
-                      const y = 50 + 44 * Math.sin(rad)
+                      const point = getOrbitPoint(item.angle, 140)
+                      const isActive = activeOrbitTitle === item.title
+                      const Icon = item.icon
                       return (
-                        <div
+                        <button
                           key={item.title}
-                          className="absolute w-[9.5rem] rounded-2xl border px-3 py-2 shadow-[0_12px_30px_-16px_rgba(0,17,80,0.45)]"
+                          type="button"
+                          className={`hero-orbit-card group absolute w-[8rem] sm:w-[9.2rem] lg:w-[9.6rem] rounded-[1.35rem] px-3 py-3 text-left ${isActive ? 'is-active' : ''}`}
                           style={{
-                            left: `${x}%`,
-                            top: `${y}%`,
+                            left: `${point.left}%`,
+                            top: `${point.top}%`,
                             transform: 'translate(-50%, -50%)',
-                            borderColor: `${item.color}40`,
-                            backgroundColor: item.tint,
+                            '--hero-card-accent': item.color,
+                            '--hero-card-glow': item.glow,
                           }}
+                          onMouseEnter={() => setActiveOrbitTitle(item.title)}
+                          onFocus={() => setActiveOrbitTitle(item.title)}
+                          onTouchStart={() => setActiveOrbitTitle(item.title)}
                         >
-                          <p className="text-[10px] leading-[1.2] font-bold" style={{ color: item.color }}>{item.title}</p>
-                          <p className="mt-1 text-[10px] leading-[1.2] text-slate-600">{item.subtitle}</p>
-                        </div>
+                          <div className="hero-orbit-card__icon-wrap mb-2 flex items-center justify-between">
+                            <span className="hero-orbit-card__icon inline-flex h-9 w-9 items-center justify-center rounded-2xl">
+                              <Icon className="h-4.5 w-4.5" strokeWidth={1.9} />
+                            </span>
+                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color, boxShadow: `0 0 12px ${item.glow}` }}></span>
+                          </div>
+                          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">Service Node</p>
+                          <p className="mt-1 text-[11px] leading-[1.25] font-semibold text-slate-900">{item.title}</p>
+                          <p className="mt-1 text-[10px] leading-[1.35] text-slate-600">{item.subtitle}</p>
+                        </button>
                       )
                     })}
                   </div>
