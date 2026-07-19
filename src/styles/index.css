@@ -528,7 +528,7 @@
 
   /* Logo in footer - invert for dark bg */
   .logo-footer {
-    height: 36px;
+    height: 32px;
     width: auto;
     filter: brightness(0) invert(1);
   }
@@ -540,7 +540,7 @@
     }
 
     .logo-footer {
-      height: 32px;
+      height: 28px;
     }
 
     .btn-primary,

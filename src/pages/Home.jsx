@@ -85,6 +85,44 @@ const backOfficeServices = [
   },
 ]
 
+const orbitEdgePoints = [
+  {
+    title: 'GST, TDS & ITR filings',
+    subtitle: 'Managed compliance calendar',
+    angle: 0,
+    color: '#2563EB',
+    tint: '#EFF6FF',
+  },
+  {
+    title: 'Udyam, loans & schemes',
+    subtitle: 'Bank-ready documentation',
+    angle: 72,
+    color: '#0284C7',
+    tint: '#E0F2FE',
+  },
+  {
+    title: 'Payroll, PF/ESI & policies',
+    subtitle: 'From your first hire',
+    angle: 144,
+    color: '#0F766E',
+    tint: '#ECFEF4',
+  },
+  {
+    title: 'Contracts & MSMED recovery',
+    subtitle: 'Get paid on time',
+    angle: 216,
+    color: '#7C3AED',
+    tint: '#F3E8FF',
+  },
+  {
+    title: 'Practical AI & systems',
+    subtitle: 'Billing, inventory, automation',
+    angle: 288,
+    color: '#DB2777',
+    tint: '#FCE7F3',
+  },
+]
+
 function LeadCaptureForm() {
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -230,29 +268,6 @@ function Home() {
                 Ofstride runs the back office of India's micro, small and medium enterprises: GST and tax filings, Udyam and bank credit, payroll and labour compliance, contracts and recovery — one senior team, one predictable monthly fee.
               </p>
 
-              {/* Mobile Hero Visual — What We Handle */}
-              <div className="lg:hidden mb-6 sm:mb-8">
-                <div className="hero-orb rounded-2xl border border-blue-100 bg-white/90 backdrop-blur-sm p-4 sm:p-5">
-                  <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-secondary mb-3">
-                    What we take off your plate
-                  </p>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                    {[
-                      'GST, TDS & ITR filings',
-                      'Udyam, loans & schemes',
-                      'Payroll, PF/ESI & policies',
-                      'Contracts & MSMED recovery',
-                      'Practical AI & systems',
-                    ].map((task) => (
-                      <div key={task} className="flex items-center gap-1.5 text-[11px] sm:text-xs text-text">
-                        <span className="w-1.5 h-1.5 bg-accent rounded-full shrink-0"></span>
-                        {task}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
               <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
                 <Link to="/book-call"
                   className="btn-primary inline-flex items-center justify-center sm:justify-start gap-2 bg-primary text-white px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl font-semibold text-sm sm:text-base"
@@ -284,21 +299,6 @@ function Home() {
                 </div>
               </div>
 
-              {/* What We Handle — desktop sidebar */}
-              <div className="hidden lg:block mt-6 pt-6 border-t border-slate-100">
-                <p className="text-xs font-semibold uppercase tracking-wider text-secondary mb-3">
-                    What we take off your plate
-                </p>
-                <div className="grid grid-cols-2 gap-x-8 gap-y-1.5">
-                  {['GST, TDS & ITR filings', 'Udyam, loans & schemes', 'Payroll, PF/ESI & policies', 'Contracts & MSMED recovery', 'Practical AI & systems'].map((task) => (
-                    <div key={task} className="flex items-center gap-1.5 text-xs text-text">
-                      <span className="w-1.5 h-1.5 bg-accent rounded-full shrink-0"></span>
-                      {task}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               {/* WhatsApp CTA — below hero text */}
               <div className="mt-5">
                 <a
@@ -316,12 +316,13 @@ function Home() {
             {/* Hero Visual — Service Orbit */}
             <div className="hidden lg:flex flex-col gap-5">
               <div className="relative animate-float">
-                <div className="relative w-full max-w-md mx-auto">
-                  <svg viewBox="0 0 400 400" className="w-full h-full">
+                <div className="relative w-full max-w-md mx-auto aspect-square">
+                  <svg viewBox="0 0 400 400" className="absolute inset-0 w-full h-full">
                     <circle cx="200" cy="200" r="140" fill="none" stroke="#0023a0" strokeWidth="1" opacity="0.18" strokeDasharray="6 4" />
                     <circle cx="200" cy="200" r="80" fill="none" stroke="#0023a0" strokeWidth="1" opacity="0.1" strokeDasharray="4 4" />
 
-                    {[0, 60, 120, 180, 240, 300].map((angle, i) => {
+                    {orbitEdgePoints.map((item, i) => {
+                      const angle = item.angle
                       const rad = (angle - 90) * Math.PI / 180
                       const x = 200 + 140 * Math.cos(rad)
                       const y = 200 + 140 * Math.sin(rad)
@@ -337,26 +338,6 @@ function Home() {
                       <animate attributeName="opacity" values="0.3;0;0.3" dur="3.5s" repeatCount="indefinite" />
                     </circle>
 
-                    {[
-                      { label: 'HR', sub: 'People', angle: 0 },
-                      { label: 'Finance', sub: 'Virtual CFO', angle: 60 },
-                      { label: 'Legal', sub: 'Compliance', angle: 120 },
-                      { label: 'IT', sub: 'Digital', angle: 180 },
-                      { label: 'AI', sub: 'Data Science', angle: 240 },
-                      { label: 'Strategy', sub: 'Growth', angle: 300 },
-                    ].map((item, i) => {
-                      const rad = (item.angle - 90) * Math.PI / 180
-                      const x = 200 + 140 * Math.cos(rad)
-                      const y = 200 + 140 * Math.sin(rad)
-                      return (
-                        <g key={i}>
-                          <circle cx={x} cy={y} r="30" fill="white" stroke="#0023a0" strokeWidth="1.5" opacity="0.95" />
-                          <text x={x} y={y - 1} textAnchor="middle" fill="#001150" fontSize="8.5" fontWeight="bold" fontFamily="Inter,system-ui,sans-serif">{item.label}</text>
-                          <text x={x} y={y + 11} textAnchor="middle" fill="#2563EB" fontSize="6.5" fontFamily="Inter,system-ui,sans-serif">{item.sub}</text>
-                        </g>
-                      )
-                    })}
-
                     <circle cx="200" cy="60" r="5" fill="#10B981">
                       <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="18s" repeatCount="indefinite" />
                     </circle>
@@ -364,6 +345,30 @@ function Home() {
                       <animateTransform attributeName="transform" type="rotate" from="0 200 200" to="-360 200 200" dur="14s" repeatCount="indefinite" />
                     </circle>
                   </svg>
+
+                  <div className="absolute inset-0">
+                    {orbitEdgePoints.map((item) => {
+                      const rad = (item.angle - 90) * Math.PI / 180
+                      const x = 50 + 44 * Math.cos(rad)
+                      const y = 50 + 44 * Math.sin(rad)
+                      return (
+                        <div
+                          key={item.title}
+                          className="absolute w-[9.5rem] rounded-2xl border px-3 py-2 shadow-[0_12px_30px_-16px_rgba(0,17,80,0.45)]"
+                          style={{
+                            left: `${x}%`,
+                            top: `${y}%`,
+                            transform: 'translate(-50%, -50%)',
+                            borderColor: `${item.color}40`,
+                            backgroundColor: item.tint,
+                          }}
+                        >
+                          <p className="text-[10px] leading-[1.2] font-bold" style={{ color: item.color }}>{item.title}</p>
+                          <p className="mt-1 text-[10px] leading-[1.2] text-slate-600">{item.subtitle}</p>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               </div>
             </div>

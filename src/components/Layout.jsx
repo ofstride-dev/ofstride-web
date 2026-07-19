@@ -379,11 +379,11 @@ function Layout() {
 
       {/* Footer */}
       <footer className="bg-primary text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-9 sm:py-12">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-7 sm:gap-10">
             {/* Brand */}
             <div className="lg:col-span-1">
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-3 mb-3">
                 <img src="/logo.png" alt="Ofstride" className="logo-footer" />
               </div>
               <p className="text-slate-300 text-sm leading-relaxed">
@@ -394,7 +394,7 @@ function Layout() {
 
             {/* Services */}
             <div>
-              <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-400">Services</h4>
+              <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider text-slate-400">Services</h4>
               <ul className="space-y-2.5">
                 {services.slice(0, 6).map((s) => (
                   <li key={s.slug}>
@@ -408,7 +408,7 @@ function Layout() {
 
             {/* More Services */}
             <div>
-              <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-400">More</h4>
+              <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider text-slate-400">More</h4>
               <ul className="space-y-2.5">
                 {services.slice(6).map((s) => (
                   <li key={s.slug}>
@@ -422,7 +422,7 @@ function Layout() {
 
             {/* Contact */}
             <div>
-              <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider text-slate-400">Contact</h4>
+              <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider text-slate-400">Contact</h4>
               <ul className="space-y-3">
                 <li className="flex items-start gap-2 text-slate-300 text-sm">
                   <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
@@ -453,7 +453,7 @@ function Layout() {
                 </li>
               </ul>
 
-              <div className="mt-6 pt-6 border-t border-slate-700 space-y-3">
+              <div className="mt-5 pt-5 border-t border-slate-700 space-y-2.5">
                 <Link 
                   to="/book-call"
                   className="inline-flex items-center gap-2 bg-secondary text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
@@ -479,7 +479,7 @@ function Layout() {
             </div>
           </div>
 
-          <div className="mt-10 sm:mt-12 pt-8 border-t border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="mt-8 sm:mt-10 pt-6 border-t border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-slate-400 text-sm text-center sm:text-left">
               © 2026 Ofstride Services LLP. All rights reserved.
             </p>
