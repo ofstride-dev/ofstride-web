@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { 
   ArrowRight, 
   Brain, 
@@ -123,63 +123,6 @@ const orbitEdgePoints = [
   },
 ]
 
-function LeadCaptureForm() {
-  const [email, setEmail] = useState('')
-  const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const webhookUrl = import.meta.env.VITE_LEAD_WEBHOOK_URL
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!email) return
-    setLoading(true)
-    try {
-      if (webhookUrl) {
-        await fetch(webhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, source: 'msme-compliance-calendar', timestamp: new Date().toISOString() })
-        })
-      }
-      setSubmitted(true)
-    } catch {
-      setSubmitted(true)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  if (submitted) {
-    return (
-      <div className="flex flex-col items-center gap-2 py-2 text-white">
-        <span className="text-emerald-300 font-bold text-2xl">✓</span>
-        <p className="font-semibold">You're on the list!</p>
-        <p className="text-sm text-slate-200">We'll send the calendar to <strong>{email}</strong> shortly.</p>
-      </div>
-    )
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 justify-center">
-      <input
-        type="email"
-        required
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="Your work email"
-        className="flex-1 border border-white/20 bg-white/10 text-white placeholder:text-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-white/60 focus:ring-2 focus:ring-white/15"
-      />
-      <button
-        type="submit"
-        disabled={loading}
-        className="inline-flex items-center justify-center gap-2 bg-white text-primary px-6 py-3 rounded-xl font-semibold text-sm btn-primary disabled:opacity-60"
-      >
-        {loading ? 'Sending…' : 'Get the Calendar →'}
-      </button>
-    </form>
-  )
-}
-
 function Home() {
   const revealRefs = useRef([])
 
@@ -268,20 +211,31 @@ function Home() {
                 Ofstride runs the back office of India's micro, small and medium enterprises: GST and tax filings, Udyam and bank credit, payroll and labour compliance, contracts and recovery — one senior team, one predictable monthly fee.
               </p>
 
-              <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-2.5 sm:p-3 inline-block max-w-full">
+                <div className="flex flex-nowrap items-center gap-2 sm:gap-3 overflow-x-auto">
                 <Link to="/book-call"
-                  className="btn-primary inline-flex items-center justify-center sm:justify-start gap-2 bg-primary text-white px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl font-semibold text-sm sm:text-base"
+                  className="btn-primary inline-flex items-center justify-center gap-2 bg-emerald-600 text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm whitespace-nowrap"
                 >
                   <Calendar className="w-4 h-4" />
                   Book a Free Call
                 </Link>
                 <Link 
                   to="/services"
-                  className="btn-secondary inline-flex items-center justify-center sm:justify-start gap-2 border-2 border-slate-200 text-primary px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl font-semibold text-sm sm:text-base"
+                  className="btn-secondary inline-flex items-center justify-center gap-2 border border-emerald-300 bg-white text-emerald-700 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm whitespace-nowrap"
                 >
                   Explore Services
                   <ArrowRight className="w-4 h-4" />
                 </Link>
+                <a
+                  href="https://wa.me/918951606862?text=Hi%2C+I%27d+like+to+know+more+about+Ofstride%27s+services"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 border border-emerald-600 bg-white text-emerald-700 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm whitespace-nowrap hover:bg-emerald-100 transition-colors"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  WhatsApp Us
+                </a>
+                </div>
               </div>
 
               <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 text-xs sm:text-sm text-muted">
@@ -299,18 +253,6 @@ function Home() {
                 </div>
               </div>
 
-              {/* WhatsApp CTA — below hero text */}
-              <div className="mt-5">
-                <a
-                  href="https://wa.me/918951606862?text=Hi%2C+I%27d+like+to+know+more+about+Ofstride%27s+services"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-xs sm:text-sm text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  Or chat with us on WhatsApp
-                </a>
-              </div>
             </div>
 
             {/* Hero Visual — Service Orbit */}
@@ -406,6 +348,9 @@ function Home() {
             </h2>
             <p className="text-sm sm:text-base text-text max-w-2xl mx-auto">
               Stop coordinating a CA, a lawyer, an HR consultant and an IT vendor. One accountable team, AI-accelerated delivery, fixed fees.
+            </p>
+            <p className="mt-4 inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs sm:text-sm font-semibold text-secondary">
+              Transforming Businesses Through IT Strategy, AI, & Data Science
             </p>
           </div>
 
@@ -532,32 +477,6 @@ function Home() {
         </div>
       </section>
 
-      {/* Lead Magnet */}
-      <section className="py-12 sm:py-16">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative overflow-hidden rounded-3xl border border-slate-900/10 bg-gradient-to-br from-primary via-slate-900 to-slate-800 text-white shadow-[0_30px_90px_-35px_rgba(0,17,80,0.7)]">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.35),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.16),transparent_30%)]"></div>
-            <div className="relative grid gap-8 lg:grid-cols-[1.1fr_0.9fr] items-center p-6 sm:p-10 lg:p-12">
-              <div>
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/8 px-3 py-1 text-[11px] sm:text-xs font-semibold uppercase tracking-[0.24em] text-slate-200 mb-4 sm:mb-5">
-                  Free download
-                </span>
-                <p className="text-slate-200 text-sm sm:text-base leading-relaxed max-w-2xl">
-                  Every GST, TDS, PF/ESI and ROC deadline for the year, in one printable calendar — plus a monthly reminder email so nothing slips.
-                </p>
-                <div className="mt-5 sm:mt-6 flex items-center gap-2 text-xs sm:text-sm text-slate-300">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                  No spam — one useful email a month. Unsubscribe anytime. (Demo form — connect your email tool.)
-                </div>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 sm:p-6">
-                <LeadCaptureForm />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Industries */}
       <section className="py-16 sm:py-24 lg:py-32" ref={addToRefs}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -627,18 +546,18 @@ function Home() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-16 sm:py-24 lg:py-32 bg-primary text-white" ref={addToRefs}>
+      <section className="py-10 sm:py-12 bg-primary text-white" ref={addToRefs}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl sm:text-4xl lg:text-5xl font-bold mb-6">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-3">
             Ready to Build Smarter?
           </h2>
-          <p className="text-slate-300 text-base sm:text-lg mb-10">
+          <p className="text-slate-300 text-sm sm:text-base mb-6">
             Book a free 30-minute consultation. No pitch decks. 
             Just clarity on your next move.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-10">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 mb-6">
             <Link to="/book-call"
-              className="inline-flex items-center justify-center gap-2 bg-secondary text-white px-8 py-4 rounded-xl font-semibold text-lg btn-primary"
+              className="inline-flex items-center justify-center gap-2 bg-secondary text-white px-6 py-3 rounded-xl font-semibold btn-primary"
             >
               <Calendar className="w-5 h-5" />
               Book a Free Call
@@ -647,14 +566,14 @@ function Home() {
               href="https://wa.me/918951606862?text=Hi%2C+I%27d+like+to+know+more+about+Ofstride%27s+services"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 border-2 border-emerald-400/50 text-white px-8 py-4 rounded-xl font-semibold hover:bg-emerald-600/30 transition-colors text-lg"
+              className="inline-flex items-center justify-center gap-2 border border-emerald-400/50 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-600/30 transition-colors"
             >
               <MessageCircle className="w-5 h-5 text-emerald-400" />
               WhatsApp Us
             </a>
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-6 text-slate-400 text-sm">
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 text-slate-400 text-xs sm:text-sm">
             <span className="flex items-center gap-2">
               <Globe className="w-4 h-4" /> New Delhi | Bengaluru
             </span>

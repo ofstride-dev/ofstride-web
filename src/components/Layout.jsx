@@ -379,8 +379,8 @@ function Layout() {
 
       {/* Footer */}
       <footer className="bg-primary text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-9 sm:py-12">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-7 sm:gap-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-9">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-7">
             {/* Brand */}
             <div className="lg:col-span-1">
               <div className="flex items-center gap-3 mb-3">
@@ -395,10 +395,10 @@ function Layout() {
             {/* Services */}
             <div>
               <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider text-slate-400">Services</h4>
-              <ul className="space-y-2.5">
+              <ul className="space-y-2">
                 {services.slice(0, 6).map((s) => (
                   <li key={s.slug}>
-                    <Link to={`/services/${s.slug}`} className="text-slate-300 hover:text-white text-sm transition-colors">
+                    <Link to={`/services/${s.slug}`} className="text-slate-300 hover:text-white text-xs sm:text-sm transition-colors">
                       {s.name}
                     </Link>
                   </li>
@@ -409,10 +409,10 @@ function Layout() {
             {/* More Services */}
             <div>
               <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider text-slate-400">More</h4>
-              <ul className="space-y-2.5">
+              <ul className="space-y-2">
                 {services.slice(6).map((s) => (
                   <li key={s.slug}>
-                    <Link to={`/services/${s.slug}`} className="text-slate-300 hover:text-white text-sm transition-colors">
+                    <Link to={`/services/${s.slug}`} className="text-slate-300 hover:text-white text-xs sm:text-sm transition-colors">
                       {s.name}
                     </Link>
                   </li>
@@ -423,18 +423,18 @@ function Layout() {
             {/* Contact */}
             <div>
               <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider text-slate-400">Contact</h4>
-              <ul className="space-y-3">
-                <li className="flex items-start gap-2 text-slate-300 text-sm">
+              <ul className="space-y-2.5">
+                <li className="flex items-start gap-2 text-slate-300 text-xs sm:text-sm">
                   <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
                   <span>New Delhi & Bengaluru, India</span>
                 </li>
-                <li className="flex items-center gap-2 text-slate-300 text-sm">
+                <li className="flex items-center gap-2 text-slate-300 text-xs sm:text-sm">
                   <Mail className="w-4 h-4 shrink-0" />
                   <a href="mailto:support@ofstrideservices.com" className="hover:text-white transition-colors break-all">
                     support@ofstrideservices.com
                   </a>
                 </li>
-                <li className="flex items-center gap-2 text-slate-300 text-sm">
+                <li className="flex items-center gap-2 text-slate-300 text-xs sm:text-sm">
                   <Phone className="w-4 h-4 shrink-0" />
                   <a href="tel:+918951606862" className="hover:text-white transition-colors">
                     +91 89516 06862
@@ -445,7 +445,7 @@ function Layout() {
                     href="https://wa.me/918951606862?text=Hi%2C+I%27d+like+to+know+more+about+Ofstride%27s+services"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300 text-sm transition-colors"
+                    className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300 text-xs sm:text-sm transition-colors"
                   >
                     <MessageCircle className="w-4 h-4 shrink-0" />
                     Chat on WhatsApp
@@ -453,24 +453,24 @@ function Layout() {
                 </li>
               </ul>
 
-              <div className="mt-5 pt-5 border-t border-slate-700 space-y-2.5">
+              <div className="mt-4 pt-4 border-t border-slate-700 space-y-2">
                 <Link 
                   to="/book-call"
-                  className="inline-flex items-center gap-2 bg-secondary text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
+                  className="inline-flex items-center gap-2 bg-secondary text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-600 transition-colors"
                 >
                   <Calendar className="w-4 h-4" />
                   Book a Free Call
                 </Link>
                 <Link
                   to="/admin/careers"
-                  className="inline-flex items-center gap-2 border border-slate-500 text-slate-300 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-white/10 transition-colors"
+                  className="inline-flex items-center gap-2 border border-slate-500 text-slate-300 px-4 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-white/10 transition-colors"
                 >
                   <Users className="w-4 h-4" />
                   Admin Careers
                 </Link>
                 <Link 
                   to="/contact-form"
-                  className="inline-flex items-center gap-2 border border-slate-500 text-slate-300 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-white/10 transition-colors"
+                  className="inline-flex items-center gap-2 border border-slate-500 text-slate-300 px-4 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-white/10 transition-colors"
                 >
                   <Mail className="w-4 h-4" />
                   Send Message
@@ -479,13 +479,13 @@ function Layout() {
             </div>
           </div>
 
-          <div className="mt-8 sm:mt-10 pt-6 border-t border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-slate-400 text-sm text-center sm:text-left">
+          <div className="mt-6 sm:mt-7 pt-5 border-t border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <p className="text-slate-400 text-xs sm:text-sm text-center sm:text-left">
               © 2026 Ofstride Services LLP. All rights reserved.
             </p>
             <div className="flex gap-6">
-              <Link to="/" className="text-slate-400 hover:text-white text-sm transition-colors">Privacy</Link>
-              <Link to="/" className="text-slate-400 hover:text-white text-sm transition-colors">Terms</Link>
+              <Link to="/" className="text-slate-400 hover:text-white text-xs sm:text-sm transition-colors">Privacy</Link>
+              <Link to="/" className="text-slate-400 hover:text-white text-xs sm:text-sm transition-colors">Terms</Link>
             </div>
           </div>
         </div>
