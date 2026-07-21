@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Briefcase, CheckCircle2, ChevronDown, ChevronRight, FileText, ShieldCheck, UploadCloud, Users } from "lucide-react";
+import { AlertTriangle, Briefcase, CheckCircle2, ChevronDown, ChevronRight, FileText, ShieldCheck, Users } from "lucide-react";
 import {
   completeCareersUpload,
   initCareersUpload,
@@ -27,18 +27,6 @@ function normalizeResumeContentType(file) {
     return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
   }
   return rawType;
-}
-
-function readFileAsBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = String(reader.result || "");
-      resolve(result.includes(",") ? result.split(",", 2)[1] : result);
-    };
-    reader.onerror = () => reject(reader.error || new Error("Unable to read resume file."));
-    reader.readAsDataURL(file);
-  });
 }
 
 function uniqueSorted(values) {
@@ -75,6 +63,7 @@ function Careers() {
   const [referenceId, setReferenceId] = useState("");
   const [expandedJobId, setExpandedJobId] = useState("");
   const [showForm, setShowForm] = useState(false);
+
   const availableDepartments = useMemo(
     () => uniqueSorted(facetData.departments.length ? facetData.departments : jobs.map((job) => job.department)),
     [facetData.departments, jobs]
@@ -301,6 +290,7 @@ function Careers() {
           <p className="text-text mt-3 max-w-3xl">
             We are a recruitment solutions provider. Explore live opportunities and submit your candidate profile through a secure, structured application workflow.
           </p>
+
           <div className="mt-6 grid sm:grid-cols-3 gap-3 text-sm text-primary">
             <div className="rounded-xl bg-white border border-slate-200 px-4 py-3"><ShieldCheck className="w-4 h-4 inline mr-2" />Secure upload flow</div>
             <div className="rounded-xl bg-white border border-slate-200 px-4 py-3"><Users className="w-4 h-4 inline mr-2" />Manual recruiter review</div>

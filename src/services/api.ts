@@ -276,6 +276,32 @@ export async function completeCareersUpload(
   return parseEnvelope<CareersCompleteResponse>(response);
 }
 
+export async function resumeUpload(payload: {
+  file_name: string;
+  file_content_base64: string;
+  content_type: string;
+}): Promise<{ uploaded: boolean }> {
+  const response = await fetch(`${CAREER_API_BASE}/resume-upload`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return parseEnvelope<{ uploaded: boolean }>(response);
+}
+
+export async function jdUpload(payload: {
+  file_name: string;
+  file_content_base64: string;
+  content_type: string;
+}): Promise<{ uploaded: boolean }> {
+  const response = await fetch(`${CAREER_API_BASE}/jd-upload`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return parseEnvelope<{ uploaded: boolean }>(response);
+}
+
 // ── Admin Career API (routed to dedicated Function App) ─────────────────
 // Route changed from admin-careers to careers/manage to avoid Azure Functions
 // reserved route families (admin/*, runtime/webhooks/*).

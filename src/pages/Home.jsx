@@ -146,7 +146,7 @@ const getOrbitPoint = (angle, radius, cardRadius = 44) => {
 
 function Home() {
   const revealRefs = useRef([])
-  const [activeOrbitTitle, setActiveOrbitTitle] = useState(orbitEdgePoints[0].title)
+  const [activeOrbitTitle, setActiveOrbitTitle] = useState(null)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -278,9 +278,9 @@ function Home() {
             </div>
 
             {/* Hero Visual — Service Orbit */}
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-5 lg:-mt-8">
               <div className="relative animate-float">
-                <div className="relative mx-auto w-full max-w-[22rem] sm:max-w-[25rem] lg:max-w-[30rem] h-[29rem] sm:h-[31rem] lg:h-[29rem]">
+                <div className="relative mx-auto w-full max-w-[24rem] sm:max-w-[28rem] lg:max-w-[34rem] h-[29rem] sm:h-[31rem] lg:h-[29rem]">
                   <svg viewBox="0 0 400 400" className="hero-orbit-svg absolute left-1/2 top-[9%] h-[17rem] w-[17rem] -translate-x-1/2 sm:h-[19rem] sm:w-[19rem] lg:top-[7%] lg:h-full lg:w-full">
                     <defs>
                       <radialGradient id="hero-core-glow" cx="50%" cy="50%" r="50%">
@@ -314,25 +314,28 @@ function Home() {
                     {orbitEdgePoints.map((item, index) => {
                       const point = getOrbitPoint(item.angle, 140)
                       const isActive = activeOrbitTitle === item.title
+                      const isDimmed = activeOrbitTitle !== null && !isActive
                       const path = `M 200 200 L ${point.x} ${point.y}`
+                      const dotDur = 4.8 + index * 0.45
+                      const trailDur = 5.2 + index * 0.35
                       return (
                         <g key={item.title}>
                           <path
                             d={path}
-                            className={`hero-pipeline ${isActive ? 'is-active' : 'is-dimmed'}`}
+                            className={`hero-pipeline ${isActive ? 'is-active' : isDimmed ? 'is-dimmed' : ''}`}
                             style={{ '--hero-pipeline-color': item.color }}
                           />
                           <path
                             d={path}
-                            className={`hero-pipeline-dash ${isActive ? 'is-active' : 'is-dimmed'}`}
+                            className={`hero-pipeline-dash ${isActive ? 'is-active' : isDimmed ? 'is-dimmed' : ''}`}
                             style={{ '--hero-pipeline-color': item.color }}
                           />
 
-                          <circle r="3.2" fill={item.color} opacity={isActive ? '0.95' : '0.55'}>
-                            <animateMotion dur={`${4.8 + index * 0.45}s`} repeatCount="indefinite" path={path} />
+                          <circle r="3.2" fill={item.color} opacity={isActive ? '0.95' : isDimmed ? '0.3' : '0.55'}>
+                            <animateMotion dur={`${isDimmed ? dotDur * 1.8 : dotDur}s`} repeatCount="indefinite" path={path} />
                           </circle>
-                          <circle r="2.4" fill="#BFDBFE" opacity={isActive ? '0.9' : '0.45'}>
-                            <animateMotion dur={`${5.2 + index * 0.35}s`} repeatCount="indefinite" path={`M ${point.x} ${point.y} L 200 200`} />
+                          <circle r="2.4" fill="#BFDBFE" opacity={isActive ? '0.9' : isDimmed ? '0.25' : '0.45'}>
+                            <animateMotion dur={`${isDimmed ? trailDur * 1.8 : trailDur}s`} repeatCount="indefinite" path={`M ${point.x} ${point.y} L 200 200`} />
                           </circle>
                         </g>
                       )
@@ -348,21 +351,27 @@ function Home() {
                     {orbitEdgePoints.map((item) => {
                       const point = getOrbitPoint(item.angle, 140)
                       const isActive = activeOrbitTitle === item.title
+                      const isDimmed = activeOrbitTitle !== null && !isActive
                       const Icon = item.icon
                       return (
                         <button
                           key={item.title}
                           type="button"
-                          className={`hero-orbit-card group absolute w-[8rem] sm:w-[9.2rem] lg:w-[9.6rem] rounded-[1.35rem] px-3 py-3 text-left ${isActive ? 'is-active' : ''}`}
+                          className={`hero-orbit-card group absolute w-[8rem] sm:w-[9.2rem] lg:w-[9.6rem] min-h-[7rem] sm:min-h-[7.25rem] lg:min-h-[7.75rem] rounded-[1.35rem] px-3 py-3 text-left transition-all duration-300 ease-out ${isActive ? 'is-active z-20 brightness-110 shadow-xl' : 'z-10'} ${isDimmed ? 'is-dimmed' : ''}`}
                           style={{
                             left: `${item.cardPosition.left}%`,
                             top: `${item.cardPosition.top}%`,
-                            transform: 'translate(-50%, -50%)',
+                            transform: isActive
+                              ? 'translate(-50%, calc(-50% - 10px)) scale(1.3)'
+                              : 'translate(-50%, -50%)',
+                            opacity: isDimmed ? 0.55 : 1,
                             '--hero-card-accent': item.color,
                             '--hero-card-glow': item.glow,
                           }}
                           onMouseEnter={() => setActiveOrbitTitle(item.title)}
+                          onMouseLeave={() => setActiveOrbitTitle(null)}
                           onFocus={() => setActiveOrbitTitle(item.title)}
+                          onBlur={() => setActiveOrbitTitle(null)}
                           onTouchStart={() => setActiveOrbitTitle(item.title)}
                         >
                           <div className="hero-orbit-card__icon-wrap mb-2 flex items-center justify-between">
@@ -371,9 +380,7 @@ function Home() {
                             </span>
                             <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color, boxShadow: `0 0 12px ${item.glow}` }}></span>
                           </div>
-                          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">Service Node</p>
-                          <p className="mt-1 text-[11px] leading-[1.25] font-semibold text-slate-900">{item.title}</p>
-                          <p className="mt-1 text-[10px] leading-[1.35] text-slate-600">{item.subtitle}</p>
+                          <p className="mt-1 text-xs sm:text-sm lg:text-base leading-snug font-semibold text-slate-900">{item.title}</p>
                         </button>
                       )
                     })}

@@ -9,11 +9,14 @@ import { ChatWidget } from './chat/ChatWidget'
 function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isServicesOpen, setIsServicesOpen] = useState(false)
+  const [isCareersOpen, setIsCareersOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
   const location = useLocation()
   const servicesRef = useRef(null)
   const closeTimerRef = useRef(null)
+  const careersRef = useRef(null)
+  const careersCloseTimerRef = useRef(null)
 
   const navLinkClass = ({ isActive }) => {
     const base = 'flex items-center gap-1.5 transition-colors font-medium px-2 py-1 rounded-lg'
@@ -28,6 +31,9 @@ function Layout() {
       if (servicesRef.current && !servicesRef.current.contains(event.target)) {
         setIsServicesOpen(false)
       }
+      if (careersRef.current && !careersRef.current.contains(event.target)) {
+        setIsCareersOpen(false)
+      }
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
@@ -37,6 +43,7 @@ function Layout() {
   useEffect(() => {
     setIsMenuOpen(false)
     setIsServicesOpen(false)
+    setIsCareersOpen(false)
     window.scrollTo(0, 0)
     setIsChatOpen(false)
   }, [location])
@@ -51,6 +58,7 @@ function Layout() {
     const onEscape = (event) => {
       if (event.key === 'Escape') {
         setIsServicesOpen(false)
+        setIsCareersOpen(false)
         setIsMenuOpen(false)
         setIsChatOpen(false)
       }
@@ -71,6 +79,9 @@ function Layout() {
     return () => {
       if (closeTimerRef.current) {
         clearTimeout(closeTimerRef.current)
+      }
+      if (careersCloseTimerRef.current) {
+        clearTimeout(careersCloseTimerRef.current)
       }
     }
   }, [])
@@ -109,10 +120,17 @@ function Layout() {
   ]
   const services = serviceGroups.flatMap((g) => g.services)
 
+  const careersItems = [
+    { name: 'Upload Resume / JD', to: '/careers/upload' },
+    { name: 'Jobseeker', to: '/careers/jobs' },
+    { name: 'Employer / Admin', to: '/employer' },
+  ]
+
   const openServices = () => {
     if (closeTimerRef.current) {
       clearTimeout(closeTimerRef.current)
     }
+    setIsCareersOpen(false)
     setIsServicesOpen(true)
   }
 
@@ -125,9 +143,36 @@ function Layout() {
     }, 120)
   }
 
-  const toggleServices = () => setIsServicesOpen((prev) => !prev)
+  const toggleServices = () => {
+    setIsCareersOpen(false)
+    setIsServicesOpen((prev) => !prev)
+  }
+
+  const openCareers = () => {
+    if (careersCloseTimerRef.current) {
+      clearTimeout(careersCloseTimerRef.current)
+    }
+    setIsServicesOpen(false)
+    setIsCareersOpen(true)
+  }
+
+  const closeCareers = () => {
+    if (careersCloseTimerRef.current) {
+      clearTimeout(careersCloseTimerRef.current)
+    }
+    careersCloseTimerRef.current = setTimeout(() => {
+      setIsCareersOpen(false)
+    }, 120)
+  }
+
+  const toggleCareers = () => {
+    setIsServicesOpen(false)
+    setIsCareersOpen((prev) => !prev)
+  }
+
   const closeAllMenus = () => {
     setIsServicesOpen(false)
+    setIsCareersOpen(false)
     setIsMenuOpen(false)
   }
 
@@ -229,10 +274,49 @@ function Layout() {
                 <Globe className="w-4 h-4" />
                 Industries
               </NavLink>
-              <NavLink to="/careers" className={navLinkClass}>
-                <FileText className="w-4 h-4" />
-                Careers
-              </NavLink>
+              <div
+                ref={careersRef}
+                className="relative"
+                onMouseEnter={openCareers}
+                onMouseLeave={closeCareers}
+              >
+                <button
+                  type="button"
+                  onClick={toggleCareers}
+                  onFocus={openCareers}
+                  aria-expanded={isCareersOpen}
+                  aria-haspopup="menu"
+                  aria-label="Open careers menu"
+                  className="flex items-center gap-1 text-text hover:text-secondary transition-colors font-medium px-2 py-1 rounded-lg hover:bg-surface"
+                >
+                  <FileText className="w-4 h-4" />
+                  Careers
+                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isCareersOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isCareersOpen && (
+                  <div
+                    className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 p-2 z-50"
+                    role="menu"
+                    onMouseEnter={openCareers}
+                    onMouseLeave={closeCareers}
+                  >
+                    <div className="space-y-0.5">
+                      {careersItems.map((item) => (
+                        <Link
+                          key={item.to}
+                          to={item.to}
+                          role="menuitem"
+                          className="block px-4 py-2 text-sm text-text hover:bg-surface hover:text-secondary rounded-lg transition-colors"
+                          onClick={() => setIsCareersOpen(false)}
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
               <NavLink to="/about" className={navLinkClass}>
                 <Info className="w-4 h-4" />
                 About
@@ -320,13 +404,33 @@ function Layout() {
               >
                 <Globe className="w-5 h-5" /> Industries
               </NavLink>
-              <NavLink
-                to="/careers"
-                onClick={closeAllMenus}
-                className={({ isActive }) => `flex items-center gap-2 py-3 px-3 rounded-lg transition-colors font-medium ${isActive ? 'text-secondary bg-surface' : 'text-text hover:text-secondary hover:bg-surface'}`}
-              >
-                <FileText className="w-5 h-5" /> Careers
-              </NavLink>
+              <div className="px-3">
+                <button
+                  type="button"
+                  onClick={toggleCareers}
+                  aria-expanded={isCareersOpen}
+                  aria-label="Toggle careers in mobile menu"
+                  className="flex items-center gap-2 py-3 text-text hover:text-secondary transition-colors font-medium w-full"
+                >
+                  <FileText className="w-5 h-5" /> Careers
+                  <ChevronDown className={`w-4 h-4 ml-auto transition-transform duration-200 ${isCareersOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isCareersOpen && (
+                  <div className="pl-8 space-y-1 mt-1">
+                    {careersItems.map((item) => (
+                      <Link
+                        key={item.to}
+                        to={item.to}
+                        className="block py-2 text-sm text-text hover:text-secondary transition-colors"
+                        onClick={closeAllMenus}
+                      >
+                        {item.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
               <NavLink
                 to="/about"
                 onClick={closeAllMenus}
