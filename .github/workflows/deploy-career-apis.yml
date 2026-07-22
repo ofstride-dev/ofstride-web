@@ -8,6 +8,8 @@ on:
       - 'api/careers_complete/**'
       - 'api/careers_init_upload/**'
       - 'api/jobs/**'
+      - 'api/submit_profile/**'
+      - 'api/veteran_careers/**'
       - 'api/shared/**'
       - 'api/requirements.txt'
       - 'api/requirements-careers.txt'
@@ -32,6 +34,8 @@ jobs:
           cp -r api/careers_complete __staged_careers/
           cp -r api/careers_init_upload __staged_careers/
           cp -r api/jobs __staged_careers/
+          cp -r api/submit_profile __staged_careers/
+          cp -r api/veteran_careers __staged_careers/
           cp -r api/shared __staged_careers/
           cp api/host.json __staged_careers/
           # Use the minimal career-only requirements to reduce build failures
