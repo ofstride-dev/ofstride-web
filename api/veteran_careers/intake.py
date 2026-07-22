@@ -30,6 +30,10 @@ def _missing_required_fields(form_data, required_fields):
 
 @veteran_bp.route(route="SubmitProfile", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST"])
 def SubmitProfile(req: func.HttpRequest) -> func.HttpResponse:
+    return handle_submit_profile(req)
+
+
+def handle_submit_profile(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Processing application intake request.")
 
     try:

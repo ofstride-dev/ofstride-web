@@ -12,10 +12,10 @@ if api_root not in sys.path:
 if shared_path not in sys.path:
     sys.path.insert(0, shared_path)
 
-from veteran_careers.intake import SubmitProfile as submit_profile_handler
+from veteran_careers.intake import handle_submit_profile
 
 
 async def main(req: func.HttpRequest) -> func.HttpResponse:
     if req.method == "OPTIONS":
         return func.HttpResponse(status_code=204)
-    return submit_profile_handler(req)
+    return handle_submit_profile(req)
