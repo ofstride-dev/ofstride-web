@@ -8,6 +8,8 @@ on:
       - 'api/careers_complete/**'
       - 'api/careers_init_upload/**'
       - 'api/jobs/**'
+      - 'api/resume_upload/**'
+      - 'api/jd_upload/**'
       - 'api/submit_profile/**'
       - 'api/veteran_careers/**'
       - 'api/shared/**'
@@ -34,6 +36,8 @@ jobs:
           cp -r api/careers_complete __staged_careers/
           cp -r api/careers_init_upload __staged_careers/
           cp -r api/jobs __staged_careers/
+          cp -r api/resume_upload __staged_careers/
+          cp -r api/jd_upload __staged_careers/
           cp -r api/submit_profile __staged_careers/
           cp -r api/veteran_careers __staged_careers/
           cp -r api/shared __staged_careers/
