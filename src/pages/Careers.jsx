@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Briefcase, CheckCircle2, ChevronDown, ChevronRight, FileText, ShieldCheck, Users } from "lucide-react";
+import { AlertTriangle, Briefcase, CheckCircle2, ChevronDown, ChevronRight, FileText, ShieldCheck, UploadCloud, Users } from "lucide-react";
 import {
   completeCareersUpload,
   initCareersUpload,

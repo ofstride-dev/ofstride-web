@@ -92,31 +92,26 @@ def handle_submit_profile(req: func.HttpRequest) -> func.HttpResponse:
         file_bytes = uploaded_file.read()
         filename = uploaded_file.filename
 
+        ai_data = {
+            "summary": None,
+            "recommendation": None,
+            "has_corporate_experience": False,
+        }
+
+        # 1. Parse and analyze resume when analyzer dependencies are available.
+        # If unavailable in the cloud runtime, continue the core submission path.
         try:
             extract_text, analyze_resume = _load_resume_tools()
+            resume_text = extract_text(file_bytes, filename)
+            if resume_text.strip():
+                try:
+                    ai_data = analyze_resume(resume_text)
+                except Exception as ai_error:
+                    logging.warning("Resume AI analysis failed, continuing submission: %s", ai_error)
+            else:
+                logging.warning("Resume text extraction returned empty content; skipping AI analysis.")
         except Exception as import_error:
-            logging.exception("Resume analyzer dependencies unavailable")
-            return func.HttpResponse(
-                json.dumps({"error": "Resume analyzer is unavailable on server.", "details": str(import_error)}),
-                mimetype="application/json",
-                status_code=503,
-            )
-
-        # 1. Parse Document Text
-        resume_text = extract_text(file_bytes, filename)
-        if not resume_text.strip():
-            return func.HttpResponse("Unable to extract copyable text from document.", status_code=400)
-
-        # 2. Process with AI Engine (informational only — does not block submission)
-        try:
-            ai_data = analyze_resume(resume_text)
-        except Exception as ai_error:
-            logging.warning("Resume AI analysis failed, continuing submission: %s", ai_error)
-            ai_data = {
-                "summary": None,
-                "recommendation": None,
-                "has_corporate_experience": False,
-            }
+            logging.warning("Resume analyzer dependencies unavailable; continuing without AI analysis: %s", import_error)
 
         # 3. Stream to Azure Blob Storage
         veteran_resume_container = os.environ.get("VETERAN_RESUME_BLOB_CONTAINER", "veteran-resume").strip() or "veteran-resume"
