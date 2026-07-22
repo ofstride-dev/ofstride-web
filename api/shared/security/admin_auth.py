@@ -102,19 +102,19 @@ def _verify_supabase_jwt(token: str) -> dict[str, Any]:
     audience = _env("SUPABASE_AUTH_AUDIENCE", "authenticated")
     jwt_secret = _env("SUPABASE_JWT_SECRET")
 
-    # Lazy import: PyJWT may not be installed in all environments
-    try:
-        import jwt
-    except ImportError as exc:
-        raise AdminAuthError("JWT verification library (pyjwt) is not installed.") from exc
+    # Always validate directly against Supabase's Auth API first. This is the
+    # most reliable path (it checks the live session, revocation, expiry) and
+    # does not depend on a correctly configured legacy JWT secret, which is
+    # easy to misconfigure across environments.
+    payload = _verify_via_supabase_auth_api(token, supabase_url)
 
-    if not jwt_secret:
-        # Prefer Supabase Auth API when no JWT secret is configured.
-        # This avoids local RS256/JWKS crypto dependency issues in serverless runtimes.
-        payload = _verify_via_supabase_auth_api(token, supabase_url)
-        if not payload:
-            raise AdminAuthError("Invalid authentication token.")
-    else:
+    if payload is None and jwt_secret:
+        # Lazy import: PyJWT may not be installed in all environments
+        try:
+            import jwt
+        except ImportError as exc:
+            raise AdminAuthError("JWT verification library (pyjwt) is not installed.") from exc
+
         try:
             payload = jwt.decode(
                 token,
@@ -125,10 +125,11 @@ def _verify_supabase_jwt(token: str) -> dict[str, Any]:
             )
         except jwt.ExpiredSignatureError as exc:
             raise AdminAuthError("Token has expired.") from exc
-        except jwt.InvalidTokenError as exc:
-            payload = _verify_via_supabase_auth_api(token, supabase_url)
-            if not payload:
-                raise AdminAuthError("Invalid authentication token.") from exc
+        except jwt.InvalidTokenError:
+            payload = None
+
+    if payload is None:
+        raise AdminAuthError("Invalid authentication token.")
 
     # ------------------------------------------------------------------
     # Extract user identity
@@ -203,6 +204,7 @@ def _verify_via_supabase_auth_api(token: str, supabase_url: str) -> dict[str, An
     """Validate access token using Supabase Auth API and map response to JWT-like claims."""
     api_key = _env("SUPABASE_SERVICE_ROLE_KEY") or _env("SUPABASE_SERVICE_KEY")
     if not api_key:
+        _logger.error("Supabase auth API check skipped: no SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SERVICE_KEY configured.")
         return None
 
     user_url = supabase_url.rstrip("/") + "/auth/v1/user"
@@ -216,12 +218,17 @@ def _verify_via_supabase_auth_api(token: str, supabase_url: str) -> dict[str, An
     )
 
     try:
-        with urlrequest.urlopen(req, timeout=8) as response:
+        with urlrequest.urlopen(req, timeout=15) as response:
             if response.status != 200:
+                _logger.warning("Supabase auth API rejected token with status %s", response.status)
                 return None
             raw = response.read().decode("utf-8")
             user_obj = json.loads(raw)
-    except (urlerror.URLError, TimeoutError, json.JSONDecodeError):
+    except urlerror.HTTPError as exc:
+        _logger.warning("Supabase auth API rejected token: HTTP %s %s", exc.code, exc.reason)
+        return None
+    except (urlerror.URLError, TimeoutError, json.JSONDecodeError) as exc:
+        _logger.error("Supabase auth API check failed: %s", exc)
         return None
 
     if not isinstance(user_obj, dict):
