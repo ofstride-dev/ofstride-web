@@ -73,10 +73,10 @@ jobs:
             --target "__staged_careers/.python_packages/lib/site-packages"
           echo "=== Packaged dependency count ==="
           python - <<'PY'
-from pathlib import Path
-site = Path("__staged_careers/.python_packages/lib/site-packages")
-print(len(list(site.glob("*"))))
-PY
+          from pathlib import Path
+          site = Path("__staged_careers/.python_packages/lib/site-packages")
+          print(len(list(site.glob("*"))))
+          PY
       - name: Sync Optional LLM Settings (Same CI/CD Pipeline)
         shell: bash
         env:
