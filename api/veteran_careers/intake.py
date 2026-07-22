@@ -2,14 +2,34 @@ import azure.functions as func
 import logging
 import json
 import os
-from supabase import create_client
-from shared.careers_agentic.vat_resume_analyzer import extract_text, analyze_resume
-from shared.engagement.communications import send_admin_notification
-from shared.persistence.blob_storage import upload_resume
 from shared.security.admin_auth import AdminAuthError, require_authenticated_user
 
 # Create the Blueprint
 veteran_bp = func.Blueprint()
+
+
+def _load_resume_tools():
+    from shared.careers_agentic.vat_resume_analyzer import extract_text, analyze_resume
+
+    return extract_text, analyze_resume
+
+
+def _load_blob_uploader():
+    from shared.persistence.blob_storage import upload_resume
+
+    return upload_resume
+
+
+def _load_supabase_client_factory():
+    from supabase import create_client
+
+    return create_client
+
+
+def _load_notification_sender():
+    from shared.engagement.communications import send_admin_notification
+
+    return send_admin_notification
 
 
 def _to_bool(value) -> bool:
@@ -72,17 +92,36 @@ def handle_submit_profile(req: func.HttpRequest) -> func.HttpResponse:
         file_bytes = uploaded_file.read()
         filename = uploaded_file.filename
 
+        try:
+            extract_text, analyze_resume = _load_resume_tools()
+        except Exception as import_error:
+            logging.exception("Resume analyzer dependencies unavailable")
+            return func.HttpResponse(
+                json.dumps({"error": "Resume analyzer is unavailable on server.", "details": str(import_error)}),
+                mimetype="application/json",
+                status_code=503,
+            )
+
         # 1. Parse Document Text
         resume_text = extract_text(file_bytes, filename)
         if not resume_text.strip():
             return func.HttpResponse("Unable to extract copyable text from document.", status_code=400)
 
         # 2. Process with AI Engine (informational only — does not block submission)
-        ai_data = analyze_resume(resume_text)
+        try:
+            ai_data = analyze_resume(resume_text)
+        except Exception as ai_error:
+            logging.warning("Resume AI analysis failed, continuing submission: %s", ai_error)
+            ai_data = {
+                "summary": None,
+                "recommendation": None,
+                "has_corporate_experience": False,
+            }
 
         # 3. Stream to Azure Blob Storage
         veteran_resume_container = os.environ.get("VETERAN_RESUME_BLOB_CONTAINER", "veteran-resume").strip() or "veteran-resume"
         try:
+            upload_resume = _load_blob_uploader()
             blob_url = upload_resume(file_bytes, filename, container_name=veteran_resume_container)
         except Exception as upload_error:
             logging.exception("Veteran resume upload failed for container '%s'", veteran_resume_container)
@@ -140,6 +179,16 @@ def handle_submit_profile(req: func.HttpRequest) -> func.HttpResponse:
                 status_code=500,
             )
 
+        try:
+            create_client = _load_supabase_client_factory()
+        except Exception as import_error:
+            logging.exception("Supabase client dependency unavailable")
+            return func.HttpResponse(
+                json.dumps({"error": "Supabase client is unavailable on server.", "details": str(import_error)}),
+                mimetype="application/json",
+                status_code=503,
+            )
+
         supabase = create_client(supabase_url, supabase_service_key)
         profile_record = {
             "full_name": form_data.get("fullName"),
@@ -165,7 +214,11 @@ def handle_submit_profile(req: func.HttpRequest) -> func.HttpResponse:
         supabase.table("veteran_profiles").insert(profile_record).execute()
 
         # 5. Fire Async Admin Email
-        send_admin_notification(profile_record["full_name"], profile_record["defence_service"])
+        try:
+            send_admin_notification = _load_notification_sender()
+            send_admin_notification(profile_record["full_name"], profile_record["defence_service"])
+        except Exception as notify_error:
+            logging.warning("Admin notification skipped: %s", notify_error)
 
         return func.HttpResponse(json.dumps({"status": "success"}), mimetype="application/json", status_code=200)
 
