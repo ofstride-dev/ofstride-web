@@ -8,12 +8,6 @@ from shared.security.admin_auth import AdminAuthError, require_authenticated_use
 veteran_bp = func.Blueprint()
 
 
-def _load_resume_tools():
-    from shared.careers_agentic.vat_resume_analyzer import extract_text, analyze_resume
-
-    return extract_text, analyze_resume
-
-
 def _load_blob_uploader():
     from shared.persistence.blob_storage import upload_resume
 
@@ -92,28 +86,7 @@ def handle_submit_profile(req: func.HttpRequest) -> func.HttpResponse:
         file_bytes = uploaded_file.read()
         filename = uploaded_file.filename
 
-        ai_data = {
-            "summary": None,
-            "recommendation": None,
-            "has_corporate_experience": False,
-        }
-
-        # 1. Parse and analyze resume when analyzer dependencies are available.
-        # If unavailable in the cloud runtime, continue the core submission path.
-        try:
-            extract_text, analyze_resume = _load_resume_tools()
-            resume_text = extract_text(file_bytes, filename)
-            if resume_text.strip():
-                try:
-                    ai_data = analyze_resume(resume_text)
-                except Exception as ai_error:
-                    logging.warning("Resume AI analysis failed, continuing submission: %s", ai_error)
-            else:
-                logging.warning("Resume text extraction returned empty content; skipping AI analysis.")
-        except Exception as import_error:
-            logging.warning("Resume analyzer dependencies unavailable; continuing without AI analysis: %s", import_error)
-
-        # 3. Stream to Azure Blob Storage
+        # Stream to Azure Blob Storage.
         veteran_resume_container = os.environ.get("VETERAN_RESUME_BLOB_CONTAINER", "veteran-resume").strip() or "veteran-resume"
         try:
             upload_resume = _load_blob_uploader()
@@ -202,9 +175,9 @@ def handle_submit_profile(req: func.HttpRequest) -> func.HttpResponse:
             "expected_salary": form_data.get("expectedSalary"),
             "consent_to_share": _to_bool(form_data.get("consentToShare")),
             "resume_blob_url": blob_url,
-            "ai_summary": ai_data.get("summary"),
-            "ai_recommendation": ai_data.get("recommendation"),
-            "has_corporate_experience": bool(ai_data.get("has_corporate_experience", False))
+            "ai_summary": None,
+            "ai_recommendation": None,
+            "has_corporate_experience": False,
         }
         supabase.table("veteran_profiles").insert(profile_record).execute()
 

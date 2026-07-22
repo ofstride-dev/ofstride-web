@@ -108,9 +108,14 @@ def _verify_supabase_jwt(token: str) -> dict[str, Any]:
     except ImportError as exc:
         raise AdminAuthError("JWT verification library (pyjwt) is not installed.") from exc
 
-    try:
-        if jwt_secret:
-            # Hosted/self-hosted Supabase configured with the JWT secret.
+    if not jwt_secret:
+        # Prefer Supabase Auth API when no JWT secret is configured.
+        # This avoids local RS256/JWKS crypto dependency issues in serverless runtimes.
+        payload = _verify_via_supabase_auth_api(token, supabase_url)
+        if not payload:
+            raise AdminAuthError("Invalid authentication token.")
+    else:
+        try:
             payload = jwt.decode(
                 token,
                 jwt_secret,
@@ -118,25 +123,12 @@ def _verify_supabase_jwt(token: str) -> dict[str, Any]:
                 audience=audience,
                 issuer=issuer,
             )
-        else:
-            # Fall back to JWKS verification (RS256).
-            jwks_url = issuer + "/.well-known/jwks.json"
-            jwks_client = jwt.PyJWKClient(jwks_url)
-            signing_key = jwks_client.get_signing_key_from_jwt(token)
-            payload = jwt.decode(
-                token,
-                signing_key.key,
-                algorithms=["RS256"],
-                audience=audience,
-                issuer=issuer,
-            )
-    except jwt.ExpiredSignatureError as exc:
-        raise AdminAuthError("Token has expired.") from exc
-    except jwt.InvalidTokenError as exc:
-        # Fallback: let Supabase Auth validate the token server-side.
-        payload = _verify_via_supabase_auth_api(token, supabase_url)
-        if not payload:
-            raise AdminAuthError("Invalid authentication token.") from exc
+        except jwt.ExpiredSignatureError as exc:
+            raise AdminAuthError("Token has expired.") from exc
+        except jwt.InvalidTokenError as exc:
+            payload = _verify_via_supabase_auth_api(token, supabase_url)
+            if not payload:
+                raise AdminAuthError("Invalid authentication token.") from exc
 
     # ------------------------------------------------------------------
     # Extract user identity
