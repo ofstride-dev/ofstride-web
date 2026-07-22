@@ -484,7 +484,7 @@ function AdminCareers() {
 
   if (auth.loading) {
     return (
-      <div className="pt-16 sm:pt-20 min-h-screen bg-surface flex items-center justify-center">
+      <div className="pt-12 sm:pt-16 min-h-screen bg-surface flex items-center justify-center">
         <p className="text-muted">Loading authentication...</p>
       </div>
     );
@@ -492,7 +492,7 @@ function AdminCareers() {
 
   if (!auth.user) {
     return (
-      <div className="pt-16 sm:pt-20 min-h-screen bg-surface">
+      <div className="pt-12 sm:pt-16 min-h-screen bg-surface">
         <div className="max-w-md mx-auto px-4 py-12">
           <div className="bg-white rounded-xl shadow-sm p-6 sm:p-8">
             <h1 className="text-2xl font-bold text-primary mb-2">Admin Sign In</h1>
@@ -566,7 +566,7 @@ function AdminCareers() {
   // ── Render: Dashboard ─────────────────────────────────────────────────
 
   return (
-    <div className="pt-16 sm:pt-20 min-h-screen bg-surface overflow-x-hidden">
+    <div className="pt-12 sm:pt-16 min-h-screen bg-surface overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -1058,3 +1058,4 @@ function AdminCareers() {
 }
 
 export default AdminCareers;
+

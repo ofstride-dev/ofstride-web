@@ -3,9 +3,9 @@ import { MapPin, Phone, Mail, Globe, Calendar, ExternalLink } from 'lucide-react
 
 function Contact() {
   return (
-    <div className="pt-16 sm:pt-20">
+    <div className="pt-12 sm:pt-16">
       {/* Hero */}
-      <section className="py-14 sm:py-20 lg:py-28 bg-surface">
+      <section className="py-10 sm:py-14 lg:py-20 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
             Contact
@@ -20,7 +20,7 @@ function Contact() {
       </section>
 
       {/* Contact Options */}
-      <section className="py-14 sm:py-20 lg:py-28">
+      <section className="py-10 sm:py-14 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-20">
             {/* Left: Contact Options */}
@@ -169,3 +169,4 @@ function Contact() {
 }
 
 export default Contact
+

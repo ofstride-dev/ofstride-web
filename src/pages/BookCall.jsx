@@ -29,7 +29,7 @@ function BookCall() {
   }
 
   return (
-    <div className="pt-16 sm:pt-20 min-h-screen bg-surface">
+    <div className="pt-12 sm:pt-16 min-h-screen bg-surface">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
         <div className="text-center mb-8">
           <span className="inline-block text-secondary text-sm font-semibold uppercase tracking-wider mb-3">
@@ -115,3 +115,4 @@ function BookCall() {
 }
 
 export default BookCall
+

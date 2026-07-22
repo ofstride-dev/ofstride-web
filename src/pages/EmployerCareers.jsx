@@ -47,7 +47,7 @@ function EmployerCareers() {
 
   if (auth.loading) {
     return (
-      <div className="pt-16 sm:pt-20 min-h-screen bg-surface flex items-center justify-center">
+      <div className="pt-12 sm:pt-16 min-h-screen bg-surface flex items-center justify-center">
         <p className="text-muted">Loading...</p>
       </div>
     );
@@ -55,7 +55,7 @@ function EmployerCareers() {
 
   if (!auth.user) {
     return (
-      <div className="pt-16 sm:pt-20 min-h-screen bg-surface">
+      <div className="pt-12 sm:pt-16 min-h-screen bg-surface">
         <section className="max-w-md mx-auto px-4 py-12">
           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 sm:p-8">
             <p className="text-sm font-semibold uppercase tracking-wide text-secondary mb-2">Employer / Admin</p>
@@ -115,7 +115,7 @@ function EmployerCareers() {
   }
 
   return (
-    <div className="pt-16 sm:pt-20 min-h-screen bg-surface">
+    <div className="pt-12 sm:pt-16 min-h-screen bg-surface">
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 sm:p-8">
           <div className="flex items-center justify-between mb-4">

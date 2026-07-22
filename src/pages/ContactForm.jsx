@@ -126,7 +126,7 @@ function ContactForm() {
 
   if (submitted) {
     return (
-      <div className="pt-16 sm:pt-20 min-h-screen flex items-center justify-center bg-surface">
+      <div className="pt-12 sm:pt-16 min-h-screen flex items-center justify-center bg-surface">
         <div className="max-w-md mx-auto px-4 text-center">
           <div className="bg-white rounded-2xl p-6 sm:p-10 shadow-sm">
             <CheckCircle2 className="w-16 h-16 text-accent mx-auto mb-6" />
@@ -154,7 +154,7 @@ function ContactForm() {
   }
 
   return (
-    <div className="pt-16 sm:pt-20 min-h-screen bg-surface">
+    <div className="pt-12 sm:pt-16 min-h-screen bg-surface">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
         <div className="grid lg:grid-cols-5 gap-8 sm:gap-12">
           {/* Left: Info */}
@@ -380,3 +380,4 @@ function ContactForm() {
 }
 
 export default ContactForm
+

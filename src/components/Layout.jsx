@@ -2,7 +2,7 @@ import { Outlet, Link, NavLink, useLocation } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import { 
   Menu, X, ChevronDown, Phone, Mail, MapPin, Calendar, Home, 
-  Briefcase, Users, Globe, Info, MessageCircle, FileText
+  Briefcase, Users, Globe, Info, MessageCircle, FileText, Bot
 } from 'lucide-react'
 import { ChatWidget } from './chat/ChatWidget'
 
@@ -611,11 +611,11 @@ function Layout() {
           type="button"
           onClick={() => setIsChatOpen((prev) => !prev)}
           aria-expanded={isChatOpen}
-          aria-label={isChatOpen ? 'Close Ofstride Assistance' : 'Open Ofstride Assistance'}
-          className="ml-auto inline-flex items-center gap-2 rounded-full bg-secondary text-white px-4 py-3 shadow-lg hover:bg-blue-600 transition-colors"
+          aria-label={isChatOpen ? 'Close Ofstride' : 'Open Ofstride'}
+          className="ml-auto inline-flex items-center gap-2 rounded-full bg-secondary text-white px-3.5 py-2.5 shadow-lg hover:bg-blue-600 transition-colors"
         >
-          {isChatOpen ? <X className="w-5 h-5" /> : <MessageCircle className="w-5 h-5" />}
-          <span className="text-sm font-semibold">Ofstride Assistance</span>
+          {isChatOpen ? <X className="w-[18px] h-[18px]" /> : <Bot className="w-[18px] h-[18px]" />}
+          <span className="text-sm font-semibold">Ofstride</span>
         </button>
       </div>
     </div>

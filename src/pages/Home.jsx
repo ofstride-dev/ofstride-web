@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
+import HeroRightGraphic from '../components/HeroRightGraphic.jsx'
 import { 
   ArrowRight, 
   Brain, 
@@ -215,11 +216,11 @@ function Home() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="min-h-screen flex items-start hero-pattern pt-16 sm:pt-20 lg:pt-24">
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 lg:py-24">
+      <section className="min-h-screen flex items-start hero-pattern pt-12 sm:pt-16 lg:pt-14">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-12 items-start">
             <div className="animate-fade-up">
-              <div className="inline-flex items-center gap-2 bg-blue-50 text-secondary px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium mb-4 sm:mb-6">
+              <div className="inline-flex items-center gap-2 bg-blue-50 text-secondary px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium mb-3 sm:mb-4">
                 <span className="w-2 h-2 bg-accent rounded-full ai-badge"></span>
                 AI-Powered Compliance &amp; Back-Office for Indian MSMEs
               </div>
@@ -277,123 +278,16 @@ function Home() {
 
             </div>
 
-            {/* Hero Visual — Service Orbit */}
+            {/* Hero Visual — Ofstride Core Engine */}
             <div className="flex flex-col gap-5 lg:-mt-8">
-              <div className="relative animate-float">
-                <div className="relative mx-auto w-full max-w-[24rem] sm:max-w-[28rem] lg:max-w-[34rem] h-[29rem] sm:h-[31rem] lg:h-[29rem]">
-                  <svg viewBox="0 0 400 400" className="hero-orbit-svg absolute left-1/2 top-[9%] h-[17rem] w-[17rem] -translate-x-1/2 sm:h-[19rem] sm:w-[19rem] lg:top-[7%] lg:h-full lg:w-full">
-                    <defs>
-                      <radialGradient id="hero-core-glow" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stopColor="#60A5FA" stopOpacity="0.55" />
-                        <stop offset="55%" stopColor="#2563EB" stopOpacity="0.2" />
-                        <stop offset="100%" stopColor="#2563EB" stopOpacity="0" />
-                      </radialGradient>
-                      <linearGradient id="hero-ring-gradient" x1="80" y1="80" x2="320" y2="320">
-                        <stop offset="0%" stopColor="#93C5FD" stopOpacity="0.7" />
-                        <stop offset="45%" stopColor="#2563EB" stopOpacity="0.95" />
-                        <stop offset="100%" stopColor="#C4B5FD" stopOpacity="0.55" />
-                      </linearGradient>
-                    </defs>
-
-                    <g className="hero-core-pulse">
-                      <circle cx="200" cy="200" r="58" fill="url(#hero-core-glow)" />
-                    </g>
-
-                    <circle cx="200" cy="200" r="146" fill="none" stroke="rgba(0, 35, 160, 0.14)" strokeWidth="1" strokeDasharray="4 10" />
-
-                    <g className="hero-ring hero-ring--cw">
-                      <circle cx="200" cy="200" r="72" fill="none" stroke="url(#hero-ring-gradient)" strokeWidth="1.4" strokeDasharray="10 10" opacity="0.85" />
-                    </g>
-                    <g className="hero-ring hero-ring--ccw">
-                      <circle cx="200" cy="200" r="86" fill="none" stroke="rgba(147, 197, 253, 0.7)" strokeWidth="1.1" strokeDasharray="3 9" opacity="0.8" />
-                    </g>
-                    <g className="hero-ring hero-ring--cw-slow">
-                      <circle cx="200" cy="200" r="98" fill="none" stroke="rgba(196, 181, 253, 0.42)" strokeWidth="1" strokeDasharray="2 12" opacity="0.75" />
-                    </g>
-
-                    {orbitEdgePoints.map((item, index) => {
-                      const point = getOrbitPoint(item.angle, 140)
-                      const isActive = activeOrbitTitle === item.title
-                      const isDimmed = activeOrbitTitle !== null && !isActive
-                      const path = `M 200 200 L ${point.x} ${point.y}`
-                      const dotDur = 4.8 + index * 0.45
-                      const trailDur = 5.2 + index * 0.35
-                      return (
-                        <g key={item.title}>
-                          <path
-                            d={path}
-                            className={`hero-pipeline ${isActive ? 'is-active' : isDimmed ? 'is-dimmed' : ''}`}
-                            style={{ '--hero-pipeline-color': item.color }}
-                          />
-                          <path
-                            d={path}
-                            className={`hero-pipeline-dash ${isActive ? 'is-active' : isDimmed ? 'is-dimmed' : ''}`}
-                            style={{ '--hero-pipeline-color': item.color }}
-                          />
-
-                          <circle r="3.2" fill={item.color} opacity={isActive ? '0.95' : isDimmed ? '0.3' : '0.55'}>
-                            <animateMotion dur={`${isDimmed ? dotDur * 1.8 : dotDur}s`} repeatCount="indefinite" path={path} />
-                          </circle>
-                          <circle r="2.4" fill="#BFDBFE" opacity={isActive ? '0.9' : isDimmed ? '0.25' : '0.45'}>
-                            <animateMotion dur={`${isDimmed ? trailDur * 1.8 : trailDur}s`} repeatCount="indefinite" path={`M ${point.x} ${point.y} L 200 200`} />
-                          </circle>
-                        </g>
-                      )
-                    })}
-
-                    <circle cx="200" cy="200" r="48" fill="#03144F" className="hero-core-shell" />
-                    <circle cx="200" cy="200" r="41" fill="rgba(255, 255, 255, 0.05)" stroke="rgba(191, 219, 254, 0.35)" strokeWidth="1" />
-                    <text x="200" y="196" textAnchor="middle" fill="white" fontSize="10.2" fontWeight="700" fontFamily="Inter,system-ui,sans-serif" letterSpacing="2.2">OFSTRIDE</text>
-                    <text x="200" y="212" textAnchor="middle" fill="#93C5FD" fontSize="8" fontFamily="Inter,system-ui,sans-serif" letterSpacing="1.4">CORE ENGINE</text>
-                  </svg>
-
-                  <div className="absolute inset-0">
-                    {orbitEdgePoints.map((item) => {
-                      const point = getOrbitPoint(item.angle, 140)
-                      const isActive = activeOrbitTitle === item.title
-                      const isDimmed = activeOrbitTitle !== null && !isActive
-                      const Icon = item.icon
-                      return (
-                        <button
-                          key={item.title}
-                          type="button"
-                          className={`hero-orbit-card group absolute w-[8rem] sm:w-[9.2rem] lg:w-[9.6rem] min-h-[7rem] sm:min-h-[7.25rem] lg:min-h-[7.75rem] rounded-[1.35rem] px-3 py-3 text-left transition-all duration-300 ease-out ${isActive ? 'is-active z-20 brightness-110 shadow-xl' : 'z-10'} ${isDimmed ? 'is-dimmed' : ''}`}
-                          style={{
-                            left: `${item.cardPosition.left}%`,
-                            top: `${item.cardPosition.top}%`,
-                            transform: isActive
-                              ? 'translate(-50%, calc(-50% - 10px)) scale(1.3)'
-                              : 'translate(-50%, -50%)',
-                            opacity: isDimmed ? 0.55 : 1,
-                            '--hero-card-accent': item.color,
-                            '--hero-card-glow': item.glow,
-                          }}
-                          onMouseEnter={() => setActiveOrbitTitle(item.title)}
-                          onMouseLeave={() => setActiveOrbitTitle(null)}
-                          onFocus={() => setActiveOrbitTitle(item.title)}
-                          onBlur={() => setActiveOrbitTitle(null)}
-                          onTouchStart={() => setActiveOrbitTitle(item.title)}
-                        >
-                          <div className="hero-orbit-card__icon-wrap mb-2 flex items-center justify-between">
-                            <span className="hero-orbit-card__icon inline-flex h-9 w-9 items-center justify-center rounded-2xl">
-                              <Icon className="h-4.5 w-4.5" strokeWidth={1.9} />
-                            </span>
-                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color, boxShadow: `0 0 12px ${item.glow}` }}></span>
-                          </div>
-                          <p className="mt-1 text-xs sm:text-sm lg:text-base leading-snug font-semibold text-slate-900">{item.title}</p>
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-              </div>
+              <HeroRightGraphic />
             </div>
           </div>
         </div>
       </section>
 
       {/* Social Proof Bar — auto-scroll ticker */}
-      <section className="bg-surface py-6 sm:py-8 border-y border-slate-100 overflow-hidden">
+      <section className="bg-surface py-4 sm:py-6 border-y border-slate-100 overflow-hidden">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-center text-xs sm:text-sm text-muted uppercase tracking-wider mb-4 font-medium">
             Trusted by teams at
@@ -411,7 +305,7 @@ function Home() {
       </section>
 
       {/* Services Bento Grid */}
-      <section className="py-16 sm:py-24 lg:py-32" ref={addToRefs}>
+      <section className="py-10 sm:py-14 lg:py-16" ref={addToRefs}>
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16 reveal">
             <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
@@ -433,23 +327,22 @@ function Home() {
               <Link
                 key={service.slug}
                 to="/services"
-                className="card-hover bg-white border border-slate-100 rounded-xl sm:rounded-2xl p-5 sm:p-8 group"
+                className="card-hover bg-white border border-slate-100 rounded-xl sm:rounded-2xl p-5 sm:p-8 group overflow-hidden"
                 style={{ transitionDelay: `${index * 0.07}s` }}
               >
-                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <div className="flex items-center justify-between mb-2 sm:mb-3">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
                     <service.icon className="w-5 h-5 sm:w-6 sm:h-6 text-secondary group-hover:text-white transition-colors" />
                   </div>
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-primary mb-2 group-hover:text-secondary transition-colors">
+                <h3 className="text-lg sm:text-xl font-bold text-primary group-hover:text-secondary transition-colors">
                   {service.title}
                 </h3>
-                <p className="text-text text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4">
-                  {service.desc}
-                </p>
-                <span className="inline-flex items-center gap-1 text-secondary text-xs sm:text-sm font-medium group-hover:gap-2 transition-all">
-                  Learn more <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
-                </span>
+                <div className="max-h-28 opacity-100 mt-3 md:max-h-0 md:opacity-0 md:mt-0 md:group-hover:max-h-28 md:group-hover:opacity-100 md:group-hover:mt-3 transition-all duration-300 ease-out">
+                  <p className="text-text text-xs sm:text-sm leading-relaxed">
+                    {service.desc}
+                  </p>
+                </div>
               </Link>
             ))}
           </div>
@@ -466,7 +359,7 @@ function Home() {
       </section>
 
       {/* Why Ofstride */}
-      <section className="py-16 sm:py-24 lg:py-32 bg-surface" ref={addToRefs}>
+      <section className="py-10 sm:py-14 lg:py-16 bg-surface" ref={addToRefs}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16 reveal">
             <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
@@ -512,7 +405,7 @@ function Home() {
       </section>
 
       {/* What This Looks Like in Practice */}
-      <section className="py-16 sm:py-24" ref={addToRefs}>
+      <section className="py-12 sm:py-16" ref={addToRefs}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 reveal">
             <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
@@ -552,7 +445,7 @@ function Home() {
       </section>
 
       {/* Industries */}
-      <section className="py-16 sm:py-24 lg:py-32" ref={addToRefs}>
+      <section className="py-10 sm:py-14 lg:py-16" ref={addToRefs}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16 reveal">
             <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
@@ -586,7 +479,7 @@ function Home() {
       </section>
 
       {/* FAQ */}
-      <section className="py-16 sm:py-20" ref={addToRefs}>
+      <section className="py-12 sm:py-16" ref={addToRefs}>
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10 reveal">
             <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2">FAQ</span>
@@ -620,7 +513,7 @@ function Home() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-14 sm:py-16 bg-slate-50" ref={addToRefs}>
+      <section className="py-10 sm:py-12 bg-slate-50" ref={addToRefs}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-primary via-slate-900 to-slate-800 text-white px-6 sm:px-10 py-8 sm:py-10 shadow-[0_32px_80px_-36px_rgba(0,17,80,0.65)]">
             <div className="text-center">
@@ -675,3 +568,4 @@ function Home() {
 }
 
 export default Home
+

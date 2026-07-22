@@ -284,9 +284,9 @@ function ServiceDetail() {
   const relatedServices = service.related.map(r => servicesData[r]).filter(Boolean)
 
   return (
-    <div className="pt-16 sm:pt-20">
+    <div className="pt-12 sm:pt-16">
       {/* Hero */}
-      <section className="py-14 sm:py-20 lg:py-28 service-hero">
+      <section className="py-10 sm:py-14 lg:py-20 service-hero">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link 
             to="/services" 
@@ -321,7 +321,7 @@ function ServiceDetail() {
       </section>
 
       {/* What You Get */}
-      <section className="py-12 sm:py-16 lg:py-20">
+      <section className="py-10 sm:py-14 lg:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-20">
             <div>
@@ -418,7 +418,7 @@ function ServiceDetail() {
       </section>
 
       {/* For Whom + Outcome */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-surface">
+      <section className="py-10 sm:py-14 lg:py-16 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-8 sm:gap-12">
             <div>
@@ -463,7 +463,7 @@ function ServiceDetail() {
 
       {/* Related Services - rendered as in-place collapsible briefs so nothing
           navigates to a missing /services/:slug page ("Service Not Found"). */}
-      <section className="py-12 sm:py-16 lg:py-20">
+      <section className="py-10 sm:py-14 lg:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-primary mb-8">
             Related Services
@@ -540,3 +540,4 @@ function ServiceDetail() {
 }
 
 export default ServiceDetail
+
