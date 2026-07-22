@@ -63,7 +63,7 @@ const SATELLITES = [
 
 export default function HeroRightGraphic() {
   return (
-    <div className="relative w-full min-h-[480px] sm:min-h-[620px] flex items-center justify-center p-4 overflow-hidden select-none">
+    <div className="relative w-full min-h-[360px] sm:min-h-[620px] flex items-center justify-center p-2 sm:p-4 overflow-hidden select-none">
       {/* --- BACKGROUND: dot grid + ambient glow --- */}
       <div
         className="absolute inset-0 opacity-[0.18] pointer-events-none"
@@ -79,7 +79,7 @@ export default function HeroRightGraphic() {
       </div>
 
       {/* --- RADAR SWEEP --- */}
-      <div className="absolute w-[400px] h-[400px] rounded-full pointer-events-none animate-[spin_6s_linear_infinite]"
+      <div className="absolute w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] rounded-full pointer-events-none animate-[spin_11s_linear_infinite]"
         style={{
           background: 'conic-gradient(from 0deg, transparent 0deg, rgba(34,211,238,0.14) 28deg, transparent 60deg, transparent 360deg)',
           maskImage: 'radial-gradient(circle, transparent 40px, black 60px, black 195px, transparent 210px)',
@@ -92,7 +92,7 @@ export default function HeroRightGraphic() {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.2, ease: 'easeOut' }}
-        className="absolute flex items-center justify-center pointer-events-none"
+        className="absolute flex items-center justify-center pointer-events-none scale-[0.72] sm:scale-100"
       >
         <div className="w-[230px] h-[230px] rounded-full border border-white/[0.06] border-dashed animate-[spin_60s_linear_infinite]" />
         <div className="absolute w-[340px] h-[340px] rounded-full border border-white/[0.08]" />
@@ -126,7 +126,7 @@ export default function HeroRightGraphic() {
         initial={{ opacity: 0, scale: 0.7 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="relative w-[400px] h-[400px] scale-[0.82] sm:scale-100 flex items-center justify-center"
+        className="relative w-[320px] h-[320px] sm:w-[400px] sm:h-[400px] scale-[0.9] sm:scale-100 flex items-center justify-center"
       >
         {/* --- SVG: curved paths, flow, packets, core arcs, satellites --- */}
         <svg viewBox="0 0 400 400" className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-visible">
@@ -268,12 +268,12 @@ export default function HeroRightGraphic() {
                     <div key={c} className={`absolute ${c} w-2.5 h-2.5 border-white/25 opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
                   ))}
                 </div>
-                <div className={`w-[94px] h-[94px] sm:w-[104px] sm:h-[104px] rounded-2xl bg-slate-900/80 backdrop-blur-md border border-white/10 flex flex-col items-center justify-center gap-1.5 px-2 transition-all duration-300 ${node.border} ${node.glow} group-hover:scale-105 group-hover:bg-slate-800/90`}>
+                <div className={`w-[82px] h-[82px] sm:w-[104px] sm:h-[104px] rounded-xl sm:rounded-2xl bg-slate-900/80 backdrop-blur-md border border-white/10 flex flex-col items-center justify-center gap-1 px-1.5 sm:gap-1.5 sm:px-2 transition-all duration-300 ${node.border} ${node.glow} group-hover:scale-105 group-hover:bg-slate-800/90`}>
                   {/* top accent bar */}
                   <div className={`h-[2px] w-7 rounded-full bg-current ${node.color} opacity-60 group-hover:opacity-100 group-hover:w-10 transition-all duration-300`} />
-                  <Icon className={`w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 ${node.color} transition-transform duration-300 group-hover:scale-110`} />
-                  <span className="text-[10.5px] sm:text-[11.5px] font-medium text-slate-100 text-center leading-tight">{node.label}</span>
-                  <span className="text-[8px] font-mono tracking-[0.25em] text-slate-500 uppercase">{node.short} · {node.tag}</span>
+                  <Icon className={`w-4 h-4 sm:w-6 sm:h-6 flex-shrink-0 ${node.color} transition-transform duration-300 group-hover:scale-110`} />
+                  <span className="text-[9px] sm:text-[11.5px] font-medium text-slate-100 text-center leading-tight">{node.label}</span>
+                  <span className="hidden sm:block text-[8px] font-mono tracking-[0.25em] text-slate-500 uppercase">{node.short} · {node.tag}</span>
                 </div>
                 {/* Active connection indicator dot */}
                 <div className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-slate-950 flex items-center justify-center">

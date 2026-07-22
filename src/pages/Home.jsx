@@ -338,7 +338,7 @@ function Home() {
                 <h3 className="text-lg sm:text-xl font-bold text-primary group-hover:text-secondary transition-colors">
                   {service.title}
                 </h3>
-                <div className="max-h-0 opacity-0 mt-0 group-hover:max-h-28 group-hover:opacity-100 group-hover:mt-3 transition-all duration-300 ease-out">
+                <div className="max-h-28 opacity-100 mt-3 md:max-h-0 md:opacity-0 md:mt-0 md:group-hover:max-h-28 md:group-hover:opacity-100 md:group-hover:mt-3 transition-all duration-300 ease-out">
                   <p className="text-text text-xs sm:text-sm leading-relaxed">
                     {service.desc}
                   </p>
