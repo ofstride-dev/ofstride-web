@@ -40,13 +40,17 @@ jobs:
           # Verify the staged requirements.txt has azure-storage-blob
           echo "=== Staged requirements.txt ==="
           cat __staged_careers/requirements.txt
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
       - name: Login to Azure
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_EED27B738214446BB01573AD4107388D }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_233886A9334C42A7B361D9577C76190C }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D79D86DAA64341A6AD251FEC74A6333C }}
-      - name: Ensure Oryx Build Settings
+      - name: Remove Unsupported Build App Settings
         shell: bash
         run: |
           RG=$(az resource list --name func-ofs-carrer-001 --resource-type Microsoft.Web/sites --query "[0].resourceGroup" -o tsv)
@@ -54,15 +58,25 @@ jobs:
             echo "ERROR: Could not resolve resource group for Function App func-ofs-carrer-001"
             exit 1
           fi
-          # Ensure the Function App has Oryx build enabled so requirements.txt is processed
-          az functionapp config appsettings set \
+          # Flex Consumption / some SKUs do not support these deployment build flags.
+          # Remove them explicitly to prevent OneDeploy failure.
+          az functionapp config appsettings delete \
             --name func-ofs-carrer-001 \
             --resource-group "$RG" \
-            --settings \
-              ENABLE_ORYX_BUILD=true \
-              SCM_DO_BUILD_DURING_DEPLOYMENT=true \
-              PYTHON_IS_WORKER_IN_VENV=true \
-            || echo "WARN: could not set appsettings (may already be configured)"
+            --setting-names ENABLE_ORYX_BUILD SCM_DO_BUILD_DURING_DEPLOYMENT \
+            || echo "WARN: could not delete unsupported appsettings (may already be absent)"
+      - name: Build Python Dependencies Into Package
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r __staged_careers/requirements.txt \
+            --target "__staged_careers/.python_packages/lib/site-packages"
+          echo "=== Packaged dependency count ==="
+          python - <<'PY'
+from pathlib import Path
+site = Path("__staged_careers/.python_packages/lib/site-packages")
+print(len(list(site.glob("*"))))
+PY
       - name: Sync Optional LLM Settings (Same CI/CD Pipeline)
         shell: bash
         env:
@@ -119,7 +133,6 @@ jobs:
         with:
           app-name: func-ofs-carrer-001
           package: __staged_careers
-          scm-do-build-during-deployment: true
       - name: Verify Deployment Health
         shell: bash
         run: |
