@@ -56,6 +56,9 @@ jobs:
 
           VITE_ADMIN_API_KEY: ${{ secrets.VITE_ADMIN_API_KEY || vars.VITE_ADMIN_API_KEY }}
 
+          VITE_CAREER_API_URL: ${{ secrets.VITE_CAREER_API_URL || vars.VITE_CAREER_API_URL || 'https://func-ofs-carrer-001-dzd4h9andncbhfha.southindia-01.azurewebsites.net/api' }}
+          VITE_AUTH_REDIRECT_URL: ${{ secrets.VITE_AUTH_REDIRECT_URL || vars.VITE_AUTH_REDIRECT_URL }}
+
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL || 'https://jxocmzvsspdnooganlps.supabase.co' }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || vars.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4b2NtenZzc3Bkbm9vZ2FubHBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5MjM0MzksImV4cCI6MjA5OTQ5OTQzOX0.73Z_CEYshcU-sGEPs9pOD6Im8exNDzAqrLqywT4anBc' }}
 

@@ -1,6 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { isSupabaseConfigured, supabase } from '../services/supabase'
 
+const CAREER_API_BASE = (import.meta.env.VITE_CAREER_API_URL
+  || 'https://func-ofs-carrer-001-dzd4h9andncbhfha.southindia-01.azurewebsites.net/api')
+  .replace(/\/+$/, '')
+
 const SERVICE_RANKS = {
   Army: [
     'Sepoy', 'Naik', 'Havildar', 'Naib Subedar', 'Subedar', 'Subedar Major',
@@ -160,7 +164,7 @@ export default function CareerForm() {
 
     setLoginLinkLoading(true)
     try {
-      const redirectTo = `${window.location.origin}/careers/veteran-transition`
+      const redirectTo = (import.meta.env.VITE_AUTH_REDIRECT_URL || `${window.location.origin}/careers/veteran-transition`).trim()
       const { error } = await supabase.auth.signInWithOtp({
         email: normalizedEmail,
         options: {
@@ -236,7 +240,7 @@ export default function CareerForm() {
     Object.keys(formData).forEach((key) => submissionData.append(key, formData[key]))
 
     try {
-      const res = await fetch('/api/SubmitProfile', {
+      const res = await fetch(`${CAREER_API_BASE}/SubmitProfile`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${accessToken}`,
