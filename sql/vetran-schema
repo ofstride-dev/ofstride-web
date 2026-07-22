@@ -1,0 +1,39 @@
+-- 1. Setup Extensions
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS vector;
+
+-- 2. Main Veteran Profiles Table
+CREATE TABLE public.veteran_profiles (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    full_name TEXT NOT NULL,
+    mobile_number TEXT NOT NULL,
+    email_id TEXT NOT NULL,
+    
+    -- Updated Location Fields
+    pin_code TEXT NOT NULL,
+    state TEXT NOT NULL,
+    district TEXT NOT NULL,
+    address_area TEXT NOT NULL,
+    
+    -- Updated Service Fields
+    defence_service TEXT NOT NULL,
+    rank_at_retirement TEXT NOT NULL,
+    retirement_date DATE NOT NULL,
+    
+    preferred_job_location TEXT,
+    willing_to_relocate BOOLEAN DEFAULT FALSE,
+    linkedin_profile TEXT,
+    expected_salary TEXT,
+    consent_to_share BOOLEAN DEFAULT FALSE,
+    resume_blob_url TEXT NOT NULL,
+    ai_summary TEXT,
+    ai_recommendation TEXT,
+    has_corporate_experience BOOLEAN DEFAULT FALSE,
+    resume_embedding vector(1536),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 3. Basic Indexes for Performance
+CREATE INDEX idx_veteran_profiles_service ON public.veteran_profiles(defence_service);
+CREATE INDEX idx_veteran_profiles_corporate ON public.veteran_profiles(has_corporate_experience);
+CREATE INDEX idx_veteran_profiles_location ON public.veteran_profiles(state, district);

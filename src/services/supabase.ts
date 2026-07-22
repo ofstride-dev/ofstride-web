@@ -5,11 +5,33 @@
 
 import { createClient, type User, type Session } from "@supabase/supabase-js";
 
-// These are set in .env as VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+function normalizeEnvValue(value: string | undefined): string {
+  const trimmed = (value || "").trim();
+  if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+    return trimmed.slice(1, -1).trim();
+  }
+  return trimmed;
+}
 
-if (!supabaseUrl || !supabaseAnonKey) {
+function normalizeSupabaseUrl(value: string | undefined): string {
+  const normalized = normalizeEnvValue(value);
+  if (!normalized) {
+    return "";
+  }
+  try {
+    const parsed = new URL(normalized);
+    return parsed.origin;
+  } catch {
+    return "";
+  }
+}
+
+// These are set in .env as VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.
+const supabaseUrl = normalizeSupabaseUrl(import.meta.env.VITE_SUPABASE_URL);
+const supabaseAnonKey = normalizeEnvValue(import.meta.env.VITE_SUPABASE_ANON_KEY);
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+
+if (!isSupabaseConfigured) {
   console.warn(
     "Supabase credentials not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env"
   );

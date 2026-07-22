@@ -18,9 +18,12 @@ Expected shape of the returned auth context::
 from __future__ import annotations
 
 import hmac
+import json
 import logging
 import os
 from typing import Any
+from urllib import error as urlerror
+from urllib import request as urlrequest
 
 import azure.functions as func
 
@@ -130,7 +133,10 @@ def _verify_supabase_jwt(token: str) -> dict[str, Any]:
     except jwt.ExpiredSignatureError as exc:
         raise AdminAuthError("Token has expired.") from exc
     except jwt.InvalidTokenError as exc:
-        raise AdminAuthError("Invalid authentication token.") from exc
+        # Fallback: let Supabase Auth validate the token server-side.
+        payload = _verify_via_supabase_auth_api(token, supabase_url)
+        if not payload:
+            raise AdminAuthError("Invalid authentication token.") from exc
 
     # ------------------------------------------------------------------
     # Extract user identity
@@ -195,8 +201,49 @@ def _verify_supabase_jwt(token: str) -> dict[str, Any]:
     return {
         "user_id": user_id,
         "user_name": str(user_name),
+        "user_email": email.lower() if isinstance(email, str) and email else None,
         "role": primary_role,
         "company_id": str(company_id) if company_id else None,
+    }
+
+
+def _verify_via_supabase_auth_api(token: str, supabase_url: str) -> dict[str, Any] | None:
+    """Validate access token using Supabase Auth API and map response to JWT-like claims."""
+    api_key = _env("SUPABASE_SERVICE_ROLE_KEY") or _env("SUPABASE_SERVICE_KEY")
+    if not api_key:
+        return None
+
+    user_url = supabase_url.rstrip("/") + "/auth/v1/user"
+    req = urlrequest.Request(
+        user_url,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "apikey": api_key,
+        },
+        method="GET",
+    )
+
+    try:
+        with urlrequest.urlopen(req, timeout=8) as response:
+            if response.status != 200:
+                return None
+            raw = response.read().decode("utf-8")
+            user_obj = json.loads(raw)
+    except (urlerror.URLError, TimeoutError, json.JSONDecodeError):
+        return None
+
+    if not isinstance(user_obj, dict):
+        return None
+
+    app_metadata = user_obj.get("app_metadata") or {}
+    role = user_obj.get("role") or app_metadata.get("role") or "authenticated"
+
+    return {
+        "sub": user_obj.get("id"),
+        "email": user_obj.get("email"),
+        "role": role,
+        "user_metadata": user_obj.get("user_metadata") or {},
+        "app_metadata": app_metadata,
     }
 
 
@@ -218,6 +265,7 @@ def _verify_local_admin_key(req: func.HttpRequest) -> dict[str, Any] | None:
         return {
             "user_id": "admin-local",
             "user_name": "Local Admin",
+            "user_email": None,
             "role": "admin",
             "company_id": None,
         }
@@ -241,7 +289,13 @@ def require_admin(req: func.HttpRequest) -> dict[str, Any]:
     bypass = _env("ADMIN_AUTH_DISABLED", "false")
     if bypass.lower() in {"1", "true", "yes", "on"}:
         _logger.warning("Admin auth bypass enabled (ADMIN_AUTH_DISABLED=true). Do not use in production.")
-        return {"user_id": "admin-bypass", "user_name": "Admin (No Auth)", "role": "admin", "company_id": None}
+        return {
+            "user_id": "admin-bypass",
+            "user_name": "Admin (No Auth)",
+            "user_email": None,
+            "role": "admin",
+            "company_id": None,
+        }
 
     # 2. Supabase JWT
     token = _extract_bearer_token(req)
@@ -271,3 +325,14 @@ def require_role(req: func.HttpRequest, allowed_roles: list[str]) -> dict[str, A
             f"Your role: {auth['role']}"
         )
     return auth
+
+
+def require_authenticated_user(req: func.HttpRequest) -> dict[str, Any]:
+    """Require a Supabase bearer token and return auth context.
+
+    This helper is strict and does not allow local key fallback.
+    """
+    token = _extract_bearer_token(req)
+    if not token:
+        raise AdminAuthError("Authentication required.")
+    return _verify_supabase_jwt(token)

@@ -13,6 +13,7 @@ import Careers from './pages/Careers.jsx'
 import AdminCareers from './pages/AdminCareers.jsx'
 import CareersUpload from './pages/CareersUpload.jsx'
 import EmployerCareers from './pages/EmployerCareers.jsx'
+import CareerForm from './pages/vat-career-form.jsx'
 
 function App() {
   const location = useLocation()
@@ -28,8 +29,10 @@ function App() {
       '/contact-form': 'Contact Form | Ofstride Services LLP',
       '/careers/jobs': 'Jobseeker Careers | Ofstride Services LLP',
       '/careers/upload': 'Upload Resume or JD | Ofstride Services LLP',
+      '/careers/veteran-transition': 'Veteran Connect | Ofstride Services LLP',
       '/employer': 'Employer Careers | Ofstride Services LLP',
       '/admin/careers': 'Admin Careers | Ofstride Services LLP',
+      '/career-connect': 'Veteran Connect | Ofstride Services LLP',
     }
 
     if (location.pathname.startsWith('/services/')) {
@@ -51,10 +54,13 @@ function App() {
         <Route path="contact" element={<Contact />} />
         <Route path="careers/jobs" element={<Careers />} />
         <Route path="careers/upload" element={<CareersUpload />} />
+        <Route path="careers/veteran-transition" element={<CareerForm />} />
         <Route path="employer" element={<EmployerCareers />} />
         <Route path="admin/careers" element={<AdminCareers />} />
         <Route path="book-call" element={<BookCall />} />
         <Route path="contact-form" element={<ContactForm />} />
+        {/* Backward-compatible alias for older links */}
+        <Route path="career-connect" element={<CareerForm />} />
       </Route>
     </Routes>
   )

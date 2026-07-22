@@ -17,6 +17,7 @@ function Layout() {
   const closeTimerRef = useRef(null)
   const careersRef = useRef(null)
   const careersCloseTimerRef = useRef(null)
+  const forceSolidHeader = location.pathname === '/careers/veteran-transition' || location.pathname === '/career-connect'
 
   const navLinkClass = ({ isActive }) => {
     const base = 'flex items-center gap-1.5 transition-colors font-medium px-2 py-1 rounded-lg'
@@ -123,6 +124,7 @@ function Layout() {
   const careersItems = [
     { name: 'Upload Resume / JD', to: '/careers/upload' },
     { name: 'Jobseeker', to: '/careers/jobs' },
+    { name: 'Veteran Connect', to: '/careers/veteran-transition' },
     { name: 'Employer / Admin', to: '/employer' },
   ]
 
@@ -182,7 +184,7 @@ function Layout() {
       {/* Header */}
       <header 
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-transparent'
+          isScrolled || forceSolidHeader ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-transparent'
         }`}
       >
         {/* Top contact bar — hidden on scroll */}
