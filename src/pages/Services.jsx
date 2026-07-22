@@ -111,9 +111,9 @@ function Services() {
   ]
 
   return (
-      <div className="pt-16 sm:pt-20">
+      <div className="pt-12 sm:pt-16">
         {/* Hero */}
-        <section className="py-14 sm:py-20 lg:py-28 bg-surface">
+        <section className="py-10 sm:py-14 lg:py-20 bg-surface">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
               Our Services
@@ -148,7 +148,7 @@ function Services() {
         </section>
 
         {/* Grouped Services */}
-        <section className="py-14 sm:py-20 lg:py-28">
+        <section className="py-10 sm:py-14 lg:py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="space-y-6 sm:space-y-8">
               {groups.map((group) => (
@@ -200,7 +200,7 @@ function Services() {
         </section>
 
         {/* CTA */}
-        <section className="py-14 sm:py-20 bg-surface">
+        <section className="py-10 sm:py-14 bg-surface">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4">
               Not Sure Where to Start?
@@ -230,3 +230,4 @@ function Services() {
   }
 
   export default Services
+

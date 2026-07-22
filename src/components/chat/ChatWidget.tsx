@@ -111,7 +111,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
   };
 
   return (
-    <section className="chat-shell flex flex-col h-[72vh] min-h-[420px] max-h-[720px] w-full overflow-hidden" aria-label="Ofstride Assistance">
+    <section className="chat-shell flex flex-col h-[72vh] min-h-[420px] max-h-[720px] w-full overflow-hidden" aria-label="Ofstride">
       <div className="chat-header">
         <div className="chat-header-left">
           <span className="chat-live-dot" aria-hidden="true" />

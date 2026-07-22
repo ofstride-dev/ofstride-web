@@ -137,8 +137,8 @@ function UploadCard({ title, description, uploadFn, invalidTypeMessage }) {
 
 function CareersUpload() {
   return (
-    <div className="pt-16 sm:pt-20 min-h-screen bg-surface">
-      <section className="py-14 sm:py-20 border-b border-slate-100">
+    <div className="pt-12 sm:pt-16 min-h-screen bg-surface">
+      <section className="py-10 sm:py-14 border-b border-slate-100">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-sm font-semibold uppercase tracking-wider text-secondary mb-2">Careers</p>
           <h1 className="text-3xl sm:text-4xl font-bold text-primary">Upload Resume or Job Description</h1>
@@ -167,3 +167,4 @@ function CareersUpload() {
 }
 
 export default CareersUpload;
+

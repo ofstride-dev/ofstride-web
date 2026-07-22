@@ -265,7 +265,7 @@ function Careers() {
 
   if (submitted) {
     return (
-      <div className="pt-16 sm:pt-20 min-h-screen bg-surface flex items-center justify-center px-4">
+      <div className="pt-12 sm:pt-16 min-h-screen bg-surface flex items-center justify-center px-4">
         <div className="max-w-xl w-full bg-white rounded-2xl shadow-sm p-8 text-center">
           <CheckCircle2 className="w-16 h-16 text-accent mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-primary mb-2">Application submitted</h1>
@@ -282,8 +282,8 @@ function Careers() {
   }
 
   return (
-    <div className="pt-16 sm:pt-20 min-h-screen bg-surface">
-      <section className="py-14 sm:py-20 lg:py-24 bg-surface border-b border-slate-100">
+    <div className="pt-12 sm:pt-16 min-h-screen bg-surface">
+      <section className="py-10 sm:py-14 lg:py-16 bg-surface border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-sm font-semibold uppercase tracking-wider text-secondary mb-2">Careers</p>
           <h1 className="text-3xl sm:text-4xl font-bold text-primary">Talent Opportunities Through Ofstride</h1>
@@ -626,3 +626,4 @@ function Careers() {
 }
 
 export default Careers;
+

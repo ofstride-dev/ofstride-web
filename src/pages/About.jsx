@@ -61,9 +61,9 @@ function About() {
   ]
 
   return (
-    <div className="pt-16 sm:pt-20">
+    <div className="pt-12 sm:pt-16">
       {/* Hero */}
-      <section className="py-14 sm:py-20 lg:py-28 bg-surface">
+      <section className="py-10 sm:py-14 lg:py-20 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
             About Us
@@ -96,7 +96,7 @@ function About() {
       </section>
 
       {/* Philosophy */}
-      <section className="py-14 sm:py-20 lg:py-28">
+      <section className="py-10 sm:py-14 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
             <div>
@@ -178,7 +178,7 @@ function About() {
       </section>
 
       {/* Leadership Team */}
-      <section className="py-14 sm:py-20 lg:py-28 bg-surface">
+      <section className="py-10 sm:py-14 lg:py-20 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
             <span className="inline-block text-secondary text-sm font-semibold uppercase tracking-wider mb-3">
@@ -217,7 +217,7 @@ function About() {
       </section>
 
       {/* Corporate Info */}
-      <section className="py-14 sm:py-20 lg:py-28">
+      <section className="py-10 sm:py-14 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-8 sm:gap-12">
             <div>
@@ -293,3 +293,4 @@ function About() {
 }
 
 export default About
+

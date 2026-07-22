@@ -90,9 +90,9 @@ function Industries() {
   ]
 
   return (
-    <div className="pt-20">
+    <div className="pt-14">
       {/* Hero */}
-      <section className="py-20 lg:py-28 bg-surface">
+      <section className="py-14 lg:py-20 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="inline-block text-secondary text-sm font-semibold uppercase tracking-wider mb-3">
             Industries
@@ -109,7 +109,7 @@ function Industries() {
       </section>
 
       {/* Industries Grid */}
-      <section className="py-20 lg:py-28">
+      <section className="py-14 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {industries.map((industry, index) => (
@@ -165,3 +165,4 @@ function Industries() {
 }
 
 export default Industries
+
