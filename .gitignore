@@ -30,6 +30,7 @@ Thumbs.db
 
 # Python
 .venv/
+.venv312/
 __pycache__/
 *.pyc
 .python-version

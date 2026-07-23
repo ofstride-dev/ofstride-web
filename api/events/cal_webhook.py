@@ -3,16 +3,14 @@ import logging
 import json
 from shared.engagement.communications import send_meeting_alert
 
-events_bp = func.Blueprint()
 
-@events_bp.route(route="CalWebhook", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST"])
-def CalWebhook(req: func.HttpRequest) -> func.HttpResponse:
+def handle_cal_webhook(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Received webhook from Cal.com")
-    
+
     try:
         req_body = req.get_json()
         trigger_event = req_body.get("triggerEvent")
-        
+
         if trigger_event == "BOOKING_CREATED":
             payload = req_body.get("payload", {})
             send_meeting_alert(payload)
@@ -21,7 +19,7 @@ def CalWebhook(req: func.HttpRequest) -> func.HttpResponse:
                 mimetype="application/json",
                 status_code=200
             )
-            
+
         elif trigger_event == "BOOKING_CANCELLED":
             return func.HttpResponse("Cancellation logged", status_code=200)
 

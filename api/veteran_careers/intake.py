@@ -4,9 +4,6 @@ import json
 import os
 from shared.security.admin_auth import AdminAuthError, require_authenticated_user
 
-# Create the Blueprint
-veteran_bp = func.Blueprint()
-
 
 def _load_blob_uploader():
     from shared.persistence.blob_storage import upload_resume
@@ -41,11 +38,6 @@ def _missing_required_fields(form_data, required_fields):
         if value is None or str(value).strip() == "":
             missing.append(field)
     return missing
-
-@veteran_bp.route(route="SubmitProfile", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST"])
-def SubmitProfile(req: func.HttpRequest) -> func.HttpResponse:
-    return handle_submit_profile(req)
-
 
 def handle_submit_profile(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Processing application intake request.")
