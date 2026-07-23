@@ -279,8 +279,11 @@ class LLMFactory:
             else:
                 # No API key configured: authenticate via the Function App's managed
                 # identity (mid-ofs-foundry-001) instead, same pattern used by
-                # careers_agentic/vat_resume_analyzer.py.
-                from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
+                # careers_agentic/vat_resume_analyzer.py. Use the SYNC azure-identity
+                # credential (not azure.identity.aio) — the aio variant requires the
+                # aiohttp package, which is not in requirements.txt, and the OpenAI
+                # SDK's async client accepts sync token-provider callables just fine.
+                from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 
                 token_provider = get_bearer_token_provider(
                     DefaultAzureCredential(),
