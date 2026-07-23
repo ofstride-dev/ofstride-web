@@ -62,6 +62,7 @@ jobs:
           cp -r api/keep_warm __staged_careers/
           cp -r api/reminder_worker __staged_careers/
           cp -r api/shared __staged_careers/
+          cp -r api/data __staged_careers/
           cp api/host.json __staged_careers/
           # Use the full requirements (superset covering both career and
           # chat/RAG dependencies) now that everything is staged here.
