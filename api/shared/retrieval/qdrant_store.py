@@ -69,32 +69,11 @@ class QdrantStore:
             )
 
     def _build_backend_order(self) -> list[str]:
-        if self._settings.use_inmemory_vector_store:
-            return ["memory"]
-
-        if self._vector_backend == "memory":
-            return ["memory"]
-
-        if self._vector_backend == "qdrant":
-            preferred = ["qdrant", "supabase", "memory"]
-        elif self._vector_backend == "supabase":
-            preferred = ["supabase", "qdrant", "memory"]
-        else:
-            preferred = ["qdrant", "supabase", "memory"]
-
-        order: list[str] = []
-        for backend in preferred:
-            if backend == "qdrant" and not self._qdrant_enabled:
-                continue
-            if backend == "supabase" and not self._supabase_enabled:
-                continue
-            if backend not in order:
-                order.append(backend)
-
-        if not order:
-            return ["memory"]
-
-        return order
+        # Vector store is pinned to Supabase pgvector only. Qdrant is no longer
+        # used and there is no in-memory fallback — if Supabase fails, the
+        # request should fail loudly rather than silently serving empty/stale
+        # in-memory results.
+        return ["supabase"]
 
     def _activate_backend(self, backend: str) -> None:
         self._active_backend = backend
