@@ -22,8 +22,6 @@ import type {
 } from "../types/chat";
 import { getAccessToken } from "./supabase";
 
-const API_BASE = "/api";
-
 /** Dedicated Career Function App base URL (separate from SWA managed functions) */
 const CAREER_API_BASE = import.meta.env.VITE_CAREER_API_URL
   || "https://func-ofs-carrer-001-dzd4h9andncbhfha.southindia-01.azurewebsites.net/api";
@@ -159,7 +157,7 @@ export async function sendChatMessage(
     session_profile: sessionProfile,
   };
 
-  const response = await fetch(`${API_BASE}/chat`, {
+  const response = await fetch(`${CAREER_API_BASE}/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -169,13 +167,13 @@ export async function sendChatMessage(
 }
 
 export async function checkHealth(): Promise<HealthCheck> {
-  const response = await fetch(`${API_BASE}/health`);
+  const response = await fetch(`${CAREER_API_BASE}/health`);
   return parseEnvelope<HealthCheck>(response);
 }
 
 export async function searchConsultants(query: string): Promise<ConsultantSearchResult> {
   const response = await fetch(
-    `${API_BASE}/consultants/search?${new URLSearchParams({ query })}`
+    `${CAREER_API_BASE}/consultants/search?${new URLSearchParams({ query })}`
   );
   return parseEnvelope<ConsultantSearchResult>(response);
 }
@@ -185,7 +183,7 @@ export function getChatSessionId(): string {
 }
 
 export async function postChatEvent(payload: ChatEventRequest): Promise<ChatEventResponse> {
-  const response = await fetch(`${API_BASE}/events`, {
+  const response = await fetch(`${CAREER_API_BASE}/events`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
