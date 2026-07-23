@@ -107,14 +107,30 @@ class EmbeddingFactory:
 
     def _get_azure_openai_client(self) -> AsyncAzureOpenAI:
         if self._azure_openai_client is None:
-            if not self._settings.azure_openai_api_key or not self._settings.azure_openai_endpoint:
-                raise RuntimeError("Azure OpenAI endpoint and API key are required.")
+            if not self._settings.azure_openai_endpoint:
+                raise RuntimeError("Azure OpenAI endpoint is required.")
 
-            self._azure_openai_client = AsyncAzureOpenAI(
-                api_key=self._settings.azure_openai_api_key,
-                azure_endpoint=self._settings.azure_openai_endpoint,
-                api_version=self._settings.azure_openai_api_version,
-            )
+            api_key = self._settings.azure_openai_api_key
+            if api_key:
+                self._azure_openai_client = AsyncAzureOpenAI(
+                    api_key=api_key,
+                    azure_endpoint=self._settings.azure_openai_endpoint,
+                    api_version=self._settings.azure_openai_api_version,
+                )
+            else:
+                # No API key configured: authenticate via the Function App's managed
+                # identity (mid-ofs-foundry-001) instead.
+                from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
+
+                token_provider = get_bearer_token_provider(
+                    DefaultAzureCredential(),
+                    "https://cognitiveservices.azure.com/.default",
+                )
+                self._azure_openai_client = AsyncAzureOpenAI(
+                    azure_endpoint=self._settings.azure_openai_endpoint,
+                    azure_ad_token_provider=token_provider,
+                    api_version=self._settings.azure_openai_api_version,
+                )
         return self._azure_openai_client
 
     def get_instance(self) -> EmbeddingClient:
@@ -123,9 +139,9 @@ class EmbeddingFactory:
 
         provider = (self._settings.llm_provider or "openai").lower()
         openai_configured = _is_configured_secret(self._settings.openai_api_key)
-        azure_key_configured = _is_configured_secret(self._settings.azure_openai_api_key)
-        azure_endpoint_configured = bool((self._settings.azure_openai_endpoint or "").strip())
-        azure_configured = azure_key_configured and azure_endpoint_configured
+        # Azure OpenAI only strictly needs an endpoint: if no API key is set, we
+        # authenticate via managed identity instead (see _get_azure_openai_client).
+        azure_configured = bool((self._settings.azure_openai_endpoint or "").strip())
 
         if provider == "azure_openai" and azure_configured:
             self._instance = AzureOpenAIEmbeddingClient(
