@@ -1,10 +1,7 @@
 import base64
 import os
 import sys
-import json
 import logging
-from urllib import error as url_error
-from urllib import request as url_request
 
 import azure.functions as func
 
@@ -15,6 +12,7 @@ if shared_path not in sys.path:
 
 from core.api_contract import error_response, get_trace_id, ok_response, options_response
 from core.blob_rest import get_blob_properties, resolve_blob_config_with_reason, upload_blob
+from engagement.communications import send_career_applicant_ack, send_career_hr_notification
 from persistence.careers_store import get_careers_store
 from security.rate_limiter import enforce_rate_limit, get_client_key
 
@@ -24,59 +22,6 @@ ALLOWED_CONTENT_TYPES = {
     "application/pdf",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 }
-
-
-def _hr_webhook_target() -> str | None:
-    return (
-        (os.getenv("CONTACT_WEBHOOK_URL") or "").strip()
-        or (os.getenv("MAKE_WEBHOOK_CHAT_URL") or "").strip()
-        or (os.getenv("CAREERS_HR_WEBHOOK_URL") or "").strip()
-    )
-
-
-def _send_hr_notification(payload: dict[str, object]) -> tuple[bool, str | None]:
-    target = _hr_webhook_target()
-    if not target:
-        return False, "hr_webhook_not_configured"
-
-    body = json.dumps(payload, ensure_ascii=True).encode("utf-8")
-    req = url_request.Request(
-        target,
-        data=body,
-        headers={"Content-Type": "application/json", "Accept": "application/json"},
-        method="POST",
-    )
-
-    try:
-        with url_request.urlopen(req, timeout=8) as response:
-            if 200 <= response.status < 300:
-                return True, None
-            return False, f"hr_webhook_http_{response.status}"
-    except (url_error.HTTPError, url_error.URLError, TimeoutError) as exc:
-        return False, str(exc)
-
-
-def _send_applicant_ack(payload: dict[str, object]) -> tuple[bool, str | None]:
-    target = _hr_webhook_target()
-    if not target:
-        return False, "applicant_webhook_not_configured"
-
-    body = json.dumps(payload, ensure_ascii=True).encode("utf-8")
-    req = url_request.Request(
-        target,
-        data=body,
-        headers={"Content-Type": "application/json", "Accept": "application/json"},
-        method="POST",
-    )
-
-    try:
-        with url_request.urlopen(req, timeout=8) as response:
-            if 200 <= response.status < 300:
-                return True, None
-            return False, f"applicant_webhook_http_{response.status}"
-    except (url_error.HTTPError, url_error.URLError, TimeoutError) as exc:
-        return False, str(exc)
-
 
 def _get_blob_config():
     container_name = (
@@ -288,38 +233,30 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
     app_after = store.get_application_by_id(application_id=application_id) or {}
     job = store.get_job_by_id(job_id=str(app_after.get("job_id") or "")) or {}
     hr_email = (os.getenv("CAREERS_HR_EMAIL") or "hr@ofstrideservices.com").strip()
-    hr_payload = {
-        "type": "career_application_received",
-        "source": "ofstride-website",
-        "submitted_at": str(app_after.get("submitted_at") or ""),
-        "notify_support_email": hr_email,
-        "application_id": application_id,
-        "reference_id": str(finalized.get("reference_id") or ""),
-        "job_id": str(app_after.get("job_id") or ""),
-        "job_title": str(job.get("title") or ""),
-        "applicant_email": str(app_after.get("email") or ""),
-    }
+    candidate_name = str(app_after.get("full_name") or "")
+    applicant_email = str(app_after.get("email") or "").strip().lower()
+    job_title = str(job.get("title") or "")
+    reference_id = str(finalized.get("reference_id") or "")
+    submitted_at = str(app_after.get("submitted_at") or "")
 
-    applicant_payload = {
-        "type": "career_application_acknowledgement",
-        "source": "ofstride-website",
-        "submitted_at": str(app_after.get("submitted_at") or ""),
-        "notify_requester_email": str(app_after.get("email") or "").strip().lower(),
-        "notify_support_email": hr_email,
-        "application_id": application_id,
-        "reference_id": str(finalized.get("reference_id") or ""),
-        "job_id": str(app_after.get("job_id") or ""),
-        "job_title": str(job.get("title") or ""),
-        "candidate_name": str(app_after.get("full_name") or ""),
-        "application_status": "submitted",
-        "message_hint": "Thank you for applying to OfStride. We have received your application and our team is reviewing your resume. We will keep you posted on the next steps.",
-    }
-
-    hr_sent, hr_error = _send_hr_notification(hr_payload)
+    hr_sent, hr_error = send_career_hr_notification(
+        to_address=hr_email,
+        candidate_name=candidate_name,
+        applicant_email=applicant_email,
+        job_title=job_title,
+        reference_id=reference_id,
+        application_id=application_id,
+        submitted_at=submitted_at,
+    )
     if hr_sent:
         store.mark_hr_email_sent(application_id=application_id)
 
-    applicant_sent, applicant_error = _send_applicant_ack(applicant_payload)
+    applicant_sent, applicant_error = send_career_applicant_ack(
+        to_address=applicant_email,
+        candidate_name=candidate_name,
+        job_title=job_title,
+        reference_id=reference_id,
+    )
 
     return ok_response(
         trace_id=trace_id,

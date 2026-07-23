@@ -48,14 +48,14 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
         checks["embeddings"] = {"status": "error", "detail": str(e)}
         status_code = 503
     
-    # Check Qdrant
+    # Check vector store (Qdrant, Supabase Vector, or in-memory fallback)
     try:
         store = QdrantStore()
         await store.ensure_collection()
         info = await store.collection_info()
-        checks["qdrant"] = {"status": "ok", "info": info}
+        checks["vector_store"] = {"status": "ok", "info": info}
     except Exception as e:
-        checks["qdrant"] = {"status": "error", "detail": str(e)}
+        checks["vector_store"] = {"status": "error", "detail": str(e)}
         status_code = 503
 
     # Check optional Langfuse observability (non-blocking)

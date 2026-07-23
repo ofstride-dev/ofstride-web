@@ -23,6 +23,10 @@
     "QDRANT_URL": "",
     "QDRANT_API_KEY": "",
     "QDRANT_COLLECTION": "ofstride_consultants",
+    "VECTOR_BACKEND": "auto",
+    "SUPABASE_VECTOR_TABLE": "rag_documents",
+    "SUPABASE_VECTOR_RPC": "match_rag_documents",
+    "SUPABASE_VECTOR_SCAN_LIMIT": "2000",
     "USE_INMEMORY_VECTOR_STORE": "true",
     "RETRIEVAL_K": "6",
 

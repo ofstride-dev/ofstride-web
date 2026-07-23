@@ -97,6 +97,10 @@ class Settings:
     qdrant_url: str | None
     qdrant_api_key: str | None
     qdrant_collection: str
+    vector_backend: str
+    supabase_vector_table: str
+    supabase_vector_rpc: str
+    supabase_vector_scan_limit: int
 
     retrieval_k: int
     retrieval_score_threshold: float
@@ -185,6 +189,12 @@ def _build_settings() -> Settings:
         qdrant_api_key=_get_str("QDRANT_API_KEY"),
         qdrant_collection=_get_str("QDRANT_COLLECTION", "ofstride_consultants")
         or "ofstride_consultants",
+        vector_backend=_get_str("VECTOR_BACKEND", "auto") or "auto",
+        supabase_vector_table=_get_str("SUPABASE_VECTOR_TABLE", "rag_documents")
+        or "rag_documents",
+        supabase_vector_rpc=_get_str("SUPABASE_VECTOR_RPC", "match_rag_documents")
+        or "match_rag_documents",
+        supabase_vector_scan_limit=_get_int("SUPABASE_VECTOR_SCAN_LIMIT", 2000),
         retrieval_k=_get_int("RETRIEVAL_K", 6),
         retrieval_score_threshold=_get_float("RETRIEVAL_SCORE_THRESHOLD", 0.40),
         retrieval_max_context_chars=_get_int("RETRIEVAL_MAX_CONTEXT_CHARS", 7000),
