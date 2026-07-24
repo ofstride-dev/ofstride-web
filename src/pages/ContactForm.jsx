@@ -48,31 +48,35 @@ function ContactForm() {
     setLoading(true)
     setSubmitError('')
 
-    const endpoint = import.meta.env.VITE_MAKE_WEBHOOK_CHAT_URL || import.meta.env.VITE_FORMS_WEBHOOK_URL || import.meta.env.VITE_ZAPIER_WEBHOOK_URL || import.meta.env.VITE_CONTACT_WEBHOOK_URL
+    // OLD Zapier-based webhook chain -- replaced by func-ofs-comms-001's /contact
+    // route. Left here (unused) until the new flow is confirmed working end to end.
+    // const endpoint = import.meta.env.VITE_MAKE_WEBHOOK_CHAT_URL || import.meta.env.VITE_FORMS_WEBHOOK_URL || import.meta.env.VITE_ZAPIER_WEBHOOK_URL || import.meta.env.VITE_CONTACT_WEBHOOK_URL
+    // const payload = {
+    //   type: 'contact_request',
+    //   source: 'ofstride-website',
+    //   channel: 'contact_form',
+    //   notify_via: 'make_com_chat_pipeline',
+    //   submitted_at: new Date().toISOString(),
+    //   notify_support_email: 'support@ofstrideservices.com',
+    //   notify_requester_email: formData.email,
+    //   ...formData,
+    // }
+
+    const commsApiBase = import.meta.env.VITE_COMMS_API_URL || 'https://func-ofs-comms-001.azurewebsites.net/api'
     const accessKey = import.meta.env.VITE_WEB3FORMS_KEY
-    const payload = {
-      type: 'contact_request',
-      source: 'ofstride-website',
-      channel: 'contact_form',
-      notify_via: 'make_com_chat_pipeline',
-      submitted_at: new Date().toISOString(),
-      notify_support_email: 'support@ofstrideservices.com',
-      notify_requester_email: formData.email,
-      ...formData,
-    }
 
     try {
       let submitted = false
 
-      if (endpoint) {
+      if (commsApiBase) {
         try {
-          const response = await fetch(endpoint, {
+          const response = await fetch(`${commsApiBase}/contact`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               Accept: 'application/json',
             },
-            body: JSON.stringify(payload),
+            body: JSON.stringify(formData),
           })
 
           if (response.ok) {
@@ -99,7 +103,9 @@ function ContactForm() {
             subject: `Contact Request - ${formData.name}`,
             from_name: 'Ofstride Website',
             replyto: formData.email,
-            ...payload,
+            notify_support_email: 'support@ofstrideservices.com',
+            submitted_at: new Date().toISOString(),
+            ...formData,
           }),
         })
 

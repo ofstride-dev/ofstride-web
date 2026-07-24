@@ -1,0 +1,71 @@
+name: Deploy Comms API to Azure Functions
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'comms-api/**'
+      - '.github/workflows/deploy-comms-api.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy Comms API
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_EED27B738214446BB01573AD4107388D }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_233886A9334C42A7B361D9577C76190C }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D79D86DAA64341A6AD251FEC74A6333C }}
+
+      - name: Build Python Dependencies Into Package
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r comms-api/requirements.txt \
+            --target "comms-api/.python_packages/lib/site-packages"
+
+      - name: Sync App Settings
+        shell: bash
+        run: |
+          RG=$(az resource list --name func-ofs-comms-001 --resource-type Microsoft.Web/sites --query "[0].resourceGroup" -o tsv)
+          if [ -z "$RG" ]; then
+            echo "ERROR: Could not resolve resource group for Function App func-ofs-comms-001"
+            exit 1
+          fi
+          az functionapp config appsettings set \
+            --name func-ofs-comms-001 \
+            --resource-group "$RG" \
+            --settings \
+              ACS_ENDPOINT="https://acs-ofs-001.india.communication.azure.com" \
+              EMAIL_SENDER_ADDRESS="DoNotReply@eafd51a7-7800-4251-bf8f-a8b754530fc3.azurecomm.net" \
+              NOTIFY_RECIPIENTS="support@ofstrideservices.com,ofstride@gmail.com" \
+              ALLOWED_ORIGINS="https://white-water-027449900.7.azurestaticapps.net,https://ofstrideservices.com,http://localhost:5173,http://localhost:4280"
+
+      - name: Deploy to Azure Functions
+        uses: Azure/functions-action@v1
+        with:
+          app-name: func-ofs-comms-001
+          package: comms-api
+
+      - name: Verify Deployment
+        shell: bash
+        run: |
+          sleep 15
+          BASE="https://func-ofs-comms-001.azurewebsites.net/api"
+          echo "=== Preflight check: OPTIONS /contact ==="
+          curl -sS -m 30 -o /dev/null -w "%{http_code}\n" -X OPTIONS "${BASE}/contact" || echo "contact endpoint not ready yet"
