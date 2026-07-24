@@ -2,13 +2,14 @@ import { Outlet, Link, NavLink, useLocation } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import { 
   Menu, X, ChevronDown, Phone, Mail, MapPin, Calendar, Home, 
-  Briefcase, Users, Globe, Info, MessageCircle, FileText, Bot
+  Briefcase, Users, Info, MessageCircle, FileText, Bot
 } from 'lucide-react'
 import { ChatWidget } from './chat/ChatWidget'
 
 function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isServicesOpen, setIsServicesOpen] = useState(false)
+  const [activeServiceCategory, setActiveServiceCategory] = useState('Finance & Compliance')
   const [isCareersOpen, setIsCareersOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
@@ -89,20 +90,20 @@ function Layout() {
 
   const serviceGroups = [
     {
+      category: 'Finance & Compliance',
+      services: [
+        { name: 'Financial Consulting & Virtual CFO', slug: 'financial-consulting-virtual-cfo' },
+        { name: 'GST & Tax Advisory', slug: 'gst-tax-advisory' },
+        { name: 'Legal & Regulatory Compliance', slug: 'legal-regulatory-compliance' },
+      ],
+    },
+    {
       category: 'People & Workforce',
       services: [
         { name: 'Human Resource Consulting', slug: 'human-resource-consulting' },
         { name: 'Executive Search & Recruitment', slug: 'executive-search-recruitment' },
         { name: 'Payroll & HR Compliance', slug: 'payroll-hr-compliance' },
         { name: 'Employer of Record & Workforce', slug: 'employer-of-record-workforce' },
-      ],
-    },
-    {
-      category: 'Finance & Compliance',
-      services: [
-        { name: 'Financial Consulting & Virtual CFO', slug: 'financial-consulting-virtual-cfo' },
-        { name: 'GST & Tax Advisory', slug: 'gst-tax-advisory' },
-        { name: 'Legal & Regulatory Compliance', slug: 'legal-regulatory-compliance' },
       ],
     },
     {
@@ -113,7 +114,7 @@ function Layout() {
       ],
     },
     {
-      category: 'Strategy',
+      category: 'Strategy & Operations',
       services: [
         { name: 'Business Strategy & Process Improvement', slug: 'business-strategy-process-improvement' },
       ],
@@ -133,6 +134,7 @@ function Layout() {
       clearTimeout(closeTimerRef.current)
     }
     setIsCareersOpen(false)
+    setActiveServiceCategory((prev) => prev || serviceGroups[0].category)
     setIsServicesOpen(true)
   }
 
@@ -147,6 +149,9 @@ function Layout() {
 
   const toggleServices = () => {
     setIsCareersOpen(false)
+    if (!isServicesOpen) {
+      setActiveServiceCategory((prev) => prev || serviceGroups[0].category)
+    }
     setIsServicesOpen((prev) => !prev)
   }
 
@@ -177,6 +182,8 @@ function Layout() {
     setIsCareersOpen(false)
     setIsMenuOpen(false)
   }
+
+  const activeGroup = serviceGroups.find((group) => group.category === activeServiceCategory) || serviceGroups[0]
 
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden">
@@ -244,38 +251,50 @@ function Layout() {
                 </button>
 
                 {isServicesOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-slate-100 p-2 z-50"
+                  <div className="absolute top-full left-0 mt-2 w-[34rem] bg-white rounded-xl shadow-xl border border-slate-100 p-2 z-50"
                     role="menu"
                     onMouseEnter={openServices}
                     onMouseLeave={closeServices}
-                    style={{ maxHeight: '460px', overflowY: 'auto' }}
+                    style={{ maxHeight: '460px' }}
                   >
-                    {serviceGroups.map((group) => (
-                      <div key={group.category} className="px-3 pt-2 pb-1 first:pt-1">
-                        <p className="px-1 mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">{group.category}</p>
-                        <div className="space-y-0.5">
-                          {group.services.map((s) => (
+                    <div className="grid grid-cols-[14rem_1fr] gap-2">
+                      <div className="border-r border-slate-100 pr-2">
+                        <p className="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Categories</p>
+                        <div className="space-y-1 pb-2">
+                          {serviceGroups.map((group) => (
+                            <button
+                              key={group.category}
+                              type="button"
+                              className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors ${activeServiceCategory === group.category ? 'bg-surface text-secondary font-semibold' : 'text-text hover:bg-surface hover:text-secondary'}`}
+                              onMouseEnter={() => setActiveServiceCategory(group.category)}
+                              onFocus={() => setActiveServiceCategory(group.category)}
+                              onClick={() => setActiveServiceCategory(group.category)}
+                            >
+                              {group.category}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="pl-1">
+                        <p className="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">{activeGroup.category}</p>
+                        <div className="space-y-1 pb-2 pr-1" style={{ maxHeight: '390px', overflowY: 'auto' }}>
+                          {activeGroup.services.map((service) => (
                             <Link
-                              key={s.slug}
-                              to={`/services/${s.slug}`}
+                              key={service.slug}
+                              to={`/services/${service.slug}`}
                               role="menuitem"
                               className="block px-4 py-2 text-sm text-text hover:bg-surface hover:text-secondary rounded-lg transition-colors"
                               onClick={() => setIsServicesOpen(false)}
                             >
-                              {s.name}
+                              {service.name}
                             </Link>
                           ))}
                         </div>
                       </div>
-                    ))}
+                    </div>
                   </div>
                 )}
               </div>
-
-              <NavLink to="/industries" className={navLinkClass}>
-                <Globe className="w-4 h-4" />
-                Industries
-              </NavLink>
               <div
                 ref={careersRef}
                 className="relative"
@@ -399,13 +418,6 @@ function Layout() {
                 )}
               </div>
 
-              <NavLink
-                to="/industries"
-                onClick={closeAllMenus}
-                className={({ isActive }) => `flex items-center gap-2 py-3 px-3 rounded-lg transition-colors font-medium ${isActive ? 'text-secondary bg-surface' : 'text-text hover:text-secondary hover:bg-surface'}`}
-              >
-                <Globe className="w-5 h-5" /> Industries
-              </NavLink>
               <div className="px-3">
                 <button
                   type="button"

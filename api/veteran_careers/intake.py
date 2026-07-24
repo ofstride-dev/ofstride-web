@@ -2,6 +2,8 @@ import azure.functions as func
 import logging
 import json
 import os
+from azure.communication.email import EmailClient
+from azure.identity import DefaultAzureCredential
 from shared.security.admin_auth import AdminAuthError, require_authenticated_user
 
 
@@ -21,6 +23,58 @@ def _load_notification_sender():
     from shared.engagement.communications import send_admin_notification
 
     return send_admin_notification
+
+
+_acs_email_client: EmailClient | None = None
+
+
+def _get_acs_endpoint() -> str:
+    return (
+        os.environ.get("ACS_ENDPOINT")
+        or "https://acs-ofs-001.india.communication.azure.com"
+    ).strip()
+
+
+def _get_sender_address() -> str:
+    return (
+        os.environ.get("EMAIL_SENDER_ADDRESS")
+        or "DoNotReply@eafd51a7-7800-4251-bf8f-a8b754530fc3.azurecomm.net"
+    ).strip()
+
+
+def _get_acs_email_client() -> EmailClient:
+    global _acs_email_client
+    if _acs_email_client is None:
+        _acs_email_client = EmailClient(
+            endpoint=_get_acs_endpoint(),
+            credential=DefaultAzureCredential(),
+        )
+    return _acs_email_client
+
+
+def _send_applicant_confirmation_email(*, to_address: str, applicant_name: str) -> None:
+    if not to_address:
+        raise ValueError("Applicant email is required for confirmation email.")
+
+    sender = _get_sender_address()
+    if "@" not in sender:
+        raise RuntimeError("Configured EMAIL_SENDER_ADDRESS is invalid.")
+
+    message = {
+        "senderAddress": sender,
+        "content": {
+            "subject": "Your details have been recorded - OfStride",
+            "plainText": (
+                f"Hi {applicant_name or 'there'},\n\n"
+                "Your details have been recorded successfully. "
+                "Thank you for submitting your profile to OfStride."
+            ),
+        },
+        "recipients": {"to": [{"address": to_address}]},
+    }
+
+    poller = _get_acs_email_client().begin_send(message)
+    poller.result()
 
 
 def _to_bool(value) -> bool:
@@ -179,6 +233,22 @@ def handle_submit_profile(req: func.HttpRequest) -> func.HttpResponse:
             send_admin_notification(profile_record["full_name"], profile_record["defence_service"])
         except Exception as notify_error:
             logging.warning("Admin notification skipped: %s", notify_error)
+
+        try:
+            _send_applicant_confirmation_email(
+                to_address=str(profile_record.get("email_id") or "").strip().lower(),
+                applicant_name=str(profile_record.get("full_name") or "").strip(),
+            )
+        except Exception as email_error:
+            logging.exception("Applicant confirmation email failed")
+            return func.HttpResponse(
+                json.dumps({
+                    "error": "Profile saved but confirmation email failed",
+                    "details": str(email_error),
+                }),
+                mimetype="application/json",
+                status_code=500,
+            )
 
         return func.HttpResponse(json.dumps({"status": "success"}), mimetype="application/json", status_code=200)
 
