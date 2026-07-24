@@ -3,7 +3,7 @@ import logging
 import json
 import os
 from azure.communication.email import EmailClient
-from azure.identity import DefaultAzureCredential
+from azure.identity import ManagedIdentityCredential
 from shared.security.admin_auth import AdminAuthError, require_authenticated_user
 
 
@@ -45,9 +45,12 @@ def _get_sender_address() -> str:
 def _get_acs_email_client() -> EmailClient:
     global _acs_email_client
     if _acs_email_client is None:
+        # Explicitly use system-assigned managed identity for ACS email sending.
+        # This avoids DefaultAzureCredential selecting a user-assigned identity
+        # from AZURE_CLIENT_ID in Function App settings.
         _acs_email_client = EmailClient(
             endpoint=_get_acs_endpoint(),
-            credential=DefaultAzureCredential(),
+            credential=ManagedIdentityCredential(),
         )
     return _acs_email_client
 
