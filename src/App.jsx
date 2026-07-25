@@ -27,6 +27,7 @@ function App() {
       '/contact': 'Contact | Ofstride Services LLP',
       '/book-call': 'Book a Call | Ofstride Services LLP',
       '/contact-form': 'Contact Form | Ofstride Services LLP',
+      '/careers': 'Careers | Ofstride Services LLP',
       '/careers/jobs': 'Jobseeker Careers | Ofstride Services LLP',
       '/careers/upload': 'Upload Resume or JD | Ofstride Services LLP',
       '/careers/veteran-transition': 'Veteran Connect | Ofstride Services LLP',
@@ -52,6 +53,7 @@ function App() {
         <Route path="about" element={<About />} />
         <Route path="industries" element={<Industries />} />
         <Route path="contact" element={<Contact />} />
+        <Route path="careers" element={<Careers />} />
         <Route path="careers/jobs" element={<Careers />} />
         <Route path="careers/upload" element={<CareersUpload />} />
         <Route path="careers/veteran-transition" element={<CareerForm />} />

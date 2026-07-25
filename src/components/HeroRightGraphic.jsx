@@ -63,7 +63,7 @@ const SATELLITES = [
 
 export default function HeroRightGraphic() {
   return (
-    <div className="relative w-full min-h-[360px] sm:min-h-[620px] flex items-center justify-center p-2 sm:p-4 overflow-hidden select-none">
+    <div className="relative w-full max-w-md mx-auto lg:max-w-none min-h-[360px] sm:min-h-[620px] flex items-center justify-center p-2 sm:p-4 overflow-hidden select-none">
       {/* --- BACKGROUND: dot grid + ambient glow --- */}
       <div
         className="absolute inset-0 opacity-[0.18] pointer-events-none"

@@ -1,4 +1,4 @@
-import { Outlet, Link, NavLink, useLocation } from 'react-router-dom'
+import { Outlet, Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import { 
   Menu, X, ChevronDown, Phone, Mail, MapPin, Calendar, Home, 
@@ -14,6 +14,7 @@ function Layout() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
   const servicesRef = useRef(null)
   const closeTimerRef = useRef(null)
   const careersRef = useRef(null)
@@ -30,6 +31,12 @@ function Layout() {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Desktop-only outside handling. On mobile, this can preempt link taps
+      // by collapsing accordions before the click navigation event runs.
+      if (window.innerWidth < 1024) {
+        return
+      }
+
       if (servicesRef.current && !servicesRef.current.contains(event.target)) {
         setIsServicesOpen(false)
       }
@@ -37,18 +44,19 @@ function Layout() {
         setIsCareersOpen(false)
       }
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+
+    document.addEventListener('mouseup', handleClickOutside)
+    return () => document.removeEventListener('mouseup', handleClickOutside)
   }, [])
 
-  // Close menu on route change
+  // Close mobile/drawer state on route pathname change.
   useEffect(() => {
     setIsMenuOpen(false)
     setIsServicesOpen(false)
     setIsCareersOpen(false)
     window.scrollTo(0, 0)
     setIsChatOpen(false)
-  }, [location])
+  }, [location.pathname])
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20)
@@ -183,6 +191,16 @@ function Layout() {
     setIsMenuOpen(false)
   }
 
+  const handleMobileNav = (e, path) => {
+    e.preventDefault()
+    e.stopPropagation()
+    navigate(path)
+    // Let route transition begin before unmounting the drawer.
+    setTimeout(() => {
+      closeAllMenus()
+    }, 150)
+  }
+
   const activeGroup = serviceGroups.find((group) => group.category === activeServiceCategory) || serviceGroups[0]
 
   return (
@@ -196,12 +214,12 @@ function Layout() {
       >
         {/* Top contact bar — hidden on scroll */}
         <div className={`transition-all duration-300 overflow-hidden ${isScrolled ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-12 opacity-100'}`}>
-          <div className="bg-primary text-white py-1.5 px-4 flex items-center justify-center flex-wrap gap-x-6 gap-y-1 text-xs">
+          <div className="bg-primary text-white py-1.5 px-4 flex items-center justify-center flex-wrap gap-x-6 gap-y-1 text-xs sm:text-sm">
             <a href="tel:+918951606862" className="flex items-center gap-1.5 hover:text-blue-200 transition-colors whitespace-nowrap">
               <Phone className="w-3 h-3" />
               +91 89516 06862
             </a>
-            <a href="mailto:support@ofstrideservices.com" className="hidden sm:flex items-center gap-1.5 hover:text-blue-200 transition-colors">
+            <a href="mailto:support@ofstrideservices.com" className="hidden sm:inline-flex items-center gap-1.5 hover:text-blue-200 transition-colors">
               <Mail className="w-3 h-3" />
               support@ofstrideservices.com
             </a>
@@ -374,8 +392,8 @@ function Layout() {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div id="mobile-menu" className="lg:hidden bg-white border-t border-surface" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
-            <div className="max-w-7xl mx-auto px-3 py-5 space-y-2">
+          <div id="mobile-menu" className="lg:hidden bg-white border-t border-surface w-full">
+            <div className="relative w-full flex flex-col h-auto overflow-y-auto pointer-events-auto px-3 py-5 space-y-2">
               <NavLink
                 to="/"
                 end
@@ -391,26 +409,33 @@ function Layout() {
                   onClick={toggleServices}
                   aria-expanded={isServicesOpen}
                   aria-label="Toggle services in mobile menu"
-                  className="flex items-center gap-2 py-3 text-text hover:text-secondary transition-colors font-medium w-full"
+                  className="flex min-h-[44px] items-center gap-2 px-2 py-2 text-text hover:text-secondary transition-colors font-medium w-full cursor-pointer"
                 >
                   <Briefcase className="w-5 h-5" /> Services
                   <ChevronDown className={`w-4 h-4 ml-auto transition-transform duration-200 ${isServicesOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {isServicesOpen && (
-                  <div className="pl-8 space-y-1 mt-1" style={{ maxHeight: '360px', overflowY: 'auto' }}>
+                  <div className="pl-4 sm:pl-8 space-y-1 mt-1" style={{ maxHeight: '360px', overflowY: 'auto' }}>
+                    <a
+                      href="/services"
+                      className="block w-full min-h-[44px] py-3 px-4 text-base font-semibold text-primary cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
+                      onClick={(e) => handleMobileNav(e, '/services')}
+                    >
+                      All Services Overview
+                    </a>
                     {serviceGroups.map((group) => (
                       <div key={group.category} className="space-y-0.5">
                         <p className="px-1 mt-2 mb-0.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">{group.category}</p>
                         {group.services.map((s) => (
-                          <Link
+                          <a
                             key={s.slug}
-                            to={`/services/${s.slug}`}
-                            className="block py-2 text-sm text-text hover:text-secondary transition-colors"
-                            onClick={closeAllMenus}
+                            href={`/services/${s.slug}`}
+                            className="block w-full min-h-[44px] py-3 px-4 text-base font-medium text-text cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
+                            onClick={(e) => handleMobileNav(e, `/services/${s.slug}`)}
                           >
                             {s.name}
-                          </Link>
+                          </a>
                         ))}
                       </div>
                     ))}
@@ -424,23 +449,30 @@ function Layout() {
                   onClick={toggleCareers}
                   aria-expanded={isCareersOpen}
                   aria-label="Toggle careers in mobile menu"
-                  className="flex items-center gap-2 py-3 text-text hover:text-secondary transition-colors font-medium w-full"
+                  className="flex min-h-[44px] items-center gap-2 px-2 py-2 text-text hover:text-secondary transition-colors font-medium w-full cursor-pointer"
                 >
                   <FileText className="w-5 h-5" /> Careers
                   <ChevronDown className={`w-4 h-4 ml-auto transition-transform duration-200 ${isCareersOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {isCareersOpen && (
-                  <div className="pl-8 space-y-1 mt-1">
+                  <div className="pl-4 sm:pl-8 space-y-1 mt-1">
+                    <a
+                      href="/careers"
+                      className="block w-full min-h-[44px] py-3 px-4 text-base font-semibold text-primary cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
+                      onClick={(e) => handleMobileNav(e, '/careers')}
+                    >
+                      Careers Overview
+                    </a>
                     {careersItems.map((item) => (
-                      <Link
+                      <a
                         key={item.to}
-                        to={item.to}
-                        className="block py-2 text-sm text-text hover:text-secondary transition-colors"
-                        onClick={closeAllMenus}
+                        href={item.to}
+                        className="block w-full min-h-[44px] py-3 px-4 text-base font-medium text-text cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
+                        onClick={(e) => handleMobileNav(e, item.to)}
                       >
                         {item.name}
-                      </Link>
+                      </a>
                     ))}
                   </div>
                 )}
@@ -491,7 +523,7 @@ function Layout() {
       </header>
 
       {/* Main Content */}
-      <main id="main-content" className="flex-1" tabIndex="-1">
+      <main id="main-content" className="flex-1 overflow-x-hidden" tabIndex="-1">
         <Outlet />
       </main>
 

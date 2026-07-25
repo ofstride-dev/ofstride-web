@@ -234,30 +234,31 @@ function Home() {
                 Ofstride runs the back office of India's micro, small and medium enterprises: GST and tax filings, Udyam and bank credit, payroll and labour compliance, contracts and recovery — one senior team, standard and transparent pricing.
               </p>
 
-              <div className="rounded-2xl border border-slate-200 bg-white/90 backdrop-blur-sm p-2.5 sm:p-3 inline-block max-w-full shadow-sm">
-                <div className="flex flex-nowrap items-center gap-2 sm:gap-3 overflow-x-auto">
-                <Link to="/book-call"
-                  className="btn-primary inline-flex items-center justify-center gap-2 bg-primary text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm whitespace-nowrap"
-                >
-                  <Calendar className="w-4 h-4" />
-                  Book a Free Call
-                </Link>
-                <Link 
-                  to="/services"
-                  className="btn-secondary inline-flex items-center justify-center gap-2 border border-blue-200 bg-blue-50 text-secondary px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm whitespace-nowrap"
-                >
-                  Explore Services
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-                <a
-                  href="https://wa.me/918951606862?text=Hi%2C+I%27d+like+to+know+more+about+Ofstride%27s+services"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 border border-emerald-700 bg-emerald-600 text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm whitespace-nowrap hover:bg-emerald-700 transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  WhatsApp Us
-                </a>
+              <div className="rounded-2xl border border-slate-200 bg-white/90 backdrop-blur-sm p-2.5 sm:p-3 w-full sm:w-auto max-w-full shadow-sm">
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-stretch sm:items-center">
+                  <Link
+                    to="/book-call"
+                    className="btn-primary inline-flex items-center justify-center gap-2 w-full sm:w-auto text-center bg-primary text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm"
+                  >
+                    <Calendar className="w-4 h-4" />
+                    Book a Free Call
+                  </Link>
+                  <Link
+                    to="/services"
+                    className="btn-secondary inline-flex items-center justify-center gap-2 w-full sm:w-auto text-center border border-blue-200 bg-blue-50 text-secondary px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm"
+                  >
+                    Explore Services
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                  <a
+                    href="https://wa.me/918951606862?text=Hi%2C+I%27d+like+to+know+more+about+Ofstride%27s+services"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 w-full sm:w-auto text-center border border-emerald-700 bg-emerald-600 text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm hover:bg-emerald-700 transition-colors"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    WhatsApp Us
+                  </a>
                 </div>
               </div>
 
@@ -279,7 +280,7 @@ function Home() {
             </div>
 
             {/* Hero Visual — Ofstride Core Engine */}
-            <div className="flex flex-col gap-5 lg:-mt-8">
+            <div className="flex flex-col gap-5 w-full max-w-md mx-auto lg:max-w-none lg:mx-0 lg:-mt-8">
               <HeroRightGraphic />
             </div>
           </div>
