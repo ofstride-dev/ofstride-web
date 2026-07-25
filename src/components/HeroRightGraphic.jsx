@@ -10,27 +10,27 @@ import {
 
 const NODES = [
   {
-    id: 1, label: 'GST, TDS & ITR filings', short: 'FILINGS', tag: 'TX-01', icon: FileText,
+    id: 1, label: 'GST, TDS & ITR filings', icon: FileText,
     color: 'text-cyan-400', stroke: '#22d3ee', border: 'group-hover:border-cyan-500/50',
     glow: 'group-hover:shadow-[0_0_24px_rgba(34,211,238,0.45)]', angle: -90,
   },
   {
-    id: 2, label: 'Udyam, loans & schemes', short: 'UDYAM', tag: 'FN-02', icon: Landmark,
+    id: 2, label: 'Udyam, loans & schemes', icon: Landmark,
     color: 'text-blue-400', stroke: '#60a5fa', border: 'group-hover:border-blue-500/50',
     glow: 'group-hover:shadow-[0_0_24px_rgba(96,165,250,0.45)]', angle: -18,
   },
   {
-    id: 3, label: 'Payroll, PF/ESI & policies', short: 'PAYROLL', tag: 'HR-03', icon: Users,
+    id: 3, label: 'Payroll, PF/ESI & policies', icon: Users,
     color: 'text-emerald-400', stroke: '#34d399', border: 'group-hover:border-emerald-500/50',
     glow: 'group-hover:shadow-[0_0_24px_rgba(52,211,153,0.45)]', angle: 54,
   },
   {
-    id: 4, label: 'Contracts & MSMED recovery', short: 'LEGAL', tag: 'LG-04', icon: ScrollText,
+    id: 4, label: 'Contracts & MSMED recovery', icon: ScrollText,
     color: 'text-fuchsia-400', stroke: '#e879f9', border: 'group-hover:border-fuchsia-500/50',
     glow: 'group-hover:shadow-[0_0_24px_rgba(232,121,249,0.45)]', angle: 198,
   },
   {
-    id: 5, label: 'Practical AI & systems', short: 'AI CORE', tag: 'AI-05', icon: BrainCircuit,
+    id: 5, label: 'Practical AI & systems', icon: BrainCircuit,
     color: 'text-violet-400', stroke: '#a78bfa', border: 'group-hover:border-violet-500/50',
     glow: 'group-hover:shadow-[0_0_24px_rgba(167,139,250,0.45)]', angle: 126,
   },

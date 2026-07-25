@@ -508,6 +508,9 @@ function Layout() {
                 AI-powered business consulting for HR, Finance, Legal, IT & Strategy. 
                 Building intelligent systems since 2019.
               </p>
+              <p className="text-sm leading-relaxed italic" style={{ color: '#0078D4' }}>
+                Our platform runs on Microsoft Azure's enterprise cloud infrastructure
+              </p>
             </div>
 
             {/* Services */}
