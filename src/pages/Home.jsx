@@ -231,7 +231,7 @@ function Home() {
               </h1>
 
               <p className="text-base sm:text-lg text-text leading-relaxed mb-6 sm:mb-8 max-w-xl">
-                Ofstride runs the back office of India's micro, small and medium enterprises: GST and tax filings, Udyam and bank credit, payroll and labour compliance, contracts and recovery — one senior team, one predictable monthly fee.
+                Ofstride runs the back office of India's micro, small and medium enterprises: GST and tax filings, Udyam and bank credit, payroll and labour compliance, contracts and recovery — one senior team, standard and transparent pricing.
               </p>
 
               <div className="rounded-2xl border border-slate-200 bg-white/90 backdrop-blur-sm p-2.5 sm:p-3 inline-block max-w-full shadow-sm">
