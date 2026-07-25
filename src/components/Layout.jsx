@@ -223,6 +223,7 @@ function Layout() {
               <Mail className="w-3 h-3" />
               support@ofstrideservices.com
             </a>
+            
             <a
               href="https://wa.me/918951606862?text=Hi%2C+I%27d+like+to+know+more+about+Ofstride%27s+services"
               target="_blank"
@@ -231,6 +232,15 @@ function Layout() {
             >
               <MessageCircle className="w-3 h-3" />
               WhatsApp Us
+            </a>
+            <a
+              href="https://in.linkedin.com/company/ofstride-services-llp"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="LinkedIn"
+              className="hidden sm:inline-flex items-center justify-center hover:text-blue-200 transition-colors whitespace-nowrap"
+            >
+              <img src="/linkedin-icon.svg" alt="" className="w-6 h-6" />
             </a>
           </div>
         </div>
@@ -602,6 +612,17 @@ function Layout() {
                   >
                     <MessageCircle className="w-4 h-4 shrink-0" />
                     Chat on WhatsApp
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://in.linkedin.com/company/ofstride-services-llp"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="LinkedIn"
+                    className="flex items-center gap-2 text-slate-300 hover:text-white text-xs sm:text-sm transition-colors"
+                  >
+                    <img src="/linkedin-icon.svg" alt="" className="w-6 h-6 shrink-0" />
                   </a>
                 </li>
               </ul>
