@@ -29,6 +29,20 @@ function normalizeResumeContentType(file) {
   return rawType;
 }
 
+// Reads a File/Blob and resolves to its raw base64 content (no "data:...;base64," prefix).
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      const base64 = typeof result === "string" ? result.split(",")[1] : "";
+      resolve(base64 || "");
+    };
+    reader.onerror = () => reject(reader.error || new Error("Failed to read file"));
+    reader.readAsDataURL(file);
+  });
+}
+
 function uniqueSorted(values) {
   return Array.from(new Set(values.filter(Boolean).map((value) => String(value).trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b));
 }
@@ -251,6 +265,7 @@ function Careers() {
       setReferenceId(completeResponse.reference_id || initResponse.reference_id);
       setSubmitted(true);
     } catch (error) {
+      console.error("Application submission failed:", error);
       if (error instanceof ApiClientError && error.details?.code === "duplicate_application_window") {
         setSubmitError("You have already applied for this role in the last 30 days.");
       } else if (error instanceof ApiClientError) {
@@ -626,4 +641,3 @@ function Careers() {
 }
 
 export default Careers;
-
