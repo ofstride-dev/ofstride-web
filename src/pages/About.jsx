@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, Shield, Award, GraduationCap, Briefcase, BookOpen, Lightbulb, Plane, Scale, Calendar, Mail, Phone } from 'lucide-react'
+import { ArrowRight, Shield, Award, GraduationCap, Briefcase, BookOpen, Lightbulb, Plane, Scale, Calendar, Mail, Phone, Target, TrendingUp } from 'lucide-react'
 
 function About() {
   const team = [
@@ -60,6 +60,29 @@ function About() {
     { number: '2019', label: 'Established' }
   ]
 
+  const cultureValues = [
+    {
+      icon: Target,
+      title: 'Ownership over titles',
+      desc: 'Every person has a purpose, and every idea has a voice — regardless of designation.'
+    },
+    {
+      icon: Lightbulb,
+      title: 'Ideation & innovation over routine',
+      desc: 'We favour original thinking over process for its own sake.'
+    },
+    {
+      icon: GraduationCap,
+      title: 'Continuous learning over comfort',
+      desc: 'We choose growth and challenge over staying comfortable.'
+    },
+    {
+      icon: TrendingUp,
+      title: 'Meaningful impact over activity',
+      desc: 'We measure ourselves by outcomes delivered, not hours logged.'
+    }
+  ]
+
   return (
     <div className="pt-12 sm:pt-16">
       {/* Hero */}
@@ -78,6 +101,23 @@ function About() {
             providing integrated solutions in Human Resources, Finance, Legal, IT, Business Strategy, 
             Artificial Intelligence, and Workforce Development.
           </p>
+        </div>
+      </section>
+
+      {/* Tagline & Purpose */}
+      <section className="py-10 sm:py-12 bg-primary">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-white text-lg sm:text-2xl lg:text-3xl font-bold leading-snug mb-4 sm:mb-6">
+            Discipline to Execute. Intelligence to Decide.<br className="hidden sm:block" />
+            Innovation to Transform. AI to Scale.
+          </p>
+          <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2">
+  Purpose Statement
+</span>
+<p className="text-slate-300 text-sm sm:text-lg max-w-3xl mx-auto leading-relaxed">
+  We bridge the gap between business challenges and intelligent execution, transforming ideas 
+  into measurable outcomes.
+</p>
         </div>
       </section>
 
@@ -142,6 +182,40 @@ function About() {
                 ))}
               </ul>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Our Work Culture */}
+      <section className="py-10 sm:py-14 lg:py-20 bg-surface">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 sm:mb-16">
+            <span className="inline-block text-secondary text-sm font-semibold uppercase tracking-wider mb-3">
+              Our Work Culture
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-bold text-primary mb-5 sm:mb-6 max-w-3xl mx-auto">
+              Every Idea Has a Voice. Every Person Has a Purpose.
+            </h2>
+            <p className="text-text max-w-2xl mx-auto leading-relaxed">
+              At Ofstride, we encourage ownership over titles, ideation and innovation over routine, 
+              continuous learning over comfort, and meaningful impact over mere activity. Together, 
+              we build the future for India's MSMEs.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {cultureValues.map((value, i) => (
+              <div 
+                key={i}
+                className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-100 card-hover"
+              >
+                <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-4">
+                  <value.icon className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-base font-bold text-primary mb-2">{value.title}</h3>
+                <p className="text-text text-sm leading-relaxed">{value.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -293,4 +367,3 @@ function About() {
 }
 
 export default About
-
