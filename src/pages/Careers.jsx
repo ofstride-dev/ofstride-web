@@ -314,19 +314,10 @@ function Careers() {
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-2xl p-4 border border-slate-200 mb-6">
-          <p className="text-sm text-text">
-            Employer/Admin flow moved to
-            {" "}
-            <a href="/employer" className="text-secondary font-medium underline">Employer Portal</a>
-            .
-            Jobseeker application flow is currently open while authentication provider migration is in progress.
-          </p>
-          <p className="mt-2 text-xs text-muted">No sign-in required for application submission at the moment.</p>
-        </div>
-
-        <div className="mt-8 max-w-md">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="bg-blue-50 rounded-2xl p-10 sm:p-12">
+          <h2 className="text-4xl sm:text-5xl font-bold text-primary text-center mb-10">Apply now</h2>
+          <div className="mt-8 max-w-md">
           <div className="relative">
             <input
               type="text"
@@ -634,6 +625,7 @@ function Careers() {
           </form>
           )}
         </div>
+      </div>
       </div>
       </section>
     </div>
