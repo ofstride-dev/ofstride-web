@@ -2,7 +2,7 @@ import { Outlet, Link, NavLink, useLocation, useNavigate } from 'react-router-do
 import { useState, useEffect, useRef } from 'react'
 import { 
   Menu, X, ChevronDown, Phone, Mail, MapPin, Calendar, Home, 
-  Briefcase, Users, Info, MessageCircle, FileText, Bot
+  Briefcase, Users, Info, MessageCircle, FileText, Bot, Receipt
 } from 'lucide-react'
 import { ChatWidget } from './chat/ChatWidget'
 
@@ -641,6 +641,13 @@ function Layout() {
                 >
                   <Users className="w-4 h-4" />
                   Admin Careers
+                </Link>
+                <Link
+                  to="/expenses/login"
+                  className="inline-flex items-center gap-2 border border-slate-500 text-slate-300 px-4 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-white/10 transition-colors"
+                >
+                  <Receipt className="w-4 h-4" />
+                  Expense Portal
                 </Link>
                 <Link 
                   to="/contact-form"

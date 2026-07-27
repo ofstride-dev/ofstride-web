@@ -14,6 +14,13 @@ import AdminCareers from './pages/AdminCareers.jsx'
 import CareersUpload from './pages/CareersUpload.jsx'
 import EmployerCareers from './pages/EmployerCareers.jsx'
 import CareerForm from './pages/vat-career-form.jsx'
+import ExpensesAuthLayout from './components/ExpensesAuthLayout.jsx'
+import ExpenseProtectedRoute from './components/ExpenseProtectedRoute.jsx'
+import ExpensesLogin from './pages/expenses/ExpensesLogin.jsx'
+import MyExpenses from './pages/expenses/MyExpenses.jsx'
+import SubmitExpense from './pages/expenses/SubmitExpense.jsx'
+import ExpenseDetail from './pages/expenses/ExpenseDetail.jsx'
+import AdminExpenseQueue from './pages/expenses/AdminExpenseQueue.jsx'
 
 function App() {
   const location = useLocation()
@@ -34,6 +41,10 @@ function App() {
       '/employer': 'Employer Careers | Ofstride Services LLP',
       '/admin/careers': 'Admin Careers | Ofstride Services LLP',
       '/career-connect': 'Veteran Connect | Ofstride Services LLP',
+      '/expenses/login': 'Sign In | Expense Portal',
+      '/expenses': 'My Expenses | Expense Portal',
+      '/expenses/new': 'Submit Claim | Expense Portal',
+      '/expenses/admin': 'Admin Queue | Expense Portal',
     }
 
     if (location.pathname.startsWith('/services/')) {
@@ -63,6 +74,42 @@ function App() {
         <Route path="contact-form" element={<ContactForm />} />
         {/* Backward-compatible alias for older links */}
         <Route path="career-connect" element={<CareerForm />} />
+
+        <Route path="expenses" element={<ExpensesAuthLayout />}>
+          <Route path="login" element={<ExpensesLogin />} />
+          <Route
+            index
+            element={
+              <ExpenseProtectedRoute>
+                <MyExpenses />
+              </ExpenseProtectedRoute>
+            }
+          />
+          <Route
+            path="new"
+            element={
+              <ExpenseProtectedRoute>
+                <SubmitExpense />
+              </ExpenseProtectedRoute>
+            }
+          />
+          <Route
+            path="admin"
+            element={
+              <ExpenseProtectedRoute adminOnly>
+                <AdminExpenseQueue />
+              </ExpenseProtectedRoute>
+            }
+          />
+          <Route
+            path=":id"
+            element={
+              <ExpenseProtectedRoute>
+                <ExpenseDetail />
+              </ExpenseProtectedRoute>
+            }
+          />
+        </Route>
       </Route>
     </Routes>
   )
