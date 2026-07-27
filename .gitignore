@@ -59,3 +59,9 @@ api/data/generated_*
 .github/copilot-instructions.md
 
 venv/
+
+# Azurite local storage emulator files
+AzuriteConfig
+__azurite_db_*__.json
+__blobstorage__/
+__queuestorage__/
