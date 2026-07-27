@@ -80,15 +80,24 @@ export async function listAllExpenses({ status }: { status?: string } = {}) {
     return expenses;
   }
 
-  const { data: profiles, error: profilesError } = await supabase
-    .from("profiles")
-    .select("id, full_name")
-    .in("id", userIds);
+  // Use the SECURITY DEFINER RPC instead of querying profiles directly.
+  // The profile_self_select RLS policy only allows id = auth.uid(), so a
+  // direct query would return empty for other users. The RPC bypasses RLS
+  // and is admin-only (enforced server-side).
+  const { data: profiles, error: profilesError } = await supabase.rpc(
+    "get_claimant_profiles",
+    { p_user_ids: userIds }
+  );
   if (profilesError) {
     throw profilesError;
   }
 
-  const nameById = new Map((profiles || []).map((profile) => [profile.id, profile.full_name]));
+  const nameById = new Map(
+    (profiles || []).map((profile: { id: string; full_name: string }) => [
+      profile.id,
+      profile.full_name,
+    ])
+  );
   return expenses.map((expense) => ({
     ...expense,
     claimant_name: nameById.get(expense.user_id) || null,

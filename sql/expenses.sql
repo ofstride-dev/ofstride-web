@@ -91,18 +91,14 @@ create or replace function public.my_company_id() returns uuid as $$
   select company_id from public.profiles where id = auth.uid();
 $$ language sql security definer stable set search_path to 'public';
 
--- profiles: a user can always see their own row; admins can see all profiles
--- in their company (needed to show claimant names in the admin expense queue).
--- Both helpers are SECURITY DEFINER so they bypass RLS — no recursion.
+-- profiles: a user can always see their own row ONLY.
+-- We intentionally do NOT add an admin branch here — any subquery or helper
+-- call on profiles from within a profiles policy risks recursion on some
+-- Supabase versions. Instead, admin access to other profiles is handled via
+-- the get_claimant_profiles() RPC below (SECURITY DEFINER, bypasses RLS).
 drop policy if exists "profile_self_select" on public.profiles;
 create policy "profile_self_select" on public.profiles for select
-  using (
-    id = auth.uid()
-    or (
-      public.is_admin()
-      and company_id = public.my_company_id()
-    )
-  );
+  using (id = auth.uid());
 
 drop policy if exists "profile_self_update" on public.profiles;
 create policy "profile_self_update" on public.profiles for update
@@ -222,6 +218,24 @@ create policy "receipt_delete_own_or_admin" on storage.objects for delete
       or public.is_admin()
     )
   );
+
+-- ============================================================
+-- Admin: get claimant profiles for expense queue (bypasses RLS)
+-- SECURITY DEFINER so admins can read other users' names without needing
+-- a profiles RLS policy that would risk recursion.
+-- ============================================================
+create or replace function public.get_claimant_profiles(p_user_ids uuid[])
+returns table (id uuid, full_name text) as $$
+begin
+  if not public.is_admin() then
+    raise exception 'Only admins can call this function';
+  end if;
+  return query
+    select p.id, p.full_name
+    from public.profiles p
+    where p.id = any(p_user_ids);
+end;
+$$ language plpgsql security definer set search_path to 'public';
 
 -- ============================================================
 -- Auto-maintain updated_at on expenses
