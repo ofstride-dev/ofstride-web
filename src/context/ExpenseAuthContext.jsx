@@ -7,18 +7,45 @@ async function fetchProfile(userId) {
   if (!userId) {
     return null;
   }
-  const { data, error } = await supabase
+  
+  // 1. Use .maybeSingle() to safely check for a profile without throwing a 406 error
+  let { data, error } = await supabase
     .from("profiles")
     .select("id, full_name, role, company_id, created_at")
     .eq("id", userId)
-    .single();
+    .maybeSingle();
+
   if (error) {
-    // Surface the error instead of silently returning null so the UI can tell
-    // the difference between "no profile row yet" and "the query failed"
-    // (e.g. RLS recursion / 500). Returning the error object lets the provider
-    // decide how to react.
+    // If a real database error occurs (e.g. RLS recursion / 500), surface it
     return { error };
   }
+
+  // 2. SELF-HEALING FALLBACK: If the profile row is missing (data is null),
+  // automatically create a default row so older accounts don't break the UI!
+  if (!data) {
+    console.warn("Profile row missing for user. Self-healing by creating a default profile...");
+    
+    const defaultProfile = {
+      id: userId,
+      full_name: "Team Member", // Default fallback name
+      role: "employee",        // Default fallback role
+    };
+
+    const { data: createdProfile, error: createError } = await supabase
+      .from("profiles")
+      .upsert(defaultProfile)
+      .select("id, full_name, role, company_id, created_at")
+      .maybeSingle();
+
+    if (createError) {
+      console.error("Failed to self-heal profile:", createError);
+      // Return a temporary in-memory profile so the UI still loads without crashing
+      return defaultProfile;
+    }
+
+    return createdProfile;
+  }
+
   return data;
 }
 
