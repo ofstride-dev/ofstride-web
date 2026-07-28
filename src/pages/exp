@@ -1,8 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Plus, ShieldCheck, Download, FileSpreadsheet, FileText } from "lucide-react";
-import { useExpenseAuth } from "../../context/ExpenseAuthContext";
-import { listMyExpenses, STATUS_LABELS, STATUS_BADGE_CLASSES } from "../../services/expenseService";
+import { Download, FileSpreadsheet, FileText } from "lucide-react";
+import { listAllExpenses, STATUS_LABELS, STATUS_BADGE_CLASSES, EXPENSE_STATUSES } from "../../services/expenseService";
 import { downloadExpenseAsXlsx, downloadExpenseAsPdf } from "../../services/expenseExport";
 
 function StatusBadge({ status }) {
@@ -14,8 +13,8 @@ function StatusBadge({ status }) {
   );
 }
 
-function MyExpenses() {
-  const { user, profile, signOut } = useExpenseAuth();
+function AdminExpenseQueue() {
+  const [statusFilter, setStatusFilter] = useState("");
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -23,17 +22,15 @@ function MyExpenses() {
   const menuRef = useRef(null);
 
   useEffect(() => {
-    if (!user?.id) {
-      return;
-    }
     let isMounted = true;
     setLoading(true);
-    listMyExpenses(user.id)
+    setError("");
+    listAllExpenses({ status: statusFilter || undefined })
       .then((data) => {
         if (isMounted) setExpenses(data);
       })
       .catch(() => {
-        if (isMounted) setError("Could not load your claims right now. Please try again shortly.");
+        if (isMounted) setError("Could not load the expense queue right now. Please try again shortly.");
       })
       .finally(() => {
         if (isMounted) setLoading(false);
@@ -41,8 +38,9 @@ function MyExpenses() {
     return () => {
       isMounted = false;
     };
-  }, [user?.id]);
+  }, [statusFilter]);
 
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -69,40 +67,34 @@ function MyExpenses() {
   return (
     <div className="pt-12 sm:pt-16 min-h-screen bg-surface">
       <section className="py-10 sm:py-14 lg:py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-2xl font-semibold text-primary">My Expense Claims</h1>
-              <p className="text-sm text-muted mt-1">{profile?.full_name || user?.email}</p>
+              <h1 className="text-2xl font-semibold text-primary">Admin Expense Queue</h1>
+              <p className="text-sm text-muted mt-1">All submitted claims across the company</p>
             </div>
-            <div className="flex items-center gap-2">
-              {profile?.role === "admin" && (
-                <Link
-                  to="/expenses/admin"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-medium text-text hover:bg-surface"
-                >
-                  <ShieldCheck className="w-4 h-4" />
-                  Admin Queue
-                </Link>
-              )}
-              <Link
-                to="/expenses/new"
-                className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-xl font-semibold text-sm"
-              >
-                <Plus className="w-4 h-4" />
-                New Claim
-              </Link>
-              <button
-                type="button"
-                onClick={signOut}
-                className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-medium text-text hover:bg-surface"
-              >
-                Sign Out
-              </button>
-            </div>
+            <Link to="/expenses" className="text-sm text-secondary font-medium">
+              ← My Claims
+            </Link>
           </div>
 
-          {loading && <p className="text-sm text-muted py-4 text-center">Loading your claims...</p>}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-primary mb-1">Filter by status</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full sm:w-64 px-4 py-3 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none bg-white"
+            >
+              <option value="">All statuses</option>
+              {EXPENSE_STATUSES.map((status) => (
+                <option key={status} value={status}>
+                  {STATUS_LABELS[status]}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {loading && <p className="text-sm text-muted py-4 text-center">Loading queue...</p>}
 
           {!loading && error && (
             <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
@@ -112,7 +104,7 @@ function MyExpenses() {
 
           {!loading && !error && expenses.length === 0 && (
             <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
-              <p className="text-sm text-muted">You haven't submitted any expense claims yet.</p>
+              <p className="text-sm text-muted">No claims match this filter.</p>
             </div>
           )}
 
@@ -128,9 +120,11 @@ function MyExpenses() {
                     className="flex items-center gap-4 min-w-0 flex-1"
                   >
                     <div className="min-w-0">
-                      <p className="font-medium text-primary truncate">{expense.category}</p>
+                      <p className="font-medium text-primary truncate">
+                        {expense.claimant_name || "Unknown claimant"}
+                      </p>
                       <p className="text-sm text-muted truncate">
-                        {expense.spend_date} · {expense.currency} {Number(expense.amount).toFixed(2)}
+                        {expense.category} · {expense.spend_date} · {expense.currency} {Number(expense.amount).toFixed(2)}
                       </p>
                     </div>
                     <StatusBadge status={expense.status} />
@@ -179,4 +173,4 @@ function MyExpenses() {
   );
 }
 
-export default MyExpenses;
+export default AdminExpenseQueue;

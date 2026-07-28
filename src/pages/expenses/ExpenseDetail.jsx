@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { FileText, Paperclip } from "lucide-react";
+import { FileText, Paperclip, Download, FileSpreadsheet } from "lucide-react";
 import { useExpenseAuth } from "../../context/ExpenseAuthContext";
 import {
   getExpense,
@@ -11,6 +11,7 @@ import {
   VALID_STATUS_TRANSITIONS,
 } from "../../services/expenseService";
 import { listAttachments, getSignedUrl } from "../../services/attachmentService";
+import { downloadExpenseAsXlsx, downloadExpenseAsPdf } from "../../services/expenseExport";
 
 const ACTION_LABELS = {
   approved: "Approve",
@@ -145,7 +146,25 @@ function ExpenseDetail() {
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <div className="flex items-center justify-between gap-4 mb-6">
               <h1 className="text-2xl font-semibold text-primary">Expense Claim</h1>
-              <StatusBadge status={expense.status} />
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => downloadExpenseAsXlsx(expense, history, attachments)}
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition-colors"
+                >
+                  <FileSpreadsheet className="w-4 h-4" />
+                  Excel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => downloadExpenseAsPdf(expense, history, attachments)}
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  PDF
+                </button>
+                <StatusBadge status={expense.status} />
+              </div>
             </div>
 
             <dl className="grid sm:grid-cols-2 gap-x-8 gap-y-4">
