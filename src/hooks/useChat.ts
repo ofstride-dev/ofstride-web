@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { getChatSessionId, postChatEvent, sendChatMessage } from "../services/api";
-import type { ChatAction, ChatEventType, ConsultantSource } from "../types/chat";
+import type { ChatAction, ChatEventType, ConsultantSource, AssessmentFocusReport } from "../types/chat";
 
 export interface ChatMessage {
   id: string;

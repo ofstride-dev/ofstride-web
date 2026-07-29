@@ -11,6 +11,7 @@ import {
   adminUpdateApplicationStatus,
   ApiClientError,
 } from "../services/api";
+import AdminAnalysisReport from "../components/AdminAnalysisReport";
 import {
   supabase,
   signInWithEmail,
@@ -42,6 +43,102 @@ function computeSimpleDiff(originalText, enhancedText) {
     }
   }
   return rows;
+}
+
+/* ── Enhanced Queue UI Helpers ────────────────────────────────── */
+function getStatusBadge(status) {
+  const s = String(status || "").toLowerCase();
+  if (s === "shortlisted") return { label: "Shortlisted", bg: "bg-emerald-100", text: "text-emerald-800", border: "border-emerald-300" };
+  if (s === "rejected") return { label: "Rejected", bg: "bg-rose-100", text: "text-rose-800", border: "border-rose-300" };
+  if (s === "under_review") return { label: "Under Review", bg: "bg-amber-100", text: "text-amber-800", border: "border-amber-300" };
+  if (s === "submitted") return { label: "New", bg: "bg-blue-100", text: "text-blue-800", border: "border-blue-300" };
+  return { label: status || "Pending", bg: "bg-slate-100", text: "text-slate-700", border: "border-slate-200" };
+}
+
+function getParsingFlag(detail) {
+  const parseError = String(detail?.resume_parse_error || "").toLowerCase();
+  if (parseError === "corrupt" || parseError === "empty" || parseError === "unreadable") {
+    return { flag: true, label: "Parsing Error / Incomplete Data", color: "text-amber-600", bg: "bg-amber-50", icon: "\u26A0\uFE0F" };
+  }
+  if (!detail?.analysis_status || String(detail.analysis_status).toLowerCase() !== "completed") {
+    return { flag: false, label: "", color: "", bg: "", icon: "" };
+  }
+  const score = detail.match_score != null ? Number(detail.match_score) : null;
+  if (score != null && score < 30) {
+    return { flag: true, label: "Low Data Confidence", color: "text-amber-500", bg: "bg-amber-50", icon: "\u26A0\uFE0F" };
+  }
+  return { flag: false, label: "", color: "", bg: "", icon: "" };
+}
+
+function getScorePill(detail) {
+  const score = detail?.match_score != null ? Math.round(Number(detail.match_score)) : null;
+  if (score == null) return null;
+  const color = score >= 75 ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+    : score >= 50 ? "bg-amber-100 text-amber-800 border-amber-300"
+    : "bg-rose-100 text-rose-800 border-rose-300";
+  return { score, color };
+}
+
+function getUnreadIndicator(detail) {
+  if (!detail?.reviewed_by_human_at && detail?.analysis_status === "completed") {
+    return { unread: true };
+  }
+  return { unread: false };
+}
+
+function getTimelineEvents(detail) {
+  const events = [];
+  if (detail?.created_at) {
+    events.push({ event_type: "applied", event_label: "Application Submitted", timestamp: detail.created_at, actor: "Candidate" });
+  }
+  if (detail?.analysis_status === "completed" && detail?.parsing_completed_at) {
+    events.push({ event_type: "ai_score", event_label: "AI Score Generated", timestamp: detail.parsing_completed_at, actor: "AI System" });
+  }
+  if (detail?.reviewed_by_human_at) {
+    events.push({ event_type: "reviewed", event_label: "Reviewed by Human", timestamp: detail.reviewed_by_human_at, actor: "Admin" });
+  }
+  if (Array.isArray(detail?.timeline_events)) {
+    detail.timeline_events.forEach((ev) => events.push(ev));
+  }
+  return events.sort((a, b) => new Date(a.timestamp || 0) - new Date(b.timestamp || 0));
+}
+
+function getEnhancedSuggestedAction(detail) {
+  const status = String(detail?.submission_status || "").toLowerCase();
+  const analysisStatus = String(detail?.analysis_status || "").toLowerCase();
+  const recommendation = String(detail?.recommendation || "").toLowerCase();
+  const mailSent = Boolean(detail?.applicant_email_sent_at);
+  const parseError = String(detail?.resume_parse_error || "").toLowerCase();
+  const score = detail?.match_score != null ? Number(detail.match_score) : null;
+
+  if (parseError === "corrupt" || parseError === "empty" || parseError === "unreadable") {
+    return { key: "request-updated-resume", title: "Request Updated Resume", description: "The uploaded resume appears corrupt or unreadable. Request a new upload from the candidate.", variant: "amber" };
+  }
+  if (analysisStatus !== "completed") {
+    return { key: "run-analysis", title: "Run AI Analysis", description: "Start AI evaluation to generate score, recommendation, and next-step guidance.", variant: "primary" };
+  }
+  if (status === "shortlisted" && !mailSent) {
+    return { key: "send-confirmation", title: "Send Interview Invite", description: "Notify the candidate with further discussion details and interview scheduling.", variant: "primary" };
+  }
+  if (status === "shortlisted" && mailSent) {
+    return { key: "none", title: "Interview Invite Sent", description: "Candidate has been notified. Awaiting response.", variant: "muted" };
+  }
+  if (status === "rejected") {
+    return { key: "none", title: "Candidate Rejected", description: "Final decision recorded. No further action required.", variant: "muted" };
+  }
+  if (score != null && score >= 75 && (recommendation === "shortlist" || !recommendation)) {
+    return { key: "shortlist", title: "Shortlist & Schedule", description: "Strong match detected. Move to shortlisted status and send interview invite.", variant: "primary" };
+  }
+  if (score != null && score < 50 && (recommendation === "hold" || !recommendation)) {
+    return { key: "reject", title: "Move to Reject", description: "Low fit score. Consider rejecting or flagging for HR audit.", variant: "rose" };
+  }
+  if (recommendation === "shortlist") {
+    return { key: "shortlist", title: "Shortlist candidate", description: "Analysis indicates strong fit. Move candidate to shortlisted status.", variant: "primary" };
+  }
+  if (recommendation === "hold") {
+    return { key: "under-review", title: "Keep under review", description: "Analysis indicates low fit. Keep candidate under review before final decision.", variant: "amber" };
+  }
+  return { key: "under-review", title: "Manual Review Required", description: "Candidate needs manual review before final decision.", variant: "amber" };
 }
 
 function getSuggestedAction(detail) {
@@ -76,9 +173,9 @@ function getSuggestedAction(detail) {
     }
     if (recommendation === "hold") {
       return {
-        key: "reject",
-        title: "Reject candidate",
-        description: "Analysis indicates low fit. Close application with a rejection decision.",
+        key: "under-review",
+        title: "Keep under review",
+        description: "Analysis indicates low fit. Keep candidate under review before final decision.",
       };
     }
     return {
@@ -132,7 +229,17 @@ function AdminCareers() {
   const [jdPreview, setJdPreview] = useState(null);
   const [showJobEditor, setShowJobEditor] = useState(false);
   const [workspaceView, setWorkspaceView] = useState("triage"); // triage | jobs
-  const [detailTab, setDetailTab] = useState("profile"); // profile | review
+  const [detailTab, setDetailTab] = useState("profile"); // profile | review | audit
+  const [showOverrideModal, setShowOverrideModal] = useState(false);
+  const [overrideTargetStatus, setOverrideTargetStatus] = useState("");
+  const [overrideReasons] = useState([
+    { key: "resume_parse_error", label: "Resume parsing error" },
+    { key: "referred_by_employee", label: "Referred by employee" },
+    { key: "equivalent_experience", label: "Equivalent industry experience" },
+    { key: "other", label: "Other reason" },
+  ]);
+  const [overrideReason, setOverrideReason] = useState("");
+  const [statusActionLoading, setStatusActionLoading] = useState(false);
 
   // ── Auth ──────────────────────────────────────────────────────────────
 
@@ -256,6 +363,7 @@ function AdminCareers() {
   const onRunAnalysis = async () => {
     if (!selectedId) return;
     setAnalysisMessage("");
+    setDetailLoading(true);
     try {
       const result = await adminRunApplicationAnalysis(selectedId, { auto_apply: false });
       const scoreLabel = result.match_score == null ? "-" : String(result.match_score);
@@ -271,14 +379,48 @@ function AdminCareers() {
       } else {
         setAnalysisMessage("Failed to run analysis.");
       }
+    } finally {
+      setDetailLoading(false);
     }
   };
 
-  const onSetStatus = async (status) => {
+  const onSetStatus = async (status, overrideReasonParam) => {
     if (!selectedId) return;
-    await adminUpdateApplicationStatus(selectedId, status);
-    await loadDetail(selectedId);
-    await loadList();
+    setStatusActionLoading(true);
+    try {
+      await adminUpdateApplicationStatus(selectedId, status);
+      await loadDetail(selectedId);
+      await loadList();
+    } finally {
+      setStatusActionLoading(false);
+    }
+  };
+
+  const onSetStatusWithOverride = async (status) => {
+    const suggested = getEnhancedSuggestedAction(detail);
+    const currentRec = String(detail?.recommendation || "").toLowerCase();
+    const isOverride = (status === "shortlisted" && currentRec === "hold") ||
+      (status === "rejected" && (currentRec === "shortlist" || (detail?.match_score ?? 0) >= 75));
+    if (isOverride) {
+      setOverrideTargetStatus(status);
+      setOverrideReason("");
+      setShowOverrideModal(true);
+      return;
+    }
+    await onSetStatus(status);
+  };
+
+  const onConfirmOverride = async () => {
+    const reason = overrideReason;
+    setShowOverrideModal(false);
+    setOverrideTargetStatus("");
+    setOverrideReason("");
+    await onSetStatus(overrideTargetStatus);
+    setDetail((prev) => ({
+      ...(prev || {}),
+      override_reason: reason || "other",
+      reviewed_by_human_at: new Date().toISOString(),
+    }));
   };
 
   const onPickJob = (job) => {
@@ -456,7 +598,7 @@ function AdminCareers() {
 
   const onRunSuggestedAction = async () => {
     if (!detail) return;
-    const suggested = getSuggestedAction(detail);
+    const suggested = getEnhancedSuggestedAction(detail);
     if (suggested.key === "run-analysis") {
       await onRunAnalysis();
       return;
@@ -466,17 +608,19 @@ function AdminCareers() {
       return;
     }
     if (suggested.key === "shortlist") {
-      await onSetStatus("shortlisted");
+      await onSetStatusWithOverride("shortlisted");
       return;
     }
     if (suggested.key === "reject") {
-      await onSetStatus("rejected");
+      await onSetStatusWithOverride("rejected");
       return;
     }
     if (suggested.key === "under-review") {
       await onSetStatus("under_review");
     }
   };
+
+  const suggestedAction = detail ? getEnhancedSuggestedAction(detail) : null;
 
   const selectedJob = jobs.find((job) => String(job.id || "") === selectedJobId) || null;
 
@@ -668,19 +812,41 @@ function AdminCareers() {
                   <p className="text-sm text-muted">Loading...</p>
                 ) : (
                   <div className="space-y-2 max-h-[70vh] overflow-auto pr-1">
-                    {items.map((item) => (
-                      <button
-                        key={String(item.id)}
-                        className={`w-full text-left border rounded-lg px-3 py-2 transition-colors ${selectedId === String(item.id) ? "border-secondary bg-blue-50" : "border-slate-200 hover:border-secondary hover:bg-slate-50"}`}
-                        onClick={() => setSelectedId(String(item.id))}
-                      >
-                        <div className="font-medium text-primary truncate">{String(item.full_name || "Unnamed")}</div>
-                        <div className="text-xs text-muted">{String(item.job_title || item.job_id || "")}</div>
-                        <div className="text-xs mt-1 text-slate-700">
-                          {String(item.submission_status || "-")} • {String(item.analysis_status || "not_started")}
-                        </div>
-                      </button>
-                    ))}
+                    {items.map((item) => {
+                      const badge = getStatusBadge(item.submission_status);
+                      const parsingFlag = getParsingFlag(item);
+                      const scorePill = getScorePill(item);
+                      const unread = getUnreadIndicator(item);
+                      return (
+                        <button
+                          key={String(item.id)}
+                          className={`w-full text-left border rounded-lg px-3 py-2.5 transition-colors ${selectedId === String(item.id) ? "border-secondary bg-blue-50 ring-1 ring-secondary" : "border-slate-200 hover:border-secondary hover:bg-slate-50"}`}
+                          onClick={() => setSelectedId(String(item.id))}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="font-medium text-primary truncate text-sm">{String(item.full_name || "Unnamed")}</div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {parsingFlag.flag && <span className="text-xs" title={parsingFlag.label}>{parsingFlag.icon}</span>}
+                              {scorePill && (
+                                <span className={`px-1.5 py-0.5 rounded-full border text-[10px] font-semibold ${scorePill.color}`}>
+                                  {scorePill.score}/100
+                                </span>
+                              )}
+                              {unread.unread && <span className="w-2 h-2 rounded-full bg-blue-500" title="New / Unreviewed" />}
+                            </div>
+                          </div>
+                          <div className="text-xs text-muted mt-0.5 truncate">{String(item.job_title || item.job_id || "")}</div>
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] border font-medium ${badge.bg} ${badge.text} ${badge.border}`}>
+                              {badge.label}
+                            </span>
+                            <span className="text-[10px] text-muted">
+                              {String(item.created_at ? new Date(item.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "")}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
                     {items.length === 0 && <p className="text-sm text-muted">No applications found.</p>}
                   </div>
                 )}
@@ -695,18 +861,44 @@ function AdminCareers() {
                 ) : (
                   <div className="space-y-4">
                     {(() => {
-                      const suggested = getSuggestedAction(detail);
+                      const sa = suggestedAction || getEnhancedSuggestedAction(detail);
+                      const variantStyles = {
+                        primary: "border-indigo-200 bg-indigo-50",
+                        amber: "border-amber-200 bg-amber-50",
+                        rose: "border-rose-200 bg-rose-50",
+                        muted: "border-slate-200 bg-slate-50",
+                      };
+                      const btnStyles = {
+                        primary: "bg-indigo-700 hover:opacity-95",
+                        amber: "bg-amber-600 hover:opacity-95",
+                        rose: "bg-rose-600 hover:opacity-95",
+                        muted: "bg-slate-400 cursor-not-allowed",
+                      };
+                      const textStyles = {
+                        primary: "text-indigo-900",
+                        amber: "text-amber-900",
+                        rose: "text-rose-900",
+                        muted: "text-slate-600",
+                      };
+                      const descStyles = {
+                        primary: "text-indigo-800",
+                        amber: "text-amber-800",
+                        rose: "text-rose-800",
+                        muted: "text-slate-500",
+                      };
+                      const v = sa.variant || "primary";
                       return (
-                        <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3">
-                          <div className="text-xs font-semibold text-indigo-900">Suggested Next Action</div>
-                          <div className="text-sm font-semibold text-indigo-900 mt-1">{suggested.title}</div>
-                          <div className="text-xs text-indigo-800 mt-1">{suggested.description}</div>
-                          {suggested.key !== "none" && suggested.key !== "run-analysis" && (
+                        <div className={`rounded-lg border p-3 ${variantStyles[v] || variantStyles.primary}`}>
+                          <div className={`text-xs font-semibold ${textStyles[v] || textStyles.primary}`}>Suggested Next Action</div>
+                          <div className={`text-sm font-semibold mt-1 ${textStyles[v] || textStyles.primary}`}>{sa.title}</div>
+                          <div className={`text-xs mt-1 ${descStyles[v] || descStyles.primary}`}>{sa.description}</div>
+                          {sa.key !== "none" && (
                             <button
                               onClick={onRunSuggestedAction}
-                              className="mt-2 px-3 py-1.5 rounded-lg bg-indigo-700 text-white text-xs hover:opacity-95 transition-opacity"
+                              disabled={detailLoading || statusActionLoading}
+                              className={`mt-2 px-3 py-1.5 rounded-lg text-white text-xs transition-opacity disabled:opacity-50 ${btnStyles[v] || btnStyles.primary}`}
                             >
-                              Proceed
+                              {sa.key === "run-analysis" && detailLoading ? "Analyzing..." : statusActionLoading ? "Updating..." : "Proceed"}
                             </button>
                           )}
                         </div>
@@ -737,15 +929,49 @@ function AdminCareers() {
                       >
                         AI Recommendation
                       </button>
+                      <button
+                        type="button"
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${detailTab === "audit" ? "border-secondary bg-blue-50 text-secondary" : "border-slate-300 bg-white hover:bg-slate-50"}`}
+                        onClick={() => setDetailTab("audit")}
+                      >
+                        Audit Trail
+                      </button>
                     </div>
 
                     {detailTab === "profile" && (
-                      <div className="space-y-2 text-sm">
-                        <div><strong>Job:</strong> {String(detail.job_title || detail.job_id || "-")}</div>
-                        <div><strong>Phone:</strong> {String(detail.phone || "-")}</div>
-                        <div><strong>Recommendation:</strong> {String(detail.recommendation || "-")}</div>
-                        <div><strong>Strengths:</strong> {String(detail.strengths_summary || "-")}</div>
-                        <div><strong>Gaps:</strong> {String(detail.gaps_summary || "-")}</div>
+                      <div className="space-y-3 text-sm">
+                        {(() => {
+                          const pf = getParsingFlag(detail);
+                          return pf.flag ? (
+                            <div className={`rounded-lg border border-amber-300 ${pf.bg} p-3 flex items-start gap-2`}>
+                              <span className="text-sm shrink-0">{pf.icon}</span>
+                              <div>
+                                <div className="text-xs font-semibold text-amber-800">Data Quality Warning</div>
+                                <div className="text-xs text-amber-700 mt-0.5">{pf.label}</div>
+                              </div>
+                            </div>
+                          ) : null;
+                        })()}
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div className="rounded border border-slate-200 px-2 py-1.5"><strong>Job:</strong> {String(detail.job_title || detail.job_id || "-")}</div>
+                          <div className="rounded border border-slate-200 px-2 py-1.5"><strong>Phone:</strong> {String(detail.phone || "-")}</div>
+                          <div className="rounded border border-slate-200 px-2 py-1.5"><strong>Email:</strong> {String(detail.email || "-")}</div>
+                          <div className="rounded border border-slate-200 px-2 py-1.5"><strong>Experience:</strong> {String(detail.years_experience ?? "-")} yrs</div>
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-2">
+                          {detail.strengths_summary && (
+                            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+                              <div className="text-xs font-semibold text-emerald-800 mb-1">Strengths</div>
+                              <p className="text-xs text-emerald-700 leading-relaxed">{String(detail.strengths_summary)}</p>
+                            </div>
+                          )}
+                          {detail.gaps_summary && (
+                            <div className="rounded-lg border border-rose-200 bg-rose-50 p-3">
+                              <div className="text-xs font-semibold text-rose-800 mb-1">Gaps / Dealbreakers</div>
+                              <p className="text-xs text-rose-700 leading-relaxed">{String(detail.gaps_summary)}</p>
+                            </div>
+                          )}
+                        </div>
                         {detail.structured_report?.summary && (
                           <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                             <div className="text-xs font-semibold text-slate-700">Structured Summary</div>
@@ -753,6 +979,12 @@ function AdminCareers() {
                             <div className="text-xs text-slate-600 mt-1">
                               Fit: {String(detail.structured_report?.fit_band || "-")} | Exp: {String(detail.structured_report?.score_breakdown?.experience_years ?? "-")} yrs | Matched: {String(detail.structured_report?.score_breakdown?.matched_skills_count ?? "-")} | Missing: {String(detail.structured_report?.score_breakdown?.missing_skills_count ?? "-")}
                             </div>
+                          </div>
+                        )}
+                        {detail.cover_note && (
+                          <div className="rounded-lg border border-slate-200 bg-white p-3">
+                            <div className="text-xs font-semibold text-slate-700 mb-1">Cover Note</div>
+                            <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-wrap">{String(detail.cover_note)}</p>
                           </div>
                         )}
                       </div>
@@ -763,40 +995,97 @@ function AdminCareers() {
                         <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
                           <div className="text-xs font-semibold text-blue-900">AI Candidate Review</div>
                           <div className="text-xs text-blue-800 mt-1">
-                            Generate one recommendation based on JD fit, evidence, and resume quality.
+                            Generate AI analysis based on JD fit, keyword overlap, semantic similarity, and structured reasoning.
                           </div>
                           <div className="mt-2 flex flex-wrap items-center gap-2">
                             <button onClick={onRunAnalysis} className="px-3 py-2 rounded-lg bg-primary text-white text-sm hover:opacity-95 transition-opacity">
-                              Generate Recommendation
+                              {detailLoading ? "Analyzing..." : "Generate Recommendation"}
                             </button>
                           </div>
                         </div>
-                        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
-                          <div><strong>AI used:</strong> {String(Boolean(detail.ai_used))}</div>
-                          <div><strong>AI provider:</strong> {String(detail.ai_provider || "-")}</div>
-                          <div><strong>Fallback reason:</strong> {String(detail.ai_fallback_reason || "-")}</div>
-                          <div><strong>AI error:</strong> {String(detail.ai_error || "-")}</div>
+
+                        <AdminAnalysisReport analysis={detail} loading={detailLoading} />
+
+                        {detail.analysis_status === "completed" && (
+                          <>
+                            <div className="flex flex-wrap gap-2">
+                              <button onClick={() => onSetStatusWithOverride("under_review")} disabled={statusActionLoading} className="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white hover:bg-slate-50 transition-colors disabled:opacity-50">Mark Under Review</button>
+                              <button onClick={() => onSetStatusWithOverride("shortlisted")} disabled={statusActionLoading} className="px-3 py-2 rounded-lg border border-emerald-400 text-emerald-700 text-sm bg-white hover:bg-emerald-50 transition-colors disabled:opacity-50">Shortlist</button>
+                              <button onClick={() => onSetStatusWithOverride("rejected")} disabled={statusActionLoading} className="px-3 py-2 rounded-lg border border-rose-400 text-rose-700 text-sm bg-white hover:bg-rose-50 transition-colors disabled:opacity-50">Reject</button>
+                            </div>
+                            <button
+                              onClick={onSendFurtherDiscussionMail}
+                              className="px-3 py-2 rounded-lg border border-indigo-400 text-indigo-700 text-sm bg-white hover:bg-indigo-50 transition-colors"
+                            >
+                              Send confirmation mail
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
+
+                    {detailTab === "audit" && (
+                      <div className="space-y-3">
+                        <div className="rounded-lg border border-slate-200 bg-white p-3">
+                          <h3 className="text-xs font-semibold text-slate-700 mb-3">Candidate Timeline</h3>
+                          {(() => {
+                            const events = getTimelineEvents(detail);
+                            if (events.length === 0) {
+                              return <p className="text-xs text-muted">No timeline events recorded yet.</p>;
+                            }
+                            return (
+                              <ol className="relative border-l border-slate-200 ml-2 space-y-3">
+                                {events.map((ev, idx) => {
+                                  const isLast = idx === events.length - 1;
+                                  const dotColor = ev.event_type === "applied" ? "bg-blue-500"
+                                    : ev.event_type === "ai_score" ? "bg-indigo-500"
+                                    : ev.event_type === "reviewed" ? "bg-emerald-500"
+                                    : "bg-slate-400";
+                                  return (
+                                    <li key={idx} className="ml-3">
+                                      <span className={`absolute -left-[7px] w-3 h-3 rounded-full border-2 border-white ${dotColor}`} />
+                                      <div className="text-xs font-medium text-slate-800">{ev.event_label}</div>
+                                      <div className="text-[10px] text-muted">
+                                        {ev.timestamp ? new Date(ev.timestamp).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) : "-"}
+                                        {ev.actor ? ` • ${ev.actor}` : ""}
+                                      </div>
+                                      {ev.event_type === "reviewed" && detail?.override_reason && (
+                                        <div className="text-[10px] text-amber-600 mt-0.5">
+                                          Override reason: {String(detail.override_reason_label || detail.override_reason || "")}
+                                        </div>
+                                      )}
+                                    </li>
+                                  );
+                                })}
+                              </ol>
+                            );
+                          })()}
                         </div>
-                        {(detail.match_score !== undefined || detail.recommendation || detail.structured_report?.summary) && (
-                          <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-900 space-y-1">
-                            <div className="font-semibold text-emerald-950">Review Outcome</div>
-                            {detail.match_score !== undefined && <div><strong>Score:</strong> {String(detail.match_score)}</div>}
-                            {detail.recommendation && <div><strong>Recommendation:</strong> {String(detail.recommendation)}</div>}
-                            {detail.structured_report?.summary && <div><strong>Summary:</strong> {String(detail.structured_report.summary)}</div>}
-                            {detail.structured_report?.recommendation_rationale && <div><strong>Why:</strong> {String(detail.structured_report.recommendation_rationale)}</div>}
+
+                        {detail?.resume_signed_url && (
+                          <div className="rounded-lg border border-slate-200 bg-white p-3">
+                            <h3 className="text-xs font-semibold text-slate-700 mb-2">Resume Document</h3>
+                            <a
+                              href={String(detail.resume_signed_url)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-xs text-secondary hover:underline"
+                            >
+                              <span>{String(detail.resume_original_name || "View resume")}</span>
+                              <span className="text-[10px] text-muted">({String(detail.resume_content_type || "file")})</span>
+                            </a>
                           </div>
                         )}
-                        <div className="flex flex-wrap gap-2">
-                          <button onClick={() => onSetStatus("under_review")} className="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white hover:bg-slate-50 transition-colors">Mark Under Review</button>
-                          <button onClick={() => onSetStatus("shortlisted")} className="px-3 py-2 rounded-lg border border-emerald-400 text-emerald-700 text-sm bg-white hover:bg-emerald-50 transition-colors">Shortlist</button>
-                          <button onClick={() => onSetStatus("rejected")} className="px-3 py-2 rounded-lg border border-rose-400 text-rose-700 text-sm bg-white hover:bg-rose-50 transition-colors">Reject</button>
-                        </div>
-                        <button
-                          onClick={onSendFurtherDiscussionMail}
-                          className="px-3 py-2 rounded-lg border border-indigo-400 text-indigo-700 text-sm bg-white hover:bg-indigo-50 transition-colors"
-                        >
-                          Send confirmation mail
-                        </button>
+
+                        {detail?.override_reason && (
+                          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+                            <h3 className="text-xs font-semibold text-amber-800 mb-1">Override Recorded</h3>
+                            <p className="text-xs text-amber-700">
+                              <span className="font-medium">Reason: </span>
+                              {String(detail.override_reason_label || detail.override_reason || "-")}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -1048,6 +1337,52 @@ function AdminCareers() {
                 className="px-3 py-2 rounded-lg bg-primary text-white text-xs"
               >
                 Accept Draft
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showOverrideModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-5">
+            <h3 className="text-sm font-semibold text-primary mb-1">Override AI Recommendation</h3>
+            <p className="text-xs text-muted mb-3">
+              You are changing this candidate's status against the AI recommendation. Please select a reason for audit purposes.
+            </p>
+            <div className="space-y-1.5 mb-4">
+              {overrideReasons.map((r) => (
+                <label
+                  key={r.key}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-xs transition-colors ${overrideReason === r.key ? "border-secondary bg-blue-50" : "border-slate-200 hover:bg-slate-50"}`}
+                >
+                  <input
+                    type="radio"
+                    name="overrideReason"
+                    value={r.key}
+                    checked={overrideReason === r.key}
+                    onChange={(e) => setOverrideReason(e.target.value)}
+                    className="accent-secondary"
+                  />
+                  <span className="text-slate-800">{r.label}</span>
+                </label>
+              ))}
+            </div>
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => { setShowOverrideModal(false); setOverrideReason(""); setOverrideTargetStatus(""); }}
+                className="px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={onConfirmOverride}
+                disabled={!overrideReason || statusActionLoading}
+                className="px-3 py-2 rounded-lg bg-primary text-white text-xs disabled:opacity-50"
+              >
+                {statusActionLoading ? "Updating..." : "Confirm Change"}
               </button>
             </div>
           </div>

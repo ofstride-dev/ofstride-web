@@ -538,6 +538,50 @@ export async function adminSendFurtherDiscussionMail(
   return parseEnvelope<{ application_id: string; sent: boolean; error?: string | null }>(response);
 }
 
+export async function adminAnalyzeResume(payload: {
+  job_id: string;
+  candidate_ids: string[];
+}): Promise<{
+  batch_id: string;
+  status: string;
+  total: number;
+  completed: number;
+  errors: number;
+  results: Array<Record<string, unknown>>;
+}> {
+  const response = await fetch(`${CAREER_API_BASE}/analyze-resume`, {
+    method: "POST",
+    headers: await authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  return parseEnvelope<{
+    batch_id: string;
+    status: string;
+    total: number;
+    completed: number;
+    errors: number;
+    results: Array<Record<string, unknown>>;
+  }>(response);
+}
+
+export async function adminGetAnalysisStatus(
+  batchId: string
+): Promise<{
+  batch_id: string;
+  status: string;
+  results?: Array<Record<string, unknown>>;
+}> {
+  const response = await fetch(
+    `${CAREER_API_BASE}/analyze-resume?batch_id=${encodeURIComponent(batchId)}`,
+    { headers: await authHeaders() }
+  );
+  return parseEnvelope<{
+    batch_id: string;
+    status: string;
+    results?: Array<Record<string, unknown>>;
+  }>(response);
+}
+
 export function buildAadLoginUrl(postLoginRedirectPath: string): string {
   const normalized = postLoginRedirectPath.startsWith("/")
     ? postLoginRedirectPath

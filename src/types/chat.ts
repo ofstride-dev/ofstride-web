@@ -198,4 +198,46 @@ export interface AdminCareersDetail extends Record<string, unknown> {
   email?: string;
   submission_status?: string;
   analysis_status?: string;
+
+  // Enhanced fields for rich UX
+  match_score?: number | null;
+  recommendation?: string | null;
+  strengths_summary?: string | null;
+  gaps_summary?: string | null;
+  job_title?: string | null;
+  phone?: string | null;
+  linkedin_url?: string | null;
+  years_experience?: number | null;
+  cover_note?: string | null;
+
+  // Parsing / document health
+  resume_parse_error?: string | null;          // "corrupt" | "empty" | "unreadable" | null
+  parsing_completed_at?: string | null;
+  applicant_email_sent_at?: string | null;
+
+  // Human review state
+  reviewed_by_human_at?: string | null;        // null = unread / not yet reviewed
+  override_reason?: string | null;             // recruiter's reason when overriding AI
+  override_reason_label?: string | null;
+
+  // AI analysis structure
+  structured_report?: Record<string, unknown> | null;
+  skills_matrix?: Array<Record<string, unknown>>;
+  experience_analysis?: Record<string, unknown> | null;
+  education_analysis?: Record<string, unknown> | null;
+
+  // Resume download for inline preview
+  resume_signed_url?: string | null;
+  resume_original_name?: string | null;
+  resume_content_type?: string | null;
+
+  // Timeline / audit trail
+  created_at?: string | null;
+  updated_at?: string | null;
+  timeline_events?: Array<{
+    event_type: string;
+    event_label: string;
+    timestamp: string;
+    actor?: string;
+  }>;
 }

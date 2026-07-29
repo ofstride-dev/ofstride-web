@@ -1,0 +1,4065 @@
+{
+  "sha": "ad7754c8b2c3ecee21314ee0b49b0e07d89e3e09",
+  "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/ad7754c8b2c3ecee21314ee0b49b0e07d89e3e09",
+  "tree": [
+    {
+      "path": ".claude",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "66102b5449a569b092dc6905a11a29453005facf",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/66102b5449a569b092dc6905a11a29453005facf"
+    },
+    {
+      "path": ".claude/CLAUDE.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1d4aa03eb8d0036d4fdbc6118cc1c3b96992dcab",
+      "size": 8438,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/1d4aa03eb8d0036d4fdbc6118cc1c3b96992dcab"
+    },
+    {
+      "path": ".claude/settings.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b2e709aee5f05d4ca8f8d3302a9ef62d00a98a4c",
+      "size": 713,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b2e709aee5f05d4ca8f8d3302a9ef62d00a98a4c"
+    },
+    {
+      "path": ".dockerignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "57bdad39dff5904758ba0d470f0b3f6d4fbb185e",
+      "size": 702,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/57bdad39dff5904758ba0d470f0b3f6d4fbb185e"
+    },
+    {
+      "path": ".githooks",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "75b33bd42e0352df794582bb0707eeaa3a3a0538",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/75b33bd42e0352df794582bb0707eeaa3a3a0538"
+    },
+    {
+      "path": ".githooks/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5c7d6824e80661ec312ad133f29e3df7ba5a5dd6",
+      "size": 2294,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/5c7d6824e80661ec312ad133f29e3df7ba5a5dd6"
+    },
+    {
+      "path": ".githooks/pre-push",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "2382232fab12df771373b4ed1b1944adc0b14657",
+      "size": 3030,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/2382232fab12df771373b4ed1b1944adc0b14657"
+    },
+    {
+      "path": ".github",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "102ad9313bfbe1db9d865a3b16f038a2778e2837",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/102ad9313bfbe1db9d865a3b16f038a2778e2837"
+    },
+    {
+      "path": ".github/CODE_OF_CONDUCT.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "004e3660743337daa4e520555cf69b0d0330e8a7",
+      "size": 5489,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/004e3660743337daa4e520555cf69b0d0330e8a7"
+    },
+    {
+      "path": ".github/CONTRIBUTING.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "40c8ff7f9718bf086a260d3c25d710ea734b5b03",
+      "size": 6592,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/40c8ff7f9718bf086a260d3c25d710ea734b5b03"
+    },
+    {
+      "path": ".github/FUNDING.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d651e4690746204cdbdb1ec3526b18e78000a343",
+      "size": 60,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/d651e4690746204cdbdb1ec3526b18e78000a343"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "beaffd9f96a205ef7f882a0397122972a8804099",
+      "size": 1216,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/beaffd9f96a205ef7f882a0397122972a8804099"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "72ffb77f21aaba5d78a2660bf49a21bb1b0e123f",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/72ffb77f21aaba5d78a2660bf49a21bb1b0e123f"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/bug_report.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4eee87fa242aeff584fed19639e1201de9cd3112",
+      "size": 1519,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/4eee87fa242aeff584fed19639e1201de9cd3112"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/config.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8e4254f05e4523a323b98a9f4284a04d27445f34",
+      "size": 697,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/8e4254f05e4523a323b98a9f4284a04d27445f34"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/custom.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "df5287ade1bbdccde591600627f3ae4cd714822d",
+      "size": 270,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/df5287ade1bbdccde591600627f3ae4cd714822d"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/feature_request.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fb8a0a6d4f3a21effd1f33b5be52866b8f2580f1",
+      "size": 1238,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/fb8a0a6d4f3a21effd1f33b5be52866b8f2580f1"
+    },
+    {
+      "path": ".github/PULL_REQUEST_TEMPLATE.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "287b1fe99ac4a333c877eca40fd5045b6b94ba87",
+      "size": 1648,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/287b1fe99ac4a333c877eca40fd5045b6b94ba87"
+    },
+    {
+      "path": ".github/SECURITY.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b194a06882cca7013a7c3a81ff999c70b1847a37",
+      "size": 368,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b194a06882cca7013a7c3a81ff999c70b1847a37"
+    },
+    {
+      "path": ".github/workflows",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2c76781078bbe56d59b19af4a3c5e64d01aef684",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/2c76781078bbe56d59b19af4a3c5e64d01aef684"
+    },
+    {
+      "path": ".github/workflows/docker-publish.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cdd558c077b9ceb4a97adc672125e39566b4d0ef",
+      "size": 1871,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/cdd558c077b9ceb4a97adc672125e39566b4d0ef"
+    },
+    {
+      "path": ".gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cdb6250cf421450ce219a7cc37e8df1c884ac1ed",
+      "size": 1996,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/cdb6250cf421450ce219a7cc37e8df1c884ac1ed"
+    },
+    {
+      "path": ".impeccable.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7fdf9f9ac53025c3f82ed3a8830f424e8d16be36",
+      "size": 8180,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/7fdf9f9ac53025c3f82ed3a8830f424e8d16be36"
+    },
+    {
+      "path": "Dockerfile",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5008fd3d3426990649dc6f7ca98ad0b2169ed294",
+      "size": 3582,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/5008fd3d3426990649dc6f7ca98ad0b2169ed294"
+    },
+    {
+      "path": "LICENSE",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64",
+      "size": 11357,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64"
+    },
+    {
+      "path": "README.es.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9655f5075cf0343fb3aa12b301bec7901feabce8",
+      "size": 14591,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/9655f5075cf0343fb3aa12b301bec7901feabce8"
+    },
+    {
+      "path": "README.ja.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "96fc2f8927f65fdd7ebd232810f122cc9372ddf9",
+      "size": 15216,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/96fc2f8927f65fdd7ebd232810f122cc9372ddf9"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4c294ac8cedbfe40639ce25574a8c89c8b22df9c",
+      "size": 14327,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/4c294ac8cedbfe40639ce25574a8c89c8b22df9c"
+    },
+    {
+      "path": "README.zh-CN.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5126d003e868d21bf0e69458771a561093a09a5b",
+      "size": 13180,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/5126d003e868d21bf0e69458771a561093a09a5b"
+    },
+    {
+      "path": "SETUP.es.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "56f925bae381fdf352a527483640b4175de88e37",
+      "size": 14343,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/56f925bae381fdf352a527483640b4175de88e37"
+    },
+    {
+      "path": "SETUP.ja.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3f111ef3e2c6770407bad6f6099c8a42a8bd5cc7",
+      "size": 15074,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/3f111ef3e2c6770407bad6f6099c8a42a8bd5cc7"
+    },
+    {
+      "path": "SETUP.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dc2b5a34f56625c01b9fb97a6dd1afdd8f3ce7e4",
+      "size": 15818,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/dc2b5a34f56625c01b9fb97a6dd1afdd8f3ce7e4"
+    },
+    {
+      "path": "SETUP.zh-CN.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bb7f59b1560ee1acffa44fbf4d5265ce669e8c05",
+      "size": 12903,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/bb7f59b1560ee1acffa44fbf4d5265ce669e8c05"
+    },
+    {
+      "path": "apps",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a37599ccc8699e524d56fbf1cfa79db72bd40488",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/a37599ccc8699e524d56fbf1cfa79db72bd40488"
+    },
+    {
+      "path": "apps/backend",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "72a069a4841d38d095c516ad8718fce7073c9c84",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/72a069a4841d38d095c516ad8718fce7073c9c84"
+    },
+    {
+      "path": "apps/backend/.env.example",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c65a90c547d02108313d6fe3cfbb84800eff78ee",
+      "size": 3355,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/c65a90c547d02108313d6fe3cfbb84800eff78ee"
+    },
+    {
+      "path": "apps/backend/.env.sample",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6c378edb5ea1e346045d2ee897640c96786dc320",
+      "size": 1533,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/6c378edb5ea1e346045d2ee897640c96786dc320"
+    },
+    {
+      "path": "apps/backend/.gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c19ffb4d81943333da2a24c39077bcdf82b9def7",
+      "size": 261,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/c19ffb4d81943333da2a24c39077bcdf82b9def7"
+    },
+    {
+      "path": "apps/backend/.python-version",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "24ee5b1be9961e38a503c8e764b7385dbb6ba124",
+      "size": 5,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/24ee5b1be9961e38a503c8e764b7385dbb6ba124"
+    },
+    {
+      "path": "apps/backend/CLAUDE.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1138ef0c4c46b1bb161088941e782a7b4fbceccc",
+      "size": 16839,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/1138ef0c4c46b1bb161088941e782a7b4fbceccc"
+    },
+    {
+      "path": "apps/backend/app",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "532ade474c90ec6cdd0f5daa7153065669e9ee64",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/532ade474c90ec6cdd0f5daa7153065669e9ee64"
+    },
+    {
+      "path": "apps/backend/app/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e762dc92f2be6f7b13f96a74ecea3700a33eee9a",
+      "size": 67,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e762dc92f2be6f7b13f96a74ecea3700a33eee9a"
+    },
+    {
+      "path": "apps/backend/app/config.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8a2f722e3b72ee8a9f09ffe7e49adb14e1d8a2c0",
+      "size": 12056,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/8a2f722e3b72ee8a9f09ffe7e49adb14e1d8a2c0"
+    },
+    {
+      "path": "apps/backend/app/config_cache.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5fdbaffffa609ebc4269695369ebea88419ae77a",
+      "size": 2159,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/5fdbaffffa609ebc4269695369ebea88419ae77a"
+    },
+    {
+      "path": "apps/backend/app/crypto.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f16f894a9a9e1d5eb2df066b86a6874166d1fa63",
+      "size": 4691,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/f16f894a9a9e1d5eb2df066b86a6874166d1fa63"
+    },
+    {
+      "path": "apps/backend/app/database.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4b237a8d069da474ac8dfd88854d9da2f451b3e2",
+      "size": 30652,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/4b237a8d069da474ac8dfd88854d9da2f451b3e2"
+    },
+    {
+      "path": "apps/backend/app/db_engine.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "29b81a88c8adec60701d8d0c519d8e343654d418",
+      "size": 2910,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/29b81a88c8adec60701d8d0c519d8e343654d418"
+    },
+    {
+      "path": "apps/backend/app/llm.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "956f663ab22c47bca8dc7f2fe8bcd15b32ee8f4b",
+      "size": 50169,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/956f663ab22c47bca8dc7f2fe8bcd15b32ee8f4b"
+    },
+    {
+      "path": "apps/backend/app/main.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "37ce7d1e7c517b50e3f1773d8d113ba6f7ca38b0",
+      "size": 3454,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/37ce7d1e7c517b50e3f1773d8d113ba6f7ca38b0"
+    },
+    {
+      "path": "apps/backend/app/models.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "94b7b3ba20d6121b485613f1963c791ca57c7350",
+      "size": 5974,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/94b7b3ba20d6121b485613f1963c791ca57c7350"
+    },
+    {
+      "path": "apps/backend/app/pdf.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f4c25b6429eb8cb4022f289d6902daab34be57f2",
+      "size": 11487,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/f4c25b6429eb8cb4022f289d6902daab34be57f2"
+    },
+    {
+      "path": "apps/backend/app/prompts",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c2d3d428e754c163414ceaf1da8d4262a5445ee4",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/c2d3d428e754c163414ceaf1da8d4262a5445ee4"
+    },
+    {
+      "path": "apps/backend/app/prompts/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ae5e4002d3d625dd0680fb7e75bbf75935317eee",
+      "size": 1861,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/ae5e4002d3d625dd0680fb7e75bbf75935317eee"
+    },
+    {
+      "path": "apps/backend/app/prompts/enrichment.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dbf44bd42f664400468f43f98ad11125813333e5",
+      "size": 8115,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/dbf44bd42f664400468f43f98ad11125813333e5"
+    },
+    {
+      "path": "apps/backend/app/prompts/refinement.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ff67e1e181230412eeec81984207b352042a2b47",
+      "size": 5517,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/ff67e1e181230412eeec81984207b352042a2b47"
+    },
+    {
+      "path": "apps/backend/app/prompts/resume_wizard.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e87f646bddeda039a1a701b39117951085a6c49c",
+      "size": 2495,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e87f646bddeda039a1a701b39117951085a6c49c"
+    },
+    {
+      "path": "apps/backend/app/prompts/templates.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e290a75ca759f3636b4c1d95072e040139901bd5",
+      "size": 24016,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e290a75ca759f3636b4c1d95072e040139901bd5"
+    },
+    {
+      "path": "apps/backend/app/routers",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "63f1471cbd709d16da5a88c0526e3f2063bdaca5",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/63f1471cbd709d16da5a88c0526e3f2063bdaca5"
+    },
+    {
+      "path": "apps/backend/app/routers/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3f198bb96738eed1a9edcdd97082e640e0a62d23",
+      "size": 615,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/3f198bb96738eed1a9edcdd97082e640e0a62d23"
+    },
+    {
+      "path": "apps/backend/app/routers/applications.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "861142ed7cd151ec49371eefef12670aa4a80897",
+      "size": 8384,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/861142ed7cd151ec49371eefef12670aa4a80897"
+    },
+    {
+      "path": "apps/backend/app/routers/config.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "25bc85eb3f387ff645b1cead71d7a29ab17429ef",
+      "size": 22223,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/25bc85eb3f387ff645b1cead71d7a29ab17429ef"
+    },
+    {
+      "path": "apps/backend/app/routers/enrichment.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cdc46630c2aa3fc5e4d7e0dd702ff99ad205873c",
+      "size": 30731,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/cdc46630c2aa3fc5e4d7e0dd702ff99ad205873c"
+    },
+    {
+      "path": "apps/backend/app/routers/health.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "47b66366bc830f31f68b85e06ea1bf03998a4fb0",
+      "size": 2197,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/47b66366bc830f31f68b85e06ea1bf03998a4fb0"
+    },
+    {
+      "path": "apps/backend/app/routers/jobs.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "20f3dd363735b1458a6ef73f05d894de0b4498d5",
+      "size": 1475,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/20f3dd363735b1458a6ef73f05d894de0b4498d5"
+    },
+    {
+      "path": "apps/backend/app/routers/resume_wizard.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "38243c0872cd1a72b2936a76624a85ac972ead3b",
+      "size": 4799,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/38243c0872cd1a72b2936a76624a85ac972ead3b"
+    },
+    {
+      "path": "apps/backend/app/routers/resumes.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "78387935c0f8ea0255a5a8d7060ecf982e602c30",
+      "size": 76328,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/78387935c0f8ea0255a5a8d7060ecf982e602c30"
+    },
+    {
+      "path": "apps/backend/app/schemas",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b564a6f07913700b05cd030c73262ef6ea4dc69b",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/b564a6f07913700b05cd030c73262ef6ea4dc69b"
+    },
+    {
+      "path": "apps/backend/app/schemas/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e4eea3da9cadd639778eced57d627743c8aa26bf",
+      "size": 3450,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e4eea3da9cadd639778eced57d627743c8aa26bf"
+    },
+    {
+      "path": "apps/backend/app/schemas/applications.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "439427b983a787570de5edac2c515bb9e1f5f480",
+      "size": 2674,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/439427b983a787570de5edac2c515bb9e1f5f480"
+    },
+    {
+      "path": "apps/backend/app/schemas/enrichment.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9b0eb81c74ae95bc46c600a3e0a2d369e1d65941",
+      "size": 3819,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/9b0eb81c74ae95bc46c600a3e0a2d369e1d65941"
+    },
+    {
+      "path": "apps/backend/app/schemas/models.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6995758b92d9441106b5e6a540ce496a57f1117d",
+      "size": 26778,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/6995758b92d9441106b5e6a540ce496a57f1117d"
+    },
+    {
+      "path": "apps/backend/app/schemas/refinement.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c16237ad2cd72abd5b37d957d3b843cf3c1a9928",
+      "size": 4473,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/c16237ad2cd72abd5b37d957d3b843cf3c1a9928"
+    },
+    {
+      "path": "apps/backend/app/schemas/resume_wizard.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "810666c86c4c4cb97d35663e9bd671e63af3a2dc",
+      "size": 3285,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/810666c86c4c4cb97d35663e9bd671e63af3a2dc"
+    },
+    {
+      "path": "apps/backend/app/scripts",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "3e96bf74d4f3bc3b77e885220172125cbf677b6e",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/3e96bf74d4f3bc3b77e885220172125cbf677b6e"
+    },
+    {
+      "path": "apps/backend/app/scripts/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8ef57e39e6a8941d3c4e9002104c042b71a63b33",
+      "size": 53,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/8ef57e39e6a8941d3c4e9002104c042b71a63b33"
+    },
+    {
+      "path": "apps/backend/app/scripts/migrate_tinydb_to_sqlite.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c841426f3b8f04e8ef7a7052894066b3140d2fdd",
+      "size": 5181,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/c841426f3b8f04e8ef7a7052894066b3140d2fdd"
+    },
+    {
+      "path": "apps/backend/app/services",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4c405a6c7f9d2aa94a5809b507f66ee17872fcd0",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/4c405a6c7f9d2aa94a5809b507f66ee17872fcd0"
+    },
+    {
+      "path": "apps/backend/app/services/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e956e2ed6268992c6e04f41311f719708d9afeec",
+      "size": 358,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e956e2ed6268992c6e04f41311f719708d9afeec"
+    },
+    {
+      "path": "apps/backend/app/services/ats.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3d3dff2aa92260355d63f4be89b13359d3a4be92",
+      "size": 7189,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/3d3dff2aa92260355d63f4be89b13359d3a4be92"
+    },
+    {
+      "path": "apps/backend/app/services/cover_letter.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "71c7ee1b97777b37affb924f9d24251f6203cffb",
+      "size": 5345,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/71c7ee1b97777b37affb924f9d24251f6203cffb"
+    },
+    {
+      "path": "apps/backend/app/services/improver.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3db06dd56dcc66fe5ec7f4217c4bc432fcca2b8c",
+      "size": 55749,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/3db06dd56dcc66fe5ec7f4217c4bc432fcca2b8c"
+    },
+    {
+      "path": "apps/backend/app/services/interview_prep.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bc6d90920cc9c2b99dc9b1c140dd7ec8f281e2b5",
+      "size": 4020,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/bc6d90920cc9c2b99dc9b1c140dd7ec8f281e2b5"
+    },
+    {
+      "path": "apps/backend/app/services/parser.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9ae504646cfe26b3d9a17c19034f244e36521ee9",
+      "size": 5994,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/9ae504646cfe26b3d9a17c19034f244e36521ee9"
+    },
+    {
+      "path": "apps/backend/app/services/refiner.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0227bf98dea820fef860d61995784ca38402cb08",
+      "size": 24082,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/0227bf98dea820fef860d61995784ca38402cb08"
+    },
+    {
+      "path": "apps/backend/app/services/resume_wizard.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fd8ff02c9f4d6b6e2f43710511d4bc9cb98a775e",
+      "size": 16720,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/fd8ff02c9f4d6b6e2f43710511d4bc9cb98a775e"
+    },
+    {
+      "path": "apps/backend/data",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d564d0bc3dd917926892c55e3706cc116d5b165e",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/d564d0bc3dd917926892c55e3706cc116d5b165e"
+    },
+    {
+      "path": "apps/backend/data/.gitkeep",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "size": 0,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "apps/backend/e2e_monitor",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f5d599f16befd40eb48a5fe2a70376355fe46184",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/f5d599f16befd40eb48a5fe2a70376355fe46184"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/AGENT_PLAYBOOK.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b4bd98b3bea3682f773567b01592c3455d803f38",
+      "size": 4001,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b4bd98b3bea3682f773567b01592c3455d803f38"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "30a036012383507595c86f06a7896102e9e952b8",
+      "size": 4797,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/30a036012383507595c86f06a7896102e9e952b8"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3aebfa88e5cdf138da370a18aedabc98680533fb",
+      "size": 631,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/3aebfa88e5cdf138da370a18aedabc98680533fb"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/__main__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3a99df3f0a13b134ba00883813179c55eb461de8",
+      "size": 10953,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/3a99df3f0a13b134ba00883813179c55eb461de8"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/baseline.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ed5334d696cb052f7ff6553c5158508bb1794ddd",
+      "size": 3376,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/ed5334d696cb052f7ff6553c5158508bb1794ddd"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/baseline",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "20d6b88ab47200968aee7dd76dc4ddbe772e8557",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/20d6b88ab47200968aee7dd76dc4ddbe772e8557"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/baseline/baseline.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b29900ee7b6c64c15204c0a5e2ccbd004dd0247a",
+      "size": 569,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b29900ee7b6c64c15204c0a5e2ccbd004dd0247a"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/bundle.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "239ef576747db0b68b5c7df1bf5da4411f458b71",
+      "size": 1324,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/239ef576747db0b68b5c7df1bf5da4411f458b71"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/collect.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6bef55002c2adb56616b6b98b05140cecdb3ad8e",
+      "size": 1383,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/6bef55002c2adb56616b6b98b05140cecdb3ad8e"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/fixtures",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "cd1ccbd7abb07cbaea5f2beba43f7f5bac47d4f1",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/cd1ccbd7abb07cbaea5f2beba43f7f5bac47d4f1"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/fixtures/jds",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "61e8bcdc3deddd759a8c0537b8581691bfddef03",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/61e8bcdc3deddd759a8c0537b8581691bfddef03"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/fixtures/jds/backend-eng.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "917779e6559c5cd0e6c960ecf49986d1fc21eaf1",
+      "size": 970,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/917779e6559c5cd0e6c960ecf49986d1fc21eaf1"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/fixtures/jds/frontend-eng.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2f5a3297dd9f288ecb02a26f33eb70ccf556c0dc",
+      "size": 917,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/2f5a3297dd9f288ecb02a26f33eb70ccf556c0dc"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/fixtures/jds/ml-eng.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0fac30bca2e6a7f5bf3e1a86bc5013ff96b0bda0",
+      "size": 1060,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/0fac30bca2e6a7f5bf3e1a86bc5013ff96b0bda0"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/fixtures/jds/product-manager.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d0009c781bb2e1d3b652ea079454dfc969a88009",
+      "size": 1125,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/d0009c781bb2e1d3b652ea079454dfc969a88009"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/fixtures/master.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a8d0831fdd82bbe7a046ce9b6698e7a886607780",
+      "size": 2052,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/a8d0831fdd82bbe7a046ce9b6698e7a886607780"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/flow.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7d9c801e1dde4f9b8b09681a0990818b7b23e4d7",
+      "size": 3431,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/7d9c801e1dde4f9b8b09681a0990818b7b23e4d7"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/gate.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3cb36a37b854477be86540aabbd824317e1a2ba4",
+      "size": 1508,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/3cb36a37b854477be86540aabbd824317e1a2ba4"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/install_skill.sh",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "3651df4b35e3a54c47175bb45830eaad22f65a27",
+      "size": 431,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/3651df4b35e3a54c47175bb45830eaad22f65a27"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/judge.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7eaf3b65930bcfff4e7d73dd000eb1c0a131ce3d",
+      "size": 3749,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/7eaf3b65930bcfff4e7d73dd000eb1c0a131ce3d"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/manifest.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e40157e0bf63cbdf48bf414a41c97cebc84eeeb5",
+      "size": 682,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e40157e0bf63cbdf48bf414a41c97cebc84eeeb5"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/render.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f07b752406c28debaf84476390699710efe583aa",
+      "size": 2415,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/f07b752406c28debaf84476390699710efe583aa"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/scrub.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f11c9b4e047d3b4247e809da1acf19349e098a7b",
+      "size": 1686,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/f11c9b4e047d3b4247e809da1acf19349e098a7b"
+    },
+    {
+      "path": "apps/backend/e2e_monitor/servers.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "89605ac680befcb209eb357821712567c9808544",
+      "size": 5045,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/89605ac680befcb209eb357821712567c9808544"
+    },
+    {
+      "path": "apps/backend/pyproject.toml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6e40c189b2a80d642aeedd68f9440ca4ec0b3999",
+      "size": 1645,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/6e40c189b2a80d642aeedd68f9440ca4ec0b3999"
+    },
+    {
+      "path": "apps/backend/requirements.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3b50112620620cba46141b56b9d777b67e2f6cb8",
+      "size": 281,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/3b50112620620cba46141b56b9d777b67e2f6cb8"
+    },
+    {
+      "path": "apps/backend/tests",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "35a65b456e69e06cdfd4ad5b52dcd421e81f79ea",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/35a65b456e69e06cdfd4ad5b52dcd421e81f79ea"
+    },
+    {
+      "path": "apps/backend/tests/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "size": 0,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "apps/backend/tests/conftest.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "61b2cd9b39c9fff9ff49bc5bba61f970a1385595",
+      "size": 8551,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/61b2cd9b39c9fff9ff49bc5bba61f970a1385595"
+    },
+    {
+      "path": "apps/backend/tests/evals",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "00b01e8bdc4bd4dbe3d089df992a1a7cfba76a86",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/00b01e8bdc4bd4dbe3d089df992a1a7cfba76a86"
+    },
+    {
+      "path": "apps/backend/tests/evals/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "895ecdc01068515b271e29d607340d06dd0d9c48",
+      "size": 4322,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/895ecdc01068515b271e29d607340d06dd0d9c48"
+    },
+    {
+      "path": "apps/backend/tests/evals/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "size": 0,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "apps/backend/tests/evals/golden",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d946827abe9fd4b98633ccf2635fc7aef88cfa51",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/d946827abe9fd4b98633ccf2635fc7aef88cfa51"
+    },
+    {
+      "path": "apps/backend/tests/evals/golden/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "size": 0,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "apps/backend/tests/evals/golden/cases.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c3648c0dea5dce6ee88d20d39569d78326212f45",
+      "size": 14421,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/c3648c0dea5dce6ee88d20d39569d78326212f45"
+    },
+    {
+      "path": "apps/backend/tests/evals/scorers.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "25c690df592c5ebc3bcb7a977486f546c88308fd",
+      "size": 6033,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/25c690df592c5ebc3bcb7a977486f546c88308fd"
+    },
+    {
+      "path": "apps/backend/tests/evals/test_scorers.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "26d886fe727b9dc98d78d098f5cd6d4b774b8d65",
+      "size": 9007,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/26d886fe727b9dc98d78d098f5cd6d4b774b8d65"
+    },
+    {
+      "path": "apps/backend/tests/evals/test_tailoring_eval.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "29cbeeb32cd2978c75f60ad3705041d703bf1667",
+      "size": 4000,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/29cbeeb32cd2978c75f60ad3705041d703bf1667"
+    },
+    {
+      "path": "apps/backend/tests/integration",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "161322f00dd8ee79c928316b1bbb7bd2b380ebc4",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/161322f00dd8ee79c928316b1bbb7bd2b380ebc4"
+    },
+    {
+      "path": "apps/backend/tests/integration/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "size": 0,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "apps/backend/tests/integration/test_applications_api.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "94502df5e35fc35b90b797c7af6544d79a84ae60",
+      "size": 10361,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/94502df5e35fc35b90b797c7af6544d79a84ae60"
+    },
+    {
+      "path": "apps/backend/tests/integration/test_config_api.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "390565d1f83b681798d2adf6fb463b2ee81baeb8",
+      "size": 21700,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/390565d1f83b681798d2adf6fb463b2ee81baeb8"
+    },
+    {
+      "path": "apps/backend/tests/integration/test_health_api.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a9bb7aa9321fd0613cc6f5d1978a6e926c5d2925",
+      "size": 6525,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/a9bb7aa9321fd0613cc6f5d1978a6e926c5d2925"
+    },
+    {
+      "path": "apps/backend/tests/integration/test_jobs_api.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "be07cbd973f49f11366f2d7b5194450117a0d900",
+      "size": 2990,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/be07cbd973f49f11366f2d7b5194450117a0d900"
+    },
+    {
+      "path": "apps/backend/tests/integration/test_llm_contract.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "99de0b569b317a652534d3e8263a16117c0fbdbf",
+      "size": 13208,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/99de0b569b317a652534d3e8263a16117c0fbdbf"
+    },
+    {
+      "path": "apps/backend/tests/integration/test_pdf_render.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7639e891998cc269a6b6e8413ef8bf89497d792c",
+      "size": 11565,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/7639e891998cc269a6b6e8413ef8bf89497d792c"
+    },
+    {
+      "path": "apps/backend/tests/integration/test_pipeline_e2e.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a4b3b31fab05ef3f2cf19bb4dbaff006168b8401",
+      "size": 22830,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/a4b3b31fab05ef3f2cf19bb4dbaff006168b8401"
+    },
+    {
+      "path": "apps/backend/tests/integration/test_regenerate_endpoints.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "37e5afcdde2f74f1d0e38deb04ce021348ce03ee",
+      "size": 12332,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/37e5afcdde2f74f1d0e38deb04ce021348ce03ee"
+    },
+    {
+      "path": "apps/backend/tests/integration/test_resume_api.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aa86dcb85a68355c269b61aef81afa94c0dd9f8c",
+      "size": 13276,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/aa86dcb85a68355c269b61aef81afa94c0dd9f8c"
+    },
+    {
+      "path": "apps/backend/tests/integration/test_resume_wizard_api.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9c2132812fca8d574adc32e8a2c25461bed7ac8c",
+      "size": 8909,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/9c2132812fca8d574adc32e8a2c25461bed7ac8c"
+    },
+    {
+      "path": "apps/backend/tests/integration/test_tracker_autocreate.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a1e2fafd86842a8461b43b75ab9b0c50726cc42f",
+      "size": 5252,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/a1e2fafd86842a8461b43b75ab9b0c50726cc42f"
+    },
+    {
+      "path": "apps/backend/tests/integration/test_upload_api.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6b603348a8a47f186eb9550793f4c80f34aa5510",
+      "size": 3148,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/6b603348a8a47f186eb9550793f4c80f34aa5510"
+    },
+    {
+      "path": "apps/backend/tests/service",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "98d72c74fb54c3e4ca903175d014019935fc154a",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/98d72c74fb54c3e4ca903175d014019935fc154a"
+    },
+    {
+      "path": "apps/backend/tests/service/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "size": 0,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "apps/backend/tests/service/test_improver.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6d37976cb3814ecde5f7a5cf22208fd9c7c60a8d",
+      "size": 16208,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/6d37976cb3814ecde5f7a5cf22208fd9c7c60a8d"
+    },
+    {
+      "path": "apps/backend/tests/unit",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "54ac0fca3fdc4ffb6650768245acd4d3f48208c8",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/54ac0fca3fdc4ffb6650768245acd4d3f48208c8"
+    },
+    {
+      "path": "apps/backend/tests/unit/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "size": 0,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_apply_diffs.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7cfb8d023af09e1454ae38b10fd0d330fb656173",
+      "size": 33505,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/7cfb8d023af09e1454ae38b10fd0d330fb656173"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_check_locale_parity.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "79d0859c01d4ac64389a6cca3ca6e82667770874",
+      "size": 3449,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/79d0859c01d4ac64389a6cca3ca6e82667770874"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_crypto.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c3b28623a2678ac5291eb7f90e21c48022c5036e",
+      "size": 1796,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/c3b28623a2678ac5291eb7f90e21c48022c5036e"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_database.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0856744d2987237f39da003d0b2890db3e5f503c",
+      "size": 12751,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/0856744d2987237f39da003d0b2890db3e5f503c"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_description_styles.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "588bca77447651f75b2c3b80eb3ce3863f26a7fe",
+      "size": 1407,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/588bca77447651f75b2c3b80eb3ce3863f26a7fe"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_e2e_monitor_baseline.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "24668e9db63ab2ceee6624b2ddb5ae456711fcc8",
+      "size": 2923,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/24668e9db63ab2ceee6624b2ddb5ae456711fcc8"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_e2e_monitor_collect.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a02049f541032438c2556f5ecd0084d227b22b3b",
+      "size": 1203,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/a02049f541032438c2556f5ecd0084d227b22b3b"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_e2e_monitor_judge.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "50bdc5115a057b5b37de5e05233958af826a192b",
+      "size": 1030,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/50bdc5115a057b5b37de5e05233958af826a192b"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_e2e_monitor_manifest.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "83f614e1022b776e6f66afba1f8ecfd21c4a6bea",
+      "size": 1060,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/83f614e1022b776e6f66afba1f8ecfd21c4a6bea"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_e2e_monitor_render.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "432edbbc286b9754e7c574a8257d4164aa07f86c",
+      "size": 1752,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/432edbbc286b9754e7c574a8257d4164aa07f86c"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_e2e_monitor_scores.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "88e5519fe538a5398af584f5b31cad06585f620d",
+      "size": 1479,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/88e5519fe538a5398af584f5b31cad06585f620d"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_e2e_monitor_scrub.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1b971658e79db72e11880ec38c34bac85ee8e646",
+      "size": 1605,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/1b971658e79db72e11880ec38c34bac85ee8e646"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_improve_confirm_hash.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "158ca4fa1fd42ab393c91118f972d8e4e73251e7",
+      "size": 2288,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/158ca4fa1fd42ab393c91118f972d8e4e73251e7"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_interview_prep_service.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1f48ade818fe56c418835d0099e04f2cf8a1dec7",
+      "size": 4045,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/1f48ade818fe56c418835d0099e04f2cf8a1dec7"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_llm.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d82eb3edfc0029f058db08bcc0d504dfea891118",
+      "size": 26891,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/d82eb3edfc0029f058db08bcc0d504dfea891118"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_llm_providers.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e238a3c99c4541a621b95384cf623f704394c2d3",
+      "size": 8343,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e238a3c99c4541a621b95384cf623f704394c2d3"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_parser.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dfbace7ec2148356c796710d7391ee7812e0fbd1",
+      "size": 3728,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/dfbace7ec2148356c796710d7391ee7812e0fbd1"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_prompt_guardrails.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c159236a797b8c26f98b3015746346260fa37dc0",
+      "size": 2634,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/c159236a797b8c26f98b3015746346260fa37dc0"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_refiner.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3b779c55aff107237d42fa29f950b43e12af5657",
+      "size": 14502,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/3b779c55aff107237d42fa29f950b43e12af5657"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_resume_diff.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fd11e226890d4b2faedc015a93210d4eb9680ebe",
+      "size": 10006,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/fd11e226890d4b2faedc015a93210d4eb9680ebe"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_resume_wizard_service.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cd9365db20b5f3f01266f87a6ec0dd602d80e5a1",
+      "size": 16060,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/cd9365db20b5f3f01266f87a6ec0dd602d80e5a1"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_settings_timeout.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ae5535b26a310a08dc6fbcc14ec4ebbd06326eff",
+      "size": 1710,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/ae5535b26a310a08dc6fbcc14ec4ebbd06326eff"
+    },
+    {
+      "path": "apps/backend/tests/unit/test_verify_diffs.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "74d05b63bda7c4fcbc84f1a4763e2a67994085d4",
+      "size": 10943,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/74d05b63bda7c4fcbc84f1a4763e2a67994085d4"
+    },
+    {
+      "path": "apps/frontend",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "567cff52082ffdadcd0cc875aa6e67c11da590d5",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/567cff52082ffdadcd0cc875aa6e67c11da590d5"
+    },
+    {
+      "path": "apps/frontend/.env.sample",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "561cd2deae3992f7e7beb1ce59dbe5de148e2bae",
+      "size": 1235,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/561cd2deae3992f7e7beb1ce59dbe5de148e2bae"
+    },
+    {
+      "path": "apps/frontend/.gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1d5dda050b3aa28864f23e5cbce8cefe322b8125",
+      "size": 496,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/1d5dda050b3aa28864f23e5cbce8cefe322b8125"
+    },
+    {
+      "path": "apps/frontend/.prettierrc",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f71a3496596f23a94573836bd257fefec1f51ca6",
+      "size": 129,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/f71a3496596f23a94573836bd257fefec1f51ca6"
+    },
+    {
+      "path": "apps/frontend/CLAUDE.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b56aabd53891113d6b6dac08e4926c96bee07aee",
+      "size": 16874,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b56aabd53891113d6b6dac08e4926c96bee07aee"
+    },
+    {
+      "path": "apps/frontend/app",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "82cee78592ae8d8016c71e7d70c0c6b53bda0496",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/82cee78592ae8d8016c71e7d70c0c6b53bda0496"
+    },
+    {
+      "path": "apps/frontend/app/(default)",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f503789d7b867814eff4b3a65129b64bd406e45d",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/f503789d7b867814eff4b3a65129b64bd406e45d"
+    },
+    {
+      "path": "apps/frontend/app/(default)/builder",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "7df617b3427da943c2221b2246aacaac9e6a8622",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/7df617b3427da943c2221b2246aacaac9e6a8622"
+    },
+    {
+      "path": "apps/frontend/app/(default)/builder/page.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "af92e79f2e46c5c2d5b6e96f597ffcd2b2269773",
+      "size": 140,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/af92e79f2e46c5c2d5b6e96f597ffcd2b2269773"
+    },
+    {
+      "path": "apps/frontend/app/(default)/css",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8b801f4d136519a20b2928fc3e87e247ae1572bf",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/8b801f4d136519a20b2928fc3e87e247ae1572bf"
+    },
+    {
+      "path": "apps/frontend/app/(default)/css/globals.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b60a70699b0e0909c185e48ec27f4ee71b11403f",
+      "size": 8225,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b60a70699b0e0909c185e48ec27f4ee71b11403f"
+    },
+    {
+      "path": "apps/frontend/app/(default)/dashboard",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b9b6a3ee1471a4e91beeeeea98a037fef51e582a",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/b9b6a3ee1471a4e91beeeeea98a037fef51e582a"
+    },
+    {
+      "path": "apps/frontend/app/(default)/dashboard/page.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "61e64426874789294bc1c0aeb6e16cde3618b74f",
+      "size": 22497,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/61e64426874789294bc1c0aeb6e16cde3618b74f"
+    },
+    {
+      "path": "apps/frontend/app/(default)/layout.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8e95ecb34720fb9d8393d016c44117305bcbf8fe",
+      "size": 715,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/8e95ecb34720fb9d8393d016c44117305bcbf8fe"
+    },
+    {
+      "path": "apps/frontend/app/(default)/page.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3a1972a7da22ffe1da054e9968e6256db61d14f1",
+      "size": 98,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/3a1972a7da22ffe1da054e9968e6256db61d14f1"
+    },
+    {
+      "path": "apps/frontend/app/(default)/resume-wizard",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "68fa996e5f4838d0738e0d3eda5c7e26ab67f0cb",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/68fa996e5f4838d0738e0d3eda5c7e26ab67f0cb"
+    },
+    {
+      "path": "apps/frontend/app/(default)/resume-wizard/page.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc50fd0e37e2ce6e20a4c7fda966ca32fff35f1b",
+      "size": 149,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/cc50fd0e37e2ce6e20a4c7fda966ca32fff35f1b"
+    },
+    {
+      "path": "apps/frontend/app/(default)/resumes",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8c92e080e10621536d46d56cf92d59f1af274750",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/8c92e080e10621536d46d56cf92d59f1af274750"
+    },
+    {
+      "path": "apps/frontend/app/(default)/resumes/[id]",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "e0db2f9613733e6d62d3a1f92a98accffe89c5e9",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/e0db2f9613733e6d62d3a1f92a98accffe89c5e9"
+    },
+    {
+      "path": "apps/frontend/app/(default)/resumes/[id]/page.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fcdd5d529e6859b0c502532bc1dcbd24576aa08d",
+      "size": 17587,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/fcdd5d529e6859b0c502532bc1dcbd24576aa08d"
+    },
+    {
+      "path": "apps/frontend/app/(default)/settings",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c0d1bb7cdd6398e64a6bf3dc9da50d99e91611f0",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/c0d1bb7cdd6398e64a6bf3dc9da50d99e91611f0"
+    },
+    {
+      "path": "apps/frontend/app/(default)/settings/page.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "965137d5d3b90c7b7bc2253704bb853298221b85",
+      "size": 60949,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/965137d5d3b90c7b7bc2253704bb853298221b85"
+    },
+    {
+      "path": "apps/frontend/app/(default)/tailor",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1afadf23adb525d27b4221b80afcc5e5431d22a9",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/1afadf23adb525d27b4221b80afcc5e5431d22a9"
+    },
+    {
+      "path": "apps/frontend/app/(default)/tailor/page.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b8ae1434deb6905e4d41e196c97bc2ff498e02c9",
+      "size": 17932,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b8ae1434deb6905e4d41e196c97bc2ff498e02c9"
+    },
+    {
+      "path": "apps/frontend/app/(default)/tracker",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ebfddcc05bc962312137d1628827e0e14dd826c8",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/ebfddcc05bc962312137d1628827e0e14dd826c8"
+    },
+    {
+      "path": "apps/frontend/app/(default)/tracker/page.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "91396d01fb28acc10526ba7400c8f82e783682fe",
+      "size": 1399,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/91396d01fb28acc10526ba7400c8f82e783682fe"
+    },
+    {
+      "path": "apps/frontend/app/layout.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8735e77b7fb85fcaf20fe493c80ca64334f0d5e8",
+      "size": 915,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/8735e77b7fb85fcaf20fe493c80ca64334f0d5e8"
+    },
+    {
+      "path": "apps/frontend/app/print",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "9741d4a785b392a5a7f7029ec332726224c83171",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/9741d4a785b392a5a7f7029ec332726224c83171"
+    },
+    {
+      "path": "apps/frontend/app/print/cover-letter",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6299f68f260638f92c34329295933075d78508cd",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/6299f68f260638f92c34329295933075d78508cd"
+    },
+    {
+      "path": "apps/frontend/app/print/cover-letter/[id]",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "03994c852a1c8cda8e23a10d796220176e24f2f9",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/03994c852a1c8cda8e23a10d796220176e24f2f9"
+    },
+    {
+      "path": "apps/frontend/app/print/cover-letter/[id]/page.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4e1e2b03e262807b36962eccfadfe5ef72fb9036",
+      "size": 4758,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/4e1e2b03e262807b36962eccfadfe5ef72fb9036"
+    },
+    {
+      "path": "apps/frontend/app/print/resumes",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b06392230a1ebada644b29d62dd4a9f2699c4a82",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/b06392230a1ebada644b29d62dd4a9f2699c4a82"
+    },
+    {
+      "path": "apps/frontend/app/print/resumes/[id]",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2a86805d11993b0294be8aa96a662f0a3b9e4849",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/2a86805d11993b0294be8aa96a662f0a3b9e4849"
+    },
+    {
+      "path": "apps/frontend/app/print/resumes/[id]/page.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "640b335738cb95375063e359d479caad0db5e993",
+      "size": 8355,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/640b335738cb95375063e359d479caad0db5e993"
+    },
+    {
+      "path": "apps/frontend/components",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "366ecae3a644494bf57a612461021a358a36bc65",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/366ecae3a644494bf57a612461021a358a36bc65"
+    },
+    {
+      "path": "apps/frontend/components/builder",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f1d7f084e7402dff8d6bad5993114d350f21a0eb",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/f1d7f084e7402dff8d6bad5993114d350f21a0eb"
+    },
+    {
+      "path": "apps/frontend/components/builder/add-section-dialog.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "601afd4e3ec5155f03a909e2294cc2247ac60c46",
+      "size": 6709,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/601afd4e3ec5155f03a909e2294cc2247ac60c46"
+    },
+    {
+      "path": "apps/frontend/components/builder/cover-letter-editor.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b4e4b1314b7028ed3c6a451673266d7412aa2eca",
+      "size": 2604,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b4e4b1314b7028ed3c6a451673266d7412aa2eca"
+    },
+    {
+      "path": "apps/frontend/components/builder/cover-letter-preview.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "151d40f42b1546e6dc57ec20720ac118b23d70d6",
+      "size": 2886,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/151d40f42b1546e6dc57ec20720ac118b23d70d6"
+    },
+    {
+      "path": "apps/frontend/components/builder/draggable-list-item.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d83045f96f354e91843599d5a60eab9642a8ff57",
+      "size": 1567,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/d83045f96f354e91843599d5a60eab9642a8ff57"
+    },
+    {
+      "path": "apps/frontend/components/builder/draggable-section-wrapper.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "125110050efed9f9fd56827c41f63c1cfb8bebf5",
+      "size": 1667,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/125110050efed9f9fd56827c41f63c1cfb8bebf5"
+    },
+    {
+      "path": "apps/frontend/components/builder/formatting-controls.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b901c42bceb2d3d3a7d5121c37052b1f2b4a3b88",
+      "size": 22957,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b901c42bceb2d3d3a7d5121c37052b1f2b4a3b88"
+    },
+    {
+      "path": "apps/frontend/components/builder/forms",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8f3db407e8fb1c99eb40e33f86803886f67d3f00",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/8f3db407e8fb1c99eb40e33f86803886f67d3f00"
+    },
+    {
+      "path": "apps/frontend/components/builder/forms/additional-form.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "de74e771d189ba71ea01907aec5c5ba9f8ecb2cb",
+      "size": 4561,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/de74e771d189ba71ea01907aec5c5ba9f8ecb2cb"
+    },
+    {
+      "path": "apps/frontend/components/builder/forms/education-form.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5494ac3d856961e5bd7fdaccfcf89caa8ec88128",
+      "size": 7293,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/5494ac3d856961e5bd7fdaccfcf89caa8ec88128"
+    },
+    {
+      "path": "apps/frontend/components/builder/forms/experience-form.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5f384d520bed9a39e6d40c0f0cdbbf4d382a035f",
+      "size": 12329,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/5f384d520bed9a39e6d40c0f0cdbbf4d382a035f"
+    },
+    {
+      "path": "apps/frontend/components/builder/forms/generic-item-form.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "46472307829b4cb1e355050819ae57453cfd6842",
+      "size": 11412,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/46472307829b4cb1e355050819ae57453cfd6842"
+    },
+    {
+      "path": "apps/frontend/components/builder/forms/generic-list-form.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2df3c7328bf36ff281e47c6ca3723ac2dd51716c",
+      "size": 1944,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/2df3c7328bf36ff281e47c6ca3723ac2dd51716c"
+    },
+    {
+      "path": "apps/frontend/components/builder/forms/generic-text-form.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a09cfa1e7d43d850b853f59eba4654d4e0f3f2c8",
+      "size": 1491,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/a09cfa1e7d43d850b853f59eba4654d4e0f3f2c8"
+    },
+    {
+      "path": "apps/frontend/components/builder/forms/personal-info-form.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5f4e4b9dbbe9a07f1e3084833e5a55fe85dfa1d1",
+      "size": 6092,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/5f4e4b9dbbe9a07f1e3084833e5a55fe85dfa1d1"
+    },
+    {
+      "path": "apps/frontend/components/builder/forms/projects-form.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ae06f0d59488cbee0e14d978e76b639f4ed81182",
+      "size": 10766,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/ae06f0d59488cbee0e14d978e76b639f4ed81182"
+    },
+    {
+      "path": "apps/frontend/components/builder/forms/summary-form.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "604a0b3933ed12b6f59dc999076138f929dd9596",
+      "size": 1278,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/604a0b3933ed12b6f59dc999076138f929dd9596"
+    },
+    {
+      "path": "apps/frontend/components/builder/generate-prompt.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fed09f2f8529b3d6802dc50a0d53762db29ee0b6",
+      "size": 3739,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/fed09f2f8529b3d6802dc50a0d53762db29ee0b6"
+    },
+    {
+      "path": "apps/frontend/components/builder/highlighted-resume-view.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "146e1d87f98df01ec0432dee6d29abfcfd8ecb52",
+      "size": 9222,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/146e1d87f98df01ec0432dee6d29abfcfd8ecb52"
+    },
+    {
+      "path": "apps/frontend/components/builder/interview-prep-view.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f4ea0993e220b6d16ce9c055c319ef11cfdbb53a",
+      "size": 6778,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/f4ea0993e220b6d16ce9c055c319ef11cfdbb53a"
+    },
+    {
+      "path": "apps/frontend/components/builder/jd-comparison-view.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f9a3d29a3a4391e8dc0c30003d218d20d30307bf",
+      "size": 3902,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/f9a3d29a3a4391e8dc0c30003d218d20d30307bf"
+    },
+    {
+      "path": "apps/frontend/components/builder/jd-display.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0f523cb7a85baedb102cb69e96416732e3cec1ec",
+      "size": 939,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/0f523cb7a85baedb102cb69e96416732e3cec1ec"
+    },
+    {
+      "path": "apps/frontend/components/builder/outreach-editor.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1e176f0ee050febbbef5401841730889797c5146",
+      "size": 3306,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/1e176f0ee050febbbef5401841730889797c5146"
+    },
+    {
+      "path": "apps/frontend/components/builder/outreach-preview.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "34ae7c5b1d4701d0accd4614aafeda5a74d5ca99",
+      "size": 2603,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/34ae7c5b1d4701d0accd4614aafeda5a74d5ca99"
+    },
+    {
+      "path": "apps/frontend/components/builder/regenerate-dialog.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d08177e49942d05197ff9a061173984149f9f59c",
+      "size": 9845,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/d08177e49942d05197ff9a061173984149f9f59c"
+    },
+    {
+      "path": "apps/frontend/components/builder/regenerate-diff-preview.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4b504c0ad968f3dd2ecb3aae225edaab402aa7cb",
+      "size": 10408,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/4b504c0ad968f3dd2ecb3aae225edaab402aa7cb"
+    },
+    {
+      "path": "apps/frontend/components/builder/regenerate-instruction-dialog.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c22304e9d1f97e48b4ec8467967ad43e299f0985",
+      "size": 5731,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/c22304e9d1f97e48b4ec8467967ad43e299f0985"
+    },
+    {
+      "path": "apps/frontend/components/builder/regenerate-wizard.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9551eb14f9fede2df470a152f0363ba71b51829f",
+      "size": 4014,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/9551eb14f9fede2df470a152f0363ba71b51829f"
+    },
+    {
+      "path": "apps/frontend/components/builder/resume-builder.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "62591144e3b1d6ac8be5125fe787e6a41521647c",
+      "size": 44360,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/62591144e3b1d6ac8be5125fe787e6a41521647c"
+    },
+    {
+      "path": "apps/frontend/components/builder/resume-form.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9f529f23e70efba7932a708bf83c751c610dd528",
+      "size": 13247,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/9f529f23e70efba7932a708bf83c751c610dd528"
+    },
+    {
+      "path": "apps/frontend/components/builder/section-header.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aa57d8b44a4c2b52f07d1ec96cbd72fab254f05d",
+      "size": 9093,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/aa57d8b44a4c2b52f07d1ec96cbd72fab254f05d"
+    },
+    {
+      "path": "apps/frontend/components/builder/template-selector.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ebe47b6f3e59eb2675122a585d894a2f9473334d",
+      "size": 12392,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/ebe47b6f3e59eb2675122a585d894a2f9473334d"
+    },
+    {
+      "path": "apps/frontend/components/common",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a2280bd032a85f794662664634d2495c477e932d",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/a2280bd032a85f794662664634d2495c477e932d"
+    },
+    {
+      "path": "apps/frontend/components/common/error-boundary.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bd4ff7220ed72265b7502010dcfb0ae3b08eecfb",
+      "size": 4453,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/bd4ff7220ed72265b7502010dcfb0ae3b08eecfb"
+    },
+    {
+      "path": "apps/frontend/components/common/resume_previewer_context.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "30aabfe51cc35bd72572a616c5b5e7e2bddf42f5",
+      "size": 3850,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/30aabfe51cc35bd72572a616c5b5e7e2bddf42f5"
+    },
+    {
+      "path": "apps/frontend/components/dashboard",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "213f972de86916e781007a5cf4a8aafe46704fe8",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/213f972de86916e781007a5cf4a8aafe46704fe8"
+    },
+    {
+      "path": "apps/frontend/components/dashboard/master-resume-choice-dialog.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7203eade0625713c73093753b8fb12d8e19acc8b",
+      "size": 3486,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/7203eade0625713c73093753b8fb12d8e19acc8b"
+    },
+    {
+      "path": "apps/frontend/components/dashboard/resume-component.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b98fd45d32acf0db83abc998b2feeaeddb6ad07f",
+      "size": 6690,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b98fd45d32acf0db83abc998b2feeaeddb6ad07f"
+    },
+    {
+      "path": "apps/frontend/components/dashboard/resume-upload-dialog.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d457872a798ffed0e85b996848288764b5df077e",
+      "size": 11774,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/d457872a798ffed0e85b996848288764b5df077e"
+    },
+    {
+      "path": "apps/frontend/components/enrichment",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b0697c22f4e6781042ba1b03ceabd156ea157a16",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/b0697c22f4e6781042ba1b03ceabd156ea157a16"
+    },
+    {
+      "path": "apps/frontend/components/enrichment/enrichment-modal.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "13a338a3277ec6536acb8b8ef0786b4f1e221be7",
+      "size": 5716,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/13a338a3277ec6536acb8b8ef0786b4f1e221be7"
+    },
+    {
+      "path": "apps/frontend/components/enrichment/loading-steps.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e8b59d387aaef77229a419d8acabcc810c998537",
+      "size": 4387,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e8b59d387aaef77229a419d8acabcc810c998537"
+    },
+    {
+      "path": "apps/frontend/components/enrichment/preview-step.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dfa3de7ff5122e285386101d6b3be0e1168836ca",
+      "size": 4471,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/dfa3de7ff5122e285386101d6b3be0e1168836ca"
+    },
+    {
+      "path": "apps/frontend/components/enrichment/question-step.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "30a7455a4dae09016b802f31e9ba3d1d576c9704",
+      "size": 4972,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/30a7455a4dae09016b802f31e9ba3d1d576c9704"
+    },
+    {
+      "path": "apps/frontend/components/home",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "3569a0230d5505f76ce369713242227875622a81",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/3569a0230d5505f76ce369713242227875622a81"
+    },
+    {
+      "path": "apps/frontend/components/home/hero.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9143f766c4d30eb57e08a4b84949c7fe1862a0d9",
+      "size": 2264,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/9143f766c4d30eb57e08a4b84949c7fe1862a0d9"
+    },
+    {
+      "path": "apps/frontend/components/home/swiss-grid.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "93134f3754a02de50bfdd81a68208d2d89a14613",
+      "size": 3563,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/93134f3754a02de50bfdd81a68208d2d89a14613"
+    },
+    {
+      "path": "apps/frontend/components/preview",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "e99f0f87c7cb65fac69092e56fd42f29aeea1e30",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/e99f0f87c7cb65fac69092e56fd42f29aeea1e30"
+    },
+    {
+      "path": "apps/frontend/components/preview/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3a49fef9e4c746ee2e66fc2ee159110fe6d316bd",
+      "size": 156,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/3a49fef9e4c746ee2e66fc2ee159110fe6d316bd"
+    },
+    {
+      "path": "apps/frontend/components/preview/page-container.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b44f3fccf8e10ea5e5408af8b7097ffd5eddef9d",
+      "size": 4022,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b44f3fccf8e10ea5e5408af8b7097ffd5eddef9d"
+    },
+    {
+      "path": "apps/frontend/components/preview/paginated-preview.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "476649caefe6b3ad143bdddda6cff2aedd1eda77",
+      "size": 8073,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/476649caefe6b3ad143bdddda6cff2aedd1eda77"
+    },
+    {
+      "path": "apps/frontend/components/preview/use-pagination.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9061866fde1123dcdee5e76997308a6d53d07a5c",
+      "size": 8045,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/9061866fde1123dcdee5e76997308a6d53d07a5c"
+    },
+    {
+      "path": "apps/frontend/components/resume-wizard",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "551f203e1ae7e6bacb466c959168d2c9b756fa9f",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/551f203e1ae7e6bacb466c959168d2c9b756fa9f"
+    },
+    {
+      "path": "apps/frontend/components/resume-wizard/live-preview.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0469d367d651a631f9b61961d5ee814e54e58055",
+      "size": 5379,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/0469d367d651a631f9b61961d5ee814e54e58055"
+    },
+    {
+      "path": "apps/frontend/components/resume-wizard/question-card.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "64bb6e08c3a9b64267585e9a14403832fdbc036f",
+      "size": 5662,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/64bb6e08c3a9b64267585e9a14403832fdbc036f"
+    },
+    {
+      "path": "apps/frontend/components/resume-wizard/resume-wizard-page.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c1fac84ad72574bd05923a6e21623c6afcdba5ae",
+      "size": 11560,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/c1fac84ad72574bd05923a6e21623c6afcdba5ae"
+    },
+    {
+      "path": "apps/frontend/components/resume",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "3ee0b9160b1c87a15658a03e72b7fce67cca1586",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/3ee0b9160b1c87a15658a03e72b7fce67cca1586"
+    },
+    {
+      "path": "apps/frontend/components/resume/description-list.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "111112634a6877b89775496e8799af4ba8133800",
+      "size": 1197,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/111112634a6877b89775496e8799af4ba8133800"
+    },
+    {
+      "path": "apps/frontend/components/resume/dynamic-resume-section.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aa9d016054515ba6fcf26baab2bfdf259191eddd",
+      "size": 3875,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/aa9d016054515ba6fcf26baab2bfdf259191eddd"
+    },
+    {
+      "path": "apps/frontend/components/resume/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b45ade8e818b9f6b45bbe04ec67d232cd48e38be",
+      "size": 370,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b45ade8e818b9f6b45bbe04ec67d232cd48e38be"
+    },
+    {
+      "path": "apps/frontend/components/resume/resume-clean.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a6ce859702bcb36995986ed98424aedc1f4ecf32",
+      "size": 15094,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/a6ce859702bcb36995986ed98424aedc1f4ecf32"
+    },
+    {
+      "path": "apps/frontend/components/resume/resume-latex.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "596b9b264d525946886d419f7ada828d734e7501",
+      "size": 15850,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/596b9b264d525946886d419f7ada828d734e7501"
+    },
+    {
+      "path": "apps/frontend/components/resume/resume-modern-two-column.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a94c18ac0b0b75c3709039c45fb4b47e51e97c53",
+      "size": 18035,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/a94c18ac0b0b75c3709039c45fb4b47e51e97c53"
+    },
+    {
+      "path": "apps/frontend/components/resume/resume-modern.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ff77acdf3ea8a7c6d355088a3800c0b6f3778717",
+      "size": 18433,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/ff77acdf3ea8a7c6d355088a3800c0b6f3778717"
+    },
+    {
+      "path": "apps/frontend/components/resume/resume-single-column.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b295169c29d409bea7c0a066799df91f278edbd0",
+      "size": 15540,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b295169c29d409bea7c0a066799df91f278edbd0"
+    },
+    {
+      "path": "apps/frontend/components/resume/resume-two-column.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f9fd88d3adf95b934029f6dd0e38d37dc20d2ee0",
+      "size": 18799,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/f9fd88d3adf95b934029f6dd0e38d37dc20d2ee0"
+    },
+    {
+      "path": "apps/frontend/components/resume/resume-vivid.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9209945f8212944e14125915e5bfaa54a859d4de",
+      "size": 19143,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/9209945f8212944e14125915e5bfaa54a859d4de"
+    },
+    {
+      "path": "apps/frontend/components/resume/safe-html.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a7de3f14a54ea45494f6f850e1b9b1d4fb4e200b",
+      "size": 1455,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/a7de3f14a54ea45494f6f850e1b9b1d4fb4e200b"
+    },
+    {
+      "path": "apps/frontend/components/resume/styles",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "045a8908c5b727551ddfc8a021ebf2058c3b9680",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/045a8908c5b727551ddfc8a021ebf2058c3b9680"
+    },
+    {
+      "path": "apps/frontend/components/resume/styles/_base.module.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3d8e90c4f32b6bb257377446832a5e23e834f76b",
+      "size": 8034,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/3d8e90c4f32b6bb257377446832a5e23e834f76b"
+    },
+    {
+      "path": "apps/frontend/components/resume/styles/_tokens.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5989672521b92375a8b8b7de5e9545f8ad7a73fa",
+      "size": 743,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/5989672521b92375a8b8b7de5e9545f8ad7a73fa"
+    },
+    {
+      "path": "apps/frontend/components/resume/styles/clean.module.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b62d1573bdd8bcf1e3bc90cf53ea04281f7e3246",
+      "size": 2245,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b62d1573bdd8bcf1e3bc90cf53ea04281f7e3246"
+    },
+    {
+      "path": "apps/frontend/components/resume/styles/latex.module.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b6ba6eaa9a48c87a61fcac486b612576974b0795",
+      "size": 2233,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b6ba6eaa9a48c87a61fcac486b612576974b0795"
+    },
+    {
+      "path": "apps/frontend/components/resume/styles/modern-two-column.module.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fe9012a959a745852341afd1bd4f450039d23b01",
+      "size": 2454,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/fe9012a959a745852341afd1bd4f450039d23b01"
+    },
+    {
+      "path": "apps/frontend/components/resume/styles/modern.module.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d2606a819e31a20a29fe11df6e95e223180a50bf",
+      "size": 2041,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/d2606a819e31a20a29fe11df6e95e223180a50bf"
+    },
+    {
+      "path": "apps/frontend/components/resume/styles/swiss-single.module.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f070862dc43968d9b7663a270dee6c35da5d637c",
+      "size": 468,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/f070862dc43968d9b7663a270dee6c35da5d637c"
+    },
+    {
+      "path": "apps/frontend/components/resume/styles/swiss-two-column.module.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d39be28463bf44e759515258a10bf624431421ca",
+      "size": 850,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/d39be28463bf44e759515258a10bf624431421ca"
+    },
+    {
+      "path": "apps/frontend/components/resume/styles/vivid.module.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1a2f9b1a503c6471e7c2b4d6804eebe2882f9b4f",
+      "size": 3249,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/1a2f9b1a503c6471e7c2b4d6804eebe2882f9b4f"
+    },
+    {
+      "path": "apps/frontend/components/settings",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "42257cf62233936687f4c5096acacb9e9eda39e1",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/42257cf62233936687f4c5096acacb9e9eda39e1"
+    },
+    {
+      "path": "apps/frontend/components/settings/api-key-menu.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "878bcd77fb5f15b08ab3e68ebed581197ac80656",
+      "size": 5343,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/878bcd77fb5f15b08ab3e68ebed581197ac80656"
+    },
+    {
+      "path": "apps/frontend/components/tailor",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d402aba777cfed9d08640bd350f9ea5efb71260e",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/d402aba777cfed9d08640bd350f9ea5efb71260e"
+    },
+    {
+      "path": "apps/frontend/components/tailor/ats-score-card.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bee3ac85e2bb4376e68f7e5652c50434729f933e",
+      "size": 4525,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/bee3ac85e2bb4376e68f7e5652c50434729f933e"
+    },
+    {
+      "path": "apps/frontend/components/tailor/diff-preview-modal.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3ac69d928f24bece4da477f133d72d6242ef205d",
+      "size": 16685,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/3ac69d928f24bece4da477f133d72d6242ef205d"
+    },
+    {
+      "path": "apps/frontend/components/tracker",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "aa154cebdc5ccd48529824e939fd164f02e8f6df",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/aa154cebdc5ccd48529824e939fd164f02e8f6df"
+    },
+    {
+      "path": "apps/frontend/components/tracker/application-card.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a5a205e98fabc4f5b34616df7b2da69b17b3faf7",
+      "size": 3139,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/a5a205e98fabc4f5b34616df7b2da69b17b3faf7"
+    },
+    {
+      "path": "apps/frontend/components/tracker/bulk-action-bar.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e118beba47fe022d131b2c4189b28fc2cb8965c0",
+      "size": 2251,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e118beba47fe022d131b2c4189b28fc2cb8965c0"
+    },
+    {
+      "path": "apps/frontend/components/tracker/card-detail-modal.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "923b5197f11bf737f8764eae98a418684ca3c4fd",
+      "size": 5865,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/923b5197f11bf737f8764eae98a418684ca3c4fd"
+    },
+    {
+      "path": "apps/frontend/components/tracker/kanban-board.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b804f9c0c02b39ce65f5c049612285b87f50904f",
+      "size": 12317,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b804f9c0c02b39ce65f5c049612285b87f50904f"
+    },
+    {
+      "path": "apps/frontend/components/tracker/kanban-column.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b19507ddc4d8fb6dbd76694823b31953c5870515",
+      "size": 2478,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b19507ddc4d8fb6dbd76694823b31953c5870515"
+    },
+    {
+      "path": "apps/frontend/components/tracker/manual-add-application-dialog.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e591a2fff21ea62e971b88a62c48a73d39ea074c",
+      "size": 5577,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e591a2fff21ea62e971b88a62c48a73d39ea074c"
+    },
+    {
+      "path": "apps/frontend/components/tracker/reorder.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b2ab44bf96f72070817282da42307c44dfe1d93f",
+      "size": 2756,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b2ab44bf96f72070817282da42307c44dfe1d93f"
+    },
+    {
+      "path": "apps/frontend/components/ui",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "237ea6a8ea00e16155b77f1e2b4592122d65e394",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/237ea6a8ea00e16155b77f1e2b4592122d65e394"
+    },
+    {
+      "path": "apps/frontend/components/ui/button.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "11501c257df7bb2de1dd7d2db255dcdd0e3d18ee",
+      "size": 6964,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/11501c257df7bb2de1dd7d2db255dcdd0e3d18ee"
+    },
+    {
+      "path": "apps/frontend/components/ui/card.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "130e4191eb2a291e21974977aff46a2ffbc7dada",
+      "size": 2817,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/130e4191eb2a291e21974977aff46a2ffbc7dada"
+    },
+    {
+      "path": "apps/frontend/components/ui/confirm-dialog.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "03d40e12b8ff67fe991a970585580a290c43312a",
+      "size": 4481,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/03d40e12b8ff67fe991a970585580a290c43312a"
+    },
+    {
+      "path": "apps/frontend/components/ui/dialog.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "308cdfc99f2d7168197dfd654f40736d72d3342b",
+      "size": 6333,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/308cdfc99f2d7168197dfd654f40736d72d3342b"
+    },
+    {
+      "path": "apps/frontend/components/ui/dropdown.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d404fb2caa379752e002fbd32fd71e048b1f64db",
+      "size": 5725,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/d404fb2caa379752e002fbd32fd71e048b1f64db"
+    },
+    {
+      "path": "apps/frontend/components/ui/input.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cf85cf2da3176d8b9cc42a8f7f152cc850dc079e",
+      "size": 1024,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/cf85cf2da3176d8b9cc42a8f7f152cc850dc079e"
+    },
+    {
+      "path": "apps/frontend/components/ui/label.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fdc3bacfe7822ad86561532b5e4dcca62328b7ef",
+      "size": 505,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/fdc3bacfe7822ad86561532b5e4dcca62328b7ef"
+    },
+    {
+      "path": "apps/frontend/components/ui/link-dialog.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ce728b0719126272edc195b658f0f30ec4489537",
+      "size": 5551,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/ce728b0719126272edc195b658f0f30ec4489537"
+    },
+    {
+      "path": "apps/frontend/components/ui/retro-tabs.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "06231ebbd0c0ff8b6cfa1364c2cd7043f8b0e5cb",
+      "size": 1803,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/06231ebbd0c0ff8b6cfa1364c2cd7043f8b0e5cb"
+    },
+    {
+      "path": "apps/frontend/components/ui/rich-text-editor.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e82164ab2b891623bbc287aa308799e4e1ea9896",
+      "size": 5676,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e82164ab2b891623bbc287aa308799e4e1ea9896"
+    },
+    {
+      "path": "apps/frontend/components/ui/rich-text-toolbar.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "88c3556249432e06745c3eeec6dc2d985eb9d627",
+      "size": 2027,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/88c3556249432e06745c3eeec6dc2d985eb9d627"
+    },
+    {
+      "path": "apps/frontend/components/ui/textarea.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "30b66bbcbf72af02a4811f13fa835e10b5e30697",
+      "size": 712,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/30b66bbcbf72af02a4811f13fa835e10b5e30697"
+    },
+    {
+      "path": "apps/frontend/components/ui/toggle-switch.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cb69257b5390aeefdc54db91a548e36f0d75ea58",
+      "size": 2129,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/cb69257b5390aeefdc54db91a548e36f0d75ea58"
+    },
+    {
+      "path": "apps/frontend/eslint.config.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b47ccfaa8bc58605a106444a5faf09c5653302dc",
+      "size": 844,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b47ccfaa8bc58605a106444a5faf09c5653302dc"
+    },
+    {
+      "path": "apps/frontend/hooks",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c46cdba876ca03cc4afcfa553da0c901334f0025",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/c46cdba876ca03cc4afcfa553da0c901334f0025"
+    },
+    {
+      "path": "apps/frontend/hooks/use-enrichment-wizard.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "284b3db5b3971f834bd0e7ddb2af9b01f7b95398",
+      "size": 8080,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/284b3db5b3971f834bd0e7ddb2af9b01f7b95398"
+    },
+    {
+      "path": "apps/frontend/hooks/use-file-upload.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "af1e300b3217b6c58b218b040b5733a412953ca1",
+      "size": 22481,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/af1e300b3217b6c58b218b040b5733a412953ca1"
+    },
+    {
+      "path": "apps/frontend/hooks/use-regenerate-wizard.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9f181b40ea90147637e66a79e3ac920db80d0817",
+      "size": 5240,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/9f181b40ea90147637e66a79e3ac920db80d0817"
+    },
+    {
+      "path": "apps/frontend/i18n",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "33fb4bdf671800f4cc450cb488473921fecaf464",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/33fb4bdf671800f4cc450cb488473921fecaf464"
+    },
+    {
+      "path": "apps/frontend/i18n/config.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "deccab28aa1e39312b7cbb2240796e74570de951",
+      "size": 582,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/deccab28aa1e39312b7cbb2240796e74570de951"
+    },
+    {
+      "path": "apps/frontend/lib",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f608bfb53010e0087290cf00ac7c3f9481c664ae",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/f608bfb53010e0087290cf00ac7c3f9481c664ae"
+    },
+    {
+      "path": "apps/frontend/lib/api",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4422b3fd4f2d3072647b6460dc4b4111991c9e93",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/4422b3fd4f2d3072647b6460dc4b4111991c9e93"
+    },
+    {
+      "path": "apps/frontend/lib/api/client.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d3ae2a3630a042f68bb0f49ac8f2d5d7054f5708",
+      "size": 4344,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/d3ae2a3630a042f68bb0f49ac8f2d5d7054f5708"
+    },
+    {
+      "path": "apps/frontend/lib/api/config.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cb1cbfe4e8546d67421c3bb08685761638fe1a30",
+      "size": 15788,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/cb1cbfe4e8546d67421c3bb08685761638fe1a30"
+    },
+    {
+      "path": "apps/frontend/lib/api/enrichment.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5baefee3b0501fc94c2e20239d8e26cd15303239",
+      "size": 4359,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/5baefee3b0501fc94c2e20239d8e26cd15303239"
+    },
+    {
+      "path": "apps/frontend/lib/api/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "df1861a2027a912a7c66ac83eb1b0532fbf3cc27",
+      "size": 1264,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/df1861a2027a912a7c66ac83eb1b0532fbf3cc27"
+    },
+    {
+      "path": "apps/frontend/lib/api/resume-wizard.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aedf04b5003e5c3ddeb90471153e14129edb8d65",
+      "size": 3179,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/aedf04b5003e5c3ddeb90471153e14129edb8d65"
+    },
+    {
+      "path": "apps/frontend/lib/api/resume.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "90a73385df055155058491620eb25a5ad19980bb",
+      "size": 13168,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/90a73385df055155058491620eb25a5ad19980bb"
+    },
+    {
+      "path": "apps/frontend/lib/api/tracker.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "82e48628ffc5d0ccfa7410e3576a3a1c5f3053f4",
+      "size": 4928,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/82e48628ffc5d0ccfa7410e3576a3a1c5f3053f4"
+    },
+    {
+      "path": "apps/frontend/lib/config",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5d1a6bdb93497582444081f079d84fd2e2199a26",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/5d1a6bdb93497582444081f079d84fd2e2199a26"
+    },
+    {
+      "path": "apps/frontend/lib/config/version.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "84254f8ac91b0221472615e06ad814c5df874fcb",
+      "size": 207,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/84254f8ac91b0221472615e06ad814c5df874fcb"
+    },
+    {
+      "path": "apps/frontend/lib/constants",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "73bd39193008b5b76c9bfda7b0f6d5c930e3c284",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/73bd39193008b5b76c9bfda7b0f6d5c930e3c284"
+    },
+    {
+      "path": "apps/frontend/lib/constants/page-dimensions.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e75b327e87bf8c5dccbefaf2d98c22f647434859",
+      "size": 1899,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e75b327e87bf8c5dccbefaf2d98c22f647434859"
+    },
+    {
+      "path": "apps/frontend/lib/context",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "54cc51a21060a7b9428faad87baaf80b902a9e52",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/54cc51a21060a7b9428faad87baaf80b902a9e52"
+    },
+    {
+      "path": "apps/frontend/lib/context/language-context.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2e9c219bc5335f7aef0e8e1d4eb054ba5ac52a74",
+      "size": 3975,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/2e9c219bc5335f7aef0e8e1d4eb054ba5ac52a74"
+    },
+    {
+      "path": "apps/frontend/lib/context/status-cache.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "19a07a865364b15c7b1b3692de457decbf798d5d",
+      "size": 6480,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/19a07a865364b15c7b1b3692de457decbf798d5d"
+    },
+    {
+      "path": "apps/frontend/lib/i18n",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "340be9b0497d723631d29cf9c7db550fab2de2f2",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/340be9b0497d723631d29cf9c7db550fab2de2f2"
+    },
+    {
+      "path": "apps/frontend/lib/i18n/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1c3cfeea069d72166835914b79972e58a81eb9e8",
+      "size": 279,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/1c3cfeea069d72166835914b79972e58a81eb9e8"
+    },
+    {
+      "path": "apps/frontend/lib/i18n/locale.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "165df60d1148439102f3779e83cdc4510263acce",
+      "size": 247,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/165df60d1148439102f3779e83cdc4510263acce"
+    },
+    {
+      "path": "apps/frontend/lib/i18n/messages.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3ef2901b74da6c33e0991eede95dc26434e3f5a9",
+      "size": 544,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/3ef2901b74da6c33e0991eede95dc26434e3f5a9"
+    },
+    {
+      "path": "apps/frontend/lib/i18n/server.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d0e42ebd04c99b370d3f129bb9dd43e0a3bcf1e4",
+      "size": 467,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/d0e42ebd04c99b370d3f129bb9dd43e0a3bcf1e4"
+    },
+    {
+      "path": "apps/frontend/lib/i18n/translations.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3be20f46b1547d398e89112cebb06f0e801b78bb",
+      "size": 1681,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/3be20f46b1547d398e89112cebb06f0e801b78bb"
+    },
+    {
+      "path": "apps/frontend/lib/i18n/utils.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2ef53256adbdc2c331d3a92354a1426181b9f134",
+      "size": 705,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/2ef53256adbdc2c331d3a92354a1426181b9f134"
+    },
+    {
+      "path": "apps/frontend/lib/types",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1a62e2d38ee3e117cfedbc0636614dd8a8cdea62",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/1a62e2d38ee3e117cfedbc0636614dd8a8cdea62"
+    },
+    {
+      "path": "apps/frontend/lib/types/lucide.d.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0c757f093c4d42e4aab34f599b83ff4e2a3c7264",
+      "size": 145,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/0c757f093c4d42e4aab34f599b83ff4e2a3c7264"
+    },
+    {
+      "path": "apps/frontend/lib/types/template-settings.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c43d28fd49d05176778ae2addb69694c1ea8bb0b",
+      "size": 8735,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/c43d28fd49d05176778ae2addb69694c1ea8bb0b"
+    },
+    {
+      "path": "apps/frontend/lib/utils.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d34e26f4e6262a3c48a3433e9358f883b9456afa",
+      "size": 1868,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/d34e26f4e6262a3c48a3433e9358f883b9456afa"
+    },
+    {
+      "path": "apps/frontend/lib/utils",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "055a8473031e1bc57609c2ba82c6fc79980c6d73",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/055a8473031e1bc57609c2ba82c6fc79980c6d73"
+    },
+    {
+      "path": "apps/frontend/lib/utils/description-styles.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2e02046b924c7e96934985e2dbdb2ca9758099da",
+      "size": 761,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/2e02046b924c7e96934985e2dbdb2ca9758099da"
+    },
+    {
+      "path": "apps/frontend/lib/utils/download.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a25d36907dab9b089193a04dc8e7d0163a4bf657",
+      "size": 2974,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/a25d36907dab9b089193a04dc8e7d0163a4bf657"
+    },
+    {
+      "path": "apps/frontend/lib/utils/html-sanitizer.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "650ea028751a1678e50e6b5ccd95c77e96110e3a",
+      "size": 723,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/650ea028751a1678e50e6b5ccd95c77e96110e3a"
+    },
+    {
+      "path": "apps/frontend/lib/utils/keyword-matcher.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4b3644b417dfdbf35a6504bc837ec40a800d7894",
+      "size": 4772,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/4b3644b417dfdbf35a6504bc837ec40a800d7894"
+    },
+    {
+      "path": "apps/frontend/lib/utils/section-helpers.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b6846d4459dbce7de52cccf3b99407ae84eb715f",
+      "size": 5158,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b6846d4459dbce7de52cccf3b99407ae84eb715f"
+    },
+    {
+      "path": "apps/frontend/messages",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "03e54a20b45df47793766aa7011b83c9422680b1",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/03e54a20b45df47793766aa7011b83c9422680b1"
+    },
+    {
+      "path": "apps/frontend/messages/en.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0d197b5d4cbe18f73419a3494a283d5bcbdd079a",
+      "size": 42433,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/0d197b5d4cbe18f73419a3494a283d5bcbdd079a"
+    },
+    {
+      "path": "apps/frontend/messages/es.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c2f4e4a863d72dda2b18a919f1eba30a6c3cfe66",
+      "size": 46697,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/c2f4e4a863d72dda2b18a919f1eba30a6c3cfe66"
+    },
+    {
+      "path": "apps/frontend/messages/fr.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a4a0aa8457282469daa6a6c04800520152793a2a",
+      "size": 48263,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/a4a0aa8457282469daa6a6c04800520152793a2a"
+    },
+    {
+      "path": "apps/frontend/messages/ja.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5a9979a14c64a5a17a3fb61cd8c99e957c0f94ae",
+      "size": 50153,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/5a9979a14c64a5a17a3fb61cd8c99e957c0f94ae"
+    },
+    {
+      "path": "apps/frontend/messages/ko.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "411baa9795ddb347bfdf2579cfd2522abf911ce6",
+      "size": 48558,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/411baa9795ddb347bfdf2579cfd2522abf911ce6"
+    },
+    {
+      "path": "apps/frontend/messages/pt-BR.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e6063b6c2a3ba2928a317984251a56d813295005",
+      "size": 46895,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e6063b6c2a3ba2928a317984251a56d813295005"
+    },
+    {
+      "path": "apps/frontend/messages/zh.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e66e37b08ddd733b290c4412d85727dae6bf791c",
+      "size": 41102,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e66e37b08ddd733b290c4412d85727dae6bf791c"
+    },
+    {
+      "path": "apps/frontend/next.config.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9193fbd9c4002e3c69765c63faf61bedcbe9fd99",
+      "size": 1739,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/9193fbd9c4002e3c69765c63faf61bedcbe9fd99"
+    },
+    {
+      "path": "apps/frontend/package-lock.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b724c2df03af10bbdb89f0bd110ca032cd3cb2dd",
+      "size": 334075,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b724c2df03af10bbdb89f0bd110ca032cd3cb2dd"
+    },
+    {
+      "path": "apps/frontend/package.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7fbab4f62dae7ad0ea7b8d4b91c109ca0738af9a",
+      "size": 1410,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/7fbab4f62dae7ad0ea7b8d4b91c109ca0738af9a"
+    },
+    {
+      "path": "apps/frontend/postcss.config.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "297374d80baa3b6081a566876859cf746a8b3669",
+      "size": 94,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/297374d80baa3b6081a566876859cf746a8b3669"
+    },
+    {
+      "path": "apps/frontend/public",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "34a8a25a8ce366d2448961e156a519c8deb1d336",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/34a8a25a8ce366d2448961e156a519c8deb1d336"
+    },
+    {
+      "path": "apps/frontend/public/logo.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "07b7d0bf41a36fdb52ff18a16afe1ff708e4b7df",
+      "size": 773,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/07b7d0bf41a36fdb52ff18a16afe1ff708e4b7df"
+    },
+    {
+      "path": "apps/frontend/tests",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a125818668156613bf129795211ad85cda44a1a3",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/a125818668156613bf129795211ad85cda44a1a3"
+    },
+    {
+      "path": "apps/frontend/tests/additional-info-newlines.test.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "81fbf2bd763642685b622328b1105a63a42f8865",
+      "size": 2498,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/81fbf2bd763642685b622328b1105a63a42f8865"
+    },
+    {
+      "path": "apps/frontend/tests/api-client.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f8df59a9e36331518d28781a4f804b013bbffbb5",
+      "size": 3375,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/f8df59a9e36331518d28781a4f804b013bbffbb5"
+    },
+    {
+      "path": "apps/frontend/tests/api-config.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5ea74ef1b2395cb138045d07e73afc44d9ee233d",
+      "size": 4537,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/5ea74ef1b2395cb138045d07e73afc44d9ee233d"
+    },
+    {
+      "path": "apps/frontend/tests/api-resume.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8845af4435cb10970042b8a6f75aac51be31e267",
+      "size": 1782,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/8845af4435cb10970042b8a6f75aac51be31e267"
+    },
+    {
+      "path": "apps/frontend/tests/api-tracker.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f64504ea6af982fa831f86b91136beee9831d027",
+      "size": 3997,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/f64504ea6af982fa831f86b91136beee9831d027"
+    },
+    {
+      "path": "apps/frontend/tests/confirm-dialog.test.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f57e8f81abcb217650fb50ab30c1e306facb4584",
+      "size": 960,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/f57e8f81abcb217650fb50ab30c1e306facb4584"
+    },
+    {
+      "path": "apps/frontend/tests/dashboard-master-choice.test.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "762aadb8f7f57a844d3b636d02df786b8d25f03f",
+      "size": 1180,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/762aadb8f7f57a844d3b636d02df786b8d25f03f"
+    },
+    {
+      "path": "apps/frontend/tests/description-list.test.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e41b9304df065a482c88e5ac736fa21723342439",
+      "size": 870,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e41b9304df065a482c88e5ac736fa21723342439"
+    },
+    {
+      "path": "apps/frontend/tests/description-styles.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5720e25f358edce15c4925d937c69cd9b4eed5d3",
+      "size": 925,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/5720e25f358edce15c4925d937c69cd9b4eed5d3"
+    },
+    {
+      "path": "apps/frontend/tests/diff-preview-modal.test.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b4f1b88d777d97beea6024b794462fef3d0a79b9",
+      "size": 3393,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b4f1b88d777d97beea6024b794462fef3d0a79b9"
+    },
+    {
+      "path": "apps/frontend/tests/download-utils.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "72e4264264964008c3ad2e89a2b862d28ec35412",
+      "size": 16159,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/72e4264264964008c3ad2e89a2b862d28ec35412"
+    },
+    {
+      "path": "apps/frontend/tests/html-sanitizer.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b5a56c59a010cdb785c4adfbded9fe9842a8e51f",
+      "size": 1708,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b5a56c59a010cdb785c4adfbded9fe9842a8e51f"
+    },
+    {
+      "path": "apps/frontend/tests/i18n-locale-parity.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7c208594a210e4aebc09fc075119899aeb289f61",
+      "size": 4786,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/7c208594a210e4aebc09fc075119899aeb289f61"
+    },
+    {
+      "path": "apps/frontend/tests/i18n-server.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2c771b2a83e0f3877445dbf5c391840e535a58dc",
+      "size": 1693,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/2c771b2a83e0f3877445dbf5c391840e535a58dc"
+    },
+    {
+      "path": "apps/frontend/tests/i18n-utils.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0e4f7b8db40c48e00ac8226e295cc53051970b89",
+      "size": 3137,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/0e4f7b8db40c48e00ac8226e295cc53051970b89"
+    },
+    {
+      "path": "apps/frontend/tests/interview-prep-view.test.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "46fd65065ac0c8bd00c4633d12ef076af1e90527",
+      "size": 3894,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/46fd65065ac0c8bd00c4633d12ef076af1e90527"
+    },
+    {
+      "path": "apps/frontend/tests/keyword-matcher.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9c2f947ccb067f4af0c4e75bd80e149f0ac59c6a",
+      "size": 2807,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/9c2f947ccb067f4af0c4e75bd80e149f0ac59c6a"
+    },
+    {
+      "path": "apps/frontend/tests/regenerate-wizard.test.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "da32009e1c0dc280db0e433df73a8bc526ad4ca5",
+      "size": 4385,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/da32009e1c0dc280db0e433df73a8bc526ad4ca5"
+    },
+    {
+      "path": "apps/frontend/tests/resume-clean.test.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8ef49a24d755954e31a18cadf076fe6b11999a4e",
+      "size": 1131,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/8ef49a24d755954e31a18cadf076fe6b11999a4e"
+    },
+    {
+      "path": "apps/frontend/tests/resume-latex.test.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cec18aa555fd949d6b1a3de05e0d9ea5e6cbe7a9",
+      "size": 1408,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/cec18aa555fd949d6b1a3de05e0d9ea5e6cbe7a9"
+    },
+    {
+      "path": "apps/frontend/tests/resume-viewer-delete.test.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "da2fe89e93e69d2d44733ec3c77666525669ffd4",
+      "size": 3109,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/da2fe89e93e69d2d44733ec3c77666525669ffd4"
+    },
+    {
+      "path": "apps/frontend/tests/resume-vivid.test.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f5b60988321e05b2280a789d6ce1816e24c141ea",
+      "size": 1950,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/f5b60988321e05b2280a789d6ce1816e24c141ea"
+    },
+    {
+      "path": "apps/frontend/tests/resume-wizard-api.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "96d5fcbe50ba25002061127815c0df053888b381",
+      "size": 2216,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/96d5fcbe50ba25002061127815c0df053888b381"
+    },
+    {
+      "path": "apps/frontend/tests/resume-wizard-live-preview.test.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dd28f99effcf1a755dbd01c130ccf4e1e0fb54cb",
+      "size": 1885,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/dd28f99effcf1a755dbd01c130ccf4e1e0fb54cb"
+    },
+    {
+      "path": "apps/frontend/tests/resume-wizard-page.test.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8d0151fc5a6fd23f744ea7755589873ca09c2f92",
+      "size": 10193,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/8d0151fc5a6fd23f744ea7755589873ca09c2f92"
+    },
+    {
+      "path": "apps/frontend/tests/resume-wizard-question-card.test.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6973699943b18aeb72a8823166b986fdd57d026f",
+      "size": 4235,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/6973699943b18aeb72a8823166b986fdd57d026f"
+    },
+    {
+      "path": "apps/frontend/tests/rich-text-editor-extensions.test.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e5c507ca8672af919cdd0f66851083a148752624",
+      "size": 866,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e5c507ca8672af919cdd0f66851083a148752624"
+    },
+    {
+      "path": "apps/frontend/tests/section-helpers.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d14c468b06e9cec557ae5887eeefd1468f96b728",
+      "size": 4254,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/d14c468b06e9cec557ae5887eeefd1468f96b728"
+    },
+    {
+      "path": "apps/frontend/tests/template-registration.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7dd8ea6bf7bbac9d1b1d973cccf74784d7624e87",
+      "size": 2392,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/7dd8ea6bf7bbac9d1b1d973cccf74784d7624e87"
+    },
+    {
+      "path": "apps/frontend/tests/tracker-reorder.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5c3050e45f57fbb33b4d3dae19650f7224a01e6e",
+      "size": 3102,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/5c3050e45f57fbb33b4d3dae19650f7224a01e6e"
+    },
+    {
+      "path": "apps/frontend/tsconfig.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "705f5ce5e36873d15f0c6a8ff0175977b23371c6",
+      "size": 650,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/705f5ce5e36873d15f0c6a8ff0175977b23371c6"
+    },
+    {
+      "path": "apps/frontend/vitest.config.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "492eab875d5c36c12cc54bf04860f55d6f14adb9",
+      "size": 384,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/492eab875d5c36c12cc54bf04860f55d6f14adb9"
+    },
+    {
+      "path": "apps/frontend/vitest.setup.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "01d18c214e3b5cf1d1843904d4ab29c953cb43f0",
+      "size": 165,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/01d18c214e3b5cf1d1843904d4ab29c953cb43f0"
+    },
+    {
+      "path": "assets",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4a4a910e51e5a62c859c6907f80b8d56f534342a",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/4a4a910e51e5a62c859c6907f80b8d56f534342a"
+    },
+    {
+      "path": "assets/Resume_Matcher_Demo.gif",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dac25212e88da3a12ff1da27e589f56b2b188e15",
+      "size": 16804948,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/dac25212e88da3a12ff1da27e589f56b2b188e15"
+    },
+    {
+      "path": "assets/Resume_Matcher_Demo_2.gif",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0c63a1b732edd5a1a4b2a93df7dedb9d2982c666",
+      "size": 9701767,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/0c63a1b732edd5a1a4b2a93df7dedb9d2982c666"
+    },
+    {
+      "path": "assets/Resume_Matcher_Video.mp4",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "587f3b2136edfbb494b61f3090df179fd53eb23d",
+      "size": 11118040,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/587f3b2136edfbb494b61f3090df179fd53eb23d"
+    },
+    {
+      "path": "assets/Star Resume Matcher.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c9a2f37f0f27f8d791296120146a00963dea9cb3",
+      "size": 40521,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/c9a2f37f0f27f8d791296120146a00963dea9cb3"
+    },
+    {
+      "path": "assets/contributors.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b8fc9e3c427a5b1f77df59a942ab6d2ae253b2db",
+      "size": 24984,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b8fc9e3c427a5b1f77df59a942ab6d2ae253b2db"
+    },
+    {
+      "path": "assets/cover_letter.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "766ebd4b6f7819ff000871c82be741462a6dabb3",
+      "size": 827346,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/766ebd4b6f7819ff000871c82be741462a6dabb3"
+    },
+    {
+      "path": "assets/cover_letter_es.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1c57f42317ed5919a31f675f56b01f4d2ec143fb",
+      "size": 156756,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/1c57f42317ed5919a31f675f56b01f4d2ec143fb"
+    },
+    {
+      "path": "assets/cover_letter_ja.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2b76802d175ad43e986e6ba362d4a770f950ea5c",
+      "size": 198106,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/2b76802d175ad43e986e6ba362d4a770f950ea5c"
+    },
+    {
+      "path": "assets/cover_letter_zh-CN.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5a10131199b55696cf3a8aee57f2a584dfce396b",
+      "size": 171498,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/5a10131199b55696cf3a8aee57f2a584dfce396b"
+    },
+    {
+      "path": "assets/creators_note.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b2cdaa11b98f39c146015626f99960d038cd2e5d",
+      "size": 43596,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b2cdaa11b98f39c146015626f99960d038cd2e5d"
+    },
+    {
+      "path": "assets/favicon.ico",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "539114ac9880f80b83a9e8fff90e3516ce3a07b5",
+      "size": 15406,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/539114ac9880f80b83a9e8fff90e3516ce3a07b5"
+    },
+    {
+      "path": "assets/features.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f32e8baa02557e3c5676e50d4fb52e9b7faa4409",
+      "size": 144356,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/f32e8baa02557e3c5676e50d4fb52e9b7faa4409"
+    },
+    {
+      "path": "assets/header.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9fa6f98db4e7fbe5e7b457770704ef9d0832f3fc",
+      "size": 35651,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/9fa6f98db4e7fbe5e7b457770704ef9d0832f3fc"
+    },
+    {
+      "path": "assets/how_to_contribute.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "532f41fcd3ffe1f73da7657a9f41bf755b62d200",
+      "size": 20735,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/532f41fcd3ffe1f73da7657a9f41bf755b62d200"
+    },
+    {
+      "path": "assets/how_to_install_resumematcher.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "88c15e906e7a1a2ecd0946f82c611a93e1cff809",
+      "size": 19922,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/88c15e906e7a1a2ecd0946f82c611a93e1cff809"
+    },
+    {
+      "path": "assets/installing_resume_matcher.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "069aa88883513e7f622edd2f1b8967a6f6486e4d",
+      "size": 1237966,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/069aa88883513e7f622edd2f1b8967a6f6486e4d"
+    },
+    {
+      "path": "assets/keyword_highlighter.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ed74f5ab02f213bad3a2ff277294319ddb799a4c",
+      "size": 874300,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/ed74f5ab02f213bad3a2ff277294319ddb799a4c"
+    },
+    {
+      "path": "assets/keyword_highlighter_ja.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c80ad491d3a4a82e920c1be11768c320bcf99bf3",
+      "size": 348786,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/c80ad491d3a4a82e920c1be11768c320bcf99bf3"
+    },
+    {
+      "path": "assets/keyword_highlighter_zh-CN.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1ed47b859cf15f1a51b4885bd3fb4fb9bf79079f",
+      "size": 330435,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/1ed47b859cf15f1a51b4885bd3fb4fb9bf79079f"
+    },
+    {
+      "path": "assets/logo.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "07b7d0bf41a36fdb52ff18a16afe1ff708e4b7df",
+      "size": 773,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/07b7d0bf41a36fdb52ff18a16afe1ff708e4b7df"
+    },
+    {
+      "path": "assets/master_resume_view.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "88686268883eacbb5ff4ce965935149b1538e715",
+      "size": 618236,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/88686268883eacbb5ff4ce965935149b1538e715"
+    },
+    {
+      "path": "assets/page_2.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7427d25640f90bae063db5e4cd6e786de6bacab8",
+      "size": 1749193,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/7427d25640f90bae063db5e4cd6e786de6bacab8"
+    },
+    {
+      "path": "assets/pdf-templates",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1d278677fda09d35d56c19dc09719438fdb9d566",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/1d278677fda09d35d56c19dc09719438fdb9d566"
+    },
+    {
+      "path": "assets/pdf-templates/modern-single-column.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ab6a78a62e77d9f59bebc6e48d9ab8808f84cb2e",
+      "size": 1120757,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/ab6a78a62e77d9f59bebc6e48d9ab8808f84cb2e"
+    },
+    {
+      "path": "assets/pdf-templates/modern-single-column.pdf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4d12bae1ae05dafe6ca6262195b351c3863cf6bd",
+      "size": 183799,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/4d12bae1ae05dafe6ca6262195b351c3863cf6bd"
+    },
+    {
+      "path": "assets/pdf-templates/modern-two-column.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6807c0ec9397982c325fc1e0fbab9a0dde91f29d",
+      "size": 1029939,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/6807c0ec9397982c325fc1e0fbab9a0dde91f29d"
+    },
+    {
+      "path": "assets/pdf-templates/modern-two-column.pdf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1a099cf0abeeb2357c547f558c9372bf10fdc7a6",
+      "size": 207959,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/1a099cf0abeeb2357c547f558c9372bf10fdc7a6"
+    },
+    {
+      "path": "assets/pdf-templates/single-column.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4212f7b5ebce0c802d1c3825dfd6dfa232c173f8",
+      "size": 1116133,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/4212f7b5ebce0c802d1c3825dfd6dfa232c173f8"
+    },
+    {
+      "path": "assets/pdf-templates/single-column.pdf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f7cbd4e8fcfc9d63c86bf4023f1d9c54d67761c7",
+      "size": 183803,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/f7cbd4e8fcfc9d63c86bf4023f1d9c54d67761c7"
+    },
+    {
+      "path": "assets/pdf-templates/two-column.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5d1a57fee7eabc977dae8ec30c2eb8cb19029f0f",
+      "size": 1008029,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/5d1a57fee7eabc977dae8ec30c2eb8cb19029f0f"
+    },
+    {
+      "path": "assets/pdf-templates/two-column.pdf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5c49172b3c7f9ad69116d84ccb40de3b8130e2e9",
+      "size": 190091,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/5c49172b3c7f9ad69116d84ccb40de3b8130e2e9"
+    },
+    {
+      "path": "assets/resume_matcher_discord.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ea8e502ec811a1d3cee85ded560c0a227e7b641f",
+      "size": 68175,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/ea8e502ec811a1d3cee85ded560c0a227e7b641f"
+    },
+    {
+      "path": "assets/resume_matcher_features.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7d304d4ff52552d7bdbe9d208b108a7656fef1d0",
+      "size": 444854,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/7d304d4ff52552d7bdbe9d208b108a7656fef1d0"
+    },
+    {
+      "path": "assets/resume_matcher_linkedin.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7580955dbebc73b3f55a69988902036172f81074",
+      "size": 55830,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/7580955dbebc73b3f55a69988902036172f81074"
+    },
+    {
+      "path": "assets/sponsors.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f8e3149f9127e372a9382f25af086086a078e175",
+      "size": 55501,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/f8e3149f9127e372a9382f25af086086a078e175"
+    },
+    {
+      "path": "assets/star_resume_matcher.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e585cf329e69806e9b33ece6e5b83ef1ffdb3283",
+      "size": 35826,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e585cf329e69806e9b33ece6e5b83ef1ffdb3283"
+    },
+    {
+      "path": "assets/step_1.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7ca75e2d22f2d9d5e20027db8bc008806629ee04",
+      "size": 260040,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/7ca75e2d22f2d9d5e20027db8bc008806629ee04"
+    },
+    {
+      "path": "assets/step_2.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d359768561623f2e84ee560bd94d6f0f409617e0",
+      "size": 290281,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/d359768561623f2e84ee560bd94d6f0f409617e0"
+    },
+    {
+      "path": "assets/step_2_zh-CN.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "75340627ae32d08482c5b24b20ed9679e47399c0",
+      "size": 42681,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/75340627ae32d08482c5b24b20ed9679e47399c0"
+    },
+    {
+      "path": "assets/step_3.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4c372fb925f45d3e98f1ffd72dc1a192c3e53d76",
+      "size": 210524,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/4c372fb925f45d3e98f1ffd72dc1a192c3e53d76"
+    },
+    {
+      "path": "assets/step_5.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4b8d5b4b4158dd55bd29c582605ff1ddc209e6a8",
+      "size": 766087,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/4b8d5b4b4158dd55bd29c582605ff1ddc209e6a8"
+    },
+    {
+      "path": "assets/step_5_ja.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "da0fba8655f61aeb420c0ba1f10fc59339fa9d86",
+      "size": 142708,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/da0fba8655f61aeb420c0ba1f10fc59339fa9d86"
+    },
+    {
+      "path": "assets/step_5_zh-CN.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aaac173e3a526eec61631f4f12d6e7ae3156cf27",
+      "size": 140083,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/aaac173e3a526eec61631f4f12d6e7ae3156cf27"
+    },
+    {
+      "path": "assets/supporting_resume_matcher.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9b4341e9482bffc0c3147aef07a106dabd1c15f4",
+      "size": 21287,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/9b4341e9482bffc0c3147aef07a106dabd1c15f4"
+    },
+    {
+      "path": "docker-compose.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f307ea174453506b74e48408ff8df70f2ab373c1",
+      "size": 1591,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/f307ea174453506b74e48408ff8df70f2ab373c1"
+    },
+    {
+      "path": "docker",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "11c32a879d5a36e09560d923af8afbe74a65a97f",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/11c32a879d5a36e09560d923af8afbe74a65a97f"
+    },
+    {
+      "path": "docker/start.sh",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "68496f49ced0cd0f6251d305a691e7584cdbd4f4",
+      "size": 8313,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/68496f49ced0cd0f6251d305a691e7584cdbd4f4"
+    },
+    {
+      "path": "docs",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "89c691cc364d0b07d37002d8e98810a69f862166",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/89c691cc364d0b07d37002d8e98810a69f862166"
+    },
+    {
+      "path": "docs/agent",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f3d2b45b1da9291f3c9873d285f583607b6dec9e",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/f3d2b45b1da9291f3c9873d285f583607b6dec9e"
+    },
+    {
+      "path": "docs/agent/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "29b590bc81ac2440ac1b1d064fbb33ef9f8ae103",
+      "size": 4496,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/29b590bc81ac2440ac1b1d064fbb33ef9f8ae103"
+    },
+    {
+      "path": "docs/agent/apis",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "72d2d4e193136f7b89508e24ceb72f364cb258ba",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/72d2d4e193136f7b89508e24ceb72f364cb258ba"
+    },
+    {
+      "path": "docs/agent/apis/api-flow-maps.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "48aefe0c7d17e76270c3a27590b8e44d72e3ee0c",
+      "size": 4835,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/48aefe0c7d17e76270c3a27590b8e44d72e3ee0c"
+    },
+    {
+      "path": "docs/agent/apis/backend-requirements.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "867f74d0ea1d0039efc363c063dc41709c5b7bf5",
+      "size": 2681,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/867f74d0ea1d0039efc363c063dc41709c5b7bf5"
+    },
+    {
+      "path": "docs/agent/apis/front-end-apis.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fb1172b6aaa29014536e08151b77ec1fa954f18d",
+      "size": 5236,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/fb1172b6aaa29014536e08151b77ec1fa954f18d"
+    },
+    {
+      "path": "docs/agent/architecture",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "603062a7074c2577ed5271b648d1dc8b40464b9e",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/603062a7074c2577ed5271b648d1dc8b40464b9e"
+    },
+    {
+      "path": "docs/agent/architecture/backend-architecture.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fb9330c0be3f7ef61f8b54a6ca000cb6ff818344",
+      "size": 7814,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/fb9330c0be3f7ef61f8b54a6ca000cb6ff818344"
+    },
+    {
+      "path": "docs/agent/architecture/backend-guide.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "722265847431d7251ce40ec6bf5903aa47f417aa",
+      "size": 5295,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/722265847431d7251ce40ec6bf5903aa47f417aa"
+    },
+    {
+      "path": "docs/agent/architecture/frontend-architecture.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "df8c65e934933eae104e39a7ae23badc0b803184",
+      "size": 3635,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/df8c65e934933eae104e39a7ae23badc0b803184"
+    },
+    {
+      "path": "docs/agent/architecture/frontend-workflow.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2a16de33ec5dec5615baf113aacf8b12289c0363",
+      "size": 2219,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/2a16de33ec5dec5615baf113aacf8b12289c0363"
+    },
+    {
+      "path": "docs/agent/architecture/prompt-workflow-design.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3a94acb9989e6a7896fbd6dbe6c76e3ed9c03c84",
+      "size": 19545,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/3a94acb9989e6a7896fbd6dbe6c76e3ed9c03c84"
+    },
+    {
+      "path": "docs/agent/coding-standards.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ba03d34a23e3df25254845f9b8d2bda3b919db57",
+      "size": 2369,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/ba03d34a23e3df25254845f9b8d2bda3b919db57"
+    },
+    {
+      "path": "docs/agent/design",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "df83dd6bd3437d9b051b5c9c3a32519172a9b0f3",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/df83dd6bd3437d9b051b5c9c3a32519172a9b0f3"
+    },
+    {
+      "path": "docs/agent/design/pdf-template-guide.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d665dc74c763ff950494c103f85e9c62a1735d8b",
+      "size": 2328,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/d665dc74c763ff950494c103f85e9c62a1735d8b"
+    },
+    {
+      "path": "docs/agent/design/print-pdf-design-spec.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "77171decd775a6f304c3adf1b1703bc16ce5f955",
+      "size": 1179,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/77171decd775a6f304c3adf1b1703bc16ce5f955"
+    },
+    {
+      "path": "docs/agent/design/resume-template-design-spec.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "879cff00b87534f074ec44422ba6e01546c803ae",
+      "size": 1735,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/879cff00b87534f074ec44422ba6e01546c803ae"
+    },
+    {
+      "path": "docs/agent/design/template-system.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d2aacacea6fc52939613a4b03e170ed50830970f",
+      "size": 4176,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/d2aacacea6fc52939613a4b03e170ed50830970f"
+    },
+    {
+      "path": "docs/agent/design/templates",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "46b484fb910b0ad3afed34e0fff34dcf95afa611",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/46b484fb910b0ad3afed34e0fff34dcf95afa611"
+    },
+    {
+      "path": "docs/agent/design/templates/swiss-single-spec.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "382e38de03742e8433de71016cb712b541c9088e",
+      "size": 1650,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/382e38de03742e8433de71016cb712b541c9088e"
+    },
+    {
+      "path": "docs/agent/design/templates/swiss-two-column-spec.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8ac3d847dd1065e22a60901d3251344f2210a210",
+      "size": 1745,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/8ac3d847dd1065e22a60901d3251344f2210a210"
+    },
+    {
+      "path": "docs/agent/features",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "836c7c601b86e5d0c34619f2524b559bc3190c68",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/836c7c601b86e5d0c34619f2524b559bc3190c68"
+    },
+    {
+      "path": "docs/agent/features/adding-resume-templates.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "201bc7e6a41288ab44e3d00f13ecffe26afc95e7",
+      "size": 1821,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/201bc7e6a41288ab44e3d00f13ecffe26afc95e7"
+    },
+    {
+      "path": "docs/agent/features/application-tracker.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3fde8751a84b1de1323b4dab526aea27e3907e55",
+      "size": 4000,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/3fde8751a84b1de1323b4dab526aea27e3907e55"
+    },
+    {
+      "path": "docs/agent/features/custom-sections.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7406feeb134b5f7377a69ae08c368f57f9e43551",
+      "size": 2890,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/7406feeb134b5f7377a69ae08c368f57f9e43551"
+    },
+    {
+      "path": "docs/agent/features/enrichment.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "856c9572a0ad4682efae3c48508e51d2e43cc12f",
+      "size": 1780,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/856c9572a0ad4682efae3c48508e51d2e43cc12f"
+    },
+    {
+      "path": "docs/agent/features/i18n-preparation.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9e5c05b61ac20d0a907b7716e2e1f5faa67f5d77",
+      "size": 1446,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/9e5c05b61ac20d0a907b7716e2e1f5faa67f5d77"
+    },
+    {
+      "path": "docs/agent/features/i18n.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f918c37011dc9c55b19e38a6f4802d2c54d67826",
+      "size": 2333,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/f918c37011dc9c55b19e38a6f4802d2c54d67826"
+    },
+    {
+      "path": "docs/agent/features/jd-match.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c3cfb2c061b35effceb8093098c336532c4aa62a",
+      "size": 1553,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/c3cfb2c061b35effceb8093098c336532c4aa62a"
+    },
+    {
+      "path": "docs/agent/features/resume-templates.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6436dd659f4bbeaa1c3163867e8f3abb791fc2ed",
+      "size": 4143,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/6436dd659f4bbeaa1c3163867e8f3abb791fc2ed"
+    },
+    {
+      "path": "docs/agent/llm-integration.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3146a02f75cc92e24cd9fd2a51373f3d72fd5c43",
+      "size": 3686,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/3146a02f75cc92e24cd9fd2a51373f3d72fd5c43"
+    },
+    {
+      "path": "docs/agent/quickstart.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "382ef37eb0578c5cdc327f9f59b5f01a3bf01e43",
+      "size": 1071,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/382ef37eb0578c5cdc327f9f59b5f01a3bf01e43"
+    },
+    {
+      "path": "docs/agent/scope-and-principles.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d2ea440a93288981e1263c7cfc7665cdd71ecaf8",
+      "size": 1820,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/d2ea440a93288981e1263c7cfc7665cdd71ecaf8"
+    },
+    {
+      "path": "docs/agent/testing-strategy.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bf486d7780bef4164b16322cf3424d90a12aa466",
+      "size": 17913,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/bf486d7780bef4164b16322cf3424d90a12aa466"
+    },
+    {
+      "path": "docs/agent/workflow.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3637494f5f7f5f995396e468b5aa795cd08fbb23",
+      "size": 1887,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/3637494f5f7f5f995396e468b5aa795cd08fbb23"
+    },
+    {
+      "path": "docs/portable",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "73de327e8c3f577d6de1f171ac008f7b9f67aab3",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/73de327e8c3f577d6de1f171ac008f7b9f67aab3"
+    },
+    {
+      "path": "docs/portable/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d173e7362b95ea807b730953cb3bfa182ef7b7b5",
+      "size": 1965,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/d173e7362b95ea807b730953cb3bfa182ef7b7b5"
+    },
+    {
+      "path": "docs/portable/nextjs-performance",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6539b06b65879b3fc1762c2d17b1fcbea83cf0a2",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/6539b06b65879b3fc1762c2d17b1fcbea83cf0a2"
+    },
+    {
+      "path": "docs/portable/nextjs-performance/01-waterfalls.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5486f2761e3c1aa0b307412b5a77e27e334d8652",
+      "size": 5729,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/5486f2761e3c1aa0b307412b5a77e27e334d8652"
+    },
+    {
+      "path": "docs/portable/nextjs-performance/02-bundle-size.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "860fd90b1c492d04cd9dc91b74893f5ad08073a5",
+      "size": 5287,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/860fd90b1c492d04cd9dc91b74893f5ad08073a5"
+    },
+    {
+      "path": "docs/portable/nextjs-performance/03-server-actions-security.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c88abbdf8732f1da6c2e367cc0b1d1cd0451bec8",
+      "size": 5056,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/c88abbdf8732f1da6c2e367cc0b1d1cd0451bec8"
+    },
+    {
+      "path": "docs/portable/nextjs-performance/04-server-side-perf.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cdda18efcf0b2419134e40c6abbfa9c9e51bcd02",
+      "size": 5676,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/cdda18efcf0b2419134e40c6abbfa9c9e51bcd02"
+    },
+    {
+      "path": "docs/portable/nextjs-performance/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fddfab5dadb4dc38ede06e4043f30ec4c805ff48",
+      "size": 2620,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/fddfab5dadb4dc38ede06e4043f30ec4c805ff48"
+    },
+    {
+      "path": "docs/portable/nextjs-performance/checklist.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f4f8f4c5e457150c88becc341875ed51b216056c",
+      "size": 3774,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/f4f8f4c5e457150c88becc341875ed51b216056c"
+    },
+    {
+      "path": "docs/portable/swiss-design-system",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ee9b5202dca691bf00cfa89b47e67e073db97203",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/ee9b5202dca691bf00cfa89b47e67e073db97203"
+    },
+    {
+      "path": "docs/portable/swiss-design-system/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b73befda8f35861033a826f674b76f8a6c97a6e7",
+      "size": 2435,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/b73befda8f35861033a826f674b76f8a6c97a6e7"
+    },
+    {
+      "path": "docs/portable/swiss-design-system/ai-prompt.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8ef36b6907795807c249e895c3adcf313a7b52b2",
+      "size": 4078,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/8ef36b6907795807c249e895c3adcf313a7b52b2"
+    },
+    {
+      "path": "docs/portable/swiss-design-system/anti-patterns.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bd34612f3eefc5ad49786bea777544839c37a779",
+      "size": 4627,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/bd34612f3eefc5ad49786bea777544839c37a779"
+    },
+    {
+      "path": "docs/portable/swiss-design-system/components.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "32aa049f1124492a4243eae03a465dd5f5c1889e",
+      "size": 5513,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/32aa049f1124492a4243eae03a465dd5f5c1889e"
+    },
+    {
+      "path": "docs/portable/swiss-design-system/layouts.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0d8e716e9d37239a1ee5ed8d3d077aa718ddb4e4",
+      "size": 3873,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/0d8e716e9d37239a1ee5ed8d3d077aa718ddb4e4"
+    },
+    {
+      "path": "docs/portable/swiss-design-system/tokens.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5196840bef6b200253522f6fc3473dc5d73d9528",
+      "size": 4170,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/5196840bef6b200253522f6fc3473dc5d73d9528"
+    },
+    {
+      "path": "docs/superpowers",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ec053c9c40f7b94b438510d75837e469a71787e7",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/ec053c9c40f7b94b438510d75837e469a71787e7"
+    },
+    {
+      "path": "docs/superpowers/plans",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2010222146a1eb7216d3838860827995d1a7f9b2",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/2010222146a1eb7216d3838860827995d1a7f9b2"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-03-23-diff-based-improvement.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "98648b18896abf0bf891711d9207d06890f3f8de",
+      "size": 46372,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/98648b18896abf0bf891711d9207d06890f3f8de"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-04-17-dev-issues-754-751-749.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c123f92b2268789dc3f8b0fd7cfc571a5fd1ad69",
+      "size": 47667,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/c123f92b2268789dc3f8b0fd7cfc571a5fd1ad69"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-04-17-litellm-reasoning-hardening.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7ed55912795ee981a754c2d3484fe29ed0e8df64",
+      "size": 41985,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/7ed55912795ee981a754c2d3484fe29ed0e8df64"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-05-06-resume-tailor-verifier-loop.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "593a556aa8b411178e65bf788ce125890d6ddbd7",
+      "size": 3219,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/593a556aa8b411178e65bf788ce125890d6ddbd7"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-06-01-agentic-e2e-monitor.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "63f2675db79c32bc8baff0255e09009f3e953bd8",
+      "size": 55766,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/63f2675db79c32bc8baff0255e09009f3e953bd8"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-06-03-resume-templates-latex-clean-vivid.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "db54d4e3e26cdcc1795ce2854535a60812ff4e17",
+      "size": 26226,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/db54d4e3e26cdcc1795ce2854535a60812ff4e17"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-06-04-resume-wizard-redesign.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9787687aeb1a2428b000e1a200c768719a9a11b6",
+      "size": 93942,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/9787687aeb1a2428b000e1a200c768719a9a11b6"
+    },
+    {
+      "path": "docs/superpowers/specs",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "01ebe01e3509d2847834010f47f5fd8b24261983",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/01ebe01e3509d2847834010f47f5fd8b24261983"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-03-23-diff-based-improvement-design.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bb2c9d9d4522efad1c5334bc78d31a3bcba1aad9",
+      "size": 24878,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/bb2c9d9d4522efad1c5334bc78d31a3bcba1aad9"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-04-10-health-check-fix-design.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5d20c9e3b1a99198f4bb4c1186ad1cb13e490aac",
+      "size": 1607,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/5d20c9e3b1a99198f4bb4c1186ad1cb13e490aac"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-04-17-custom-feature-prompts-design.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "84a6bcce4c7c0bf957c9556093563463227d27d0",
+      "size": 11278,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/84a6bcce4c7c0bf957c9556093563463227d27d0"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-04-17-litellm-reasoning-hardening-design.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e3f7c44ab2c1d18b1eaa7c52f1ab0e607b6371a7",
+      "size": 10063,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/e3f7c44ab2c1d18b1eaa7c52f1ab0e607b6371a7"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-04-17-openai-compatible-provider-design.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "738c87832bc05eb965185ad694da5fcc4eada804",
+      "size": 8468,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/738c87832bc05eb965185ad694da5fcc4eada804"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-04-17-settings-error-overflow-design.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1ce8e51453fcb3aad326f50d5e95928a6c82ebbb",
+      "size": 4132,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/1ce8e51453fcb3aad326f50d5e95928a6c82ebbb"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-06-01-agentic-e2e-monitor-design.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7f45befbfccb5179211dc54c637be8094424cd91",
+      "size": 17328,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/7f45befbfccb5179211dc54c637be8094424cd91"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-06-03-resume-templates-latex-clean-vivid-design.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "86ed0625ec0fa71eed41dcec92dc243c7388db3a",
+      "size": 9215,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/86ed0625ec0fa71eed41dcec92dc243c7388db3a"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-06-04-resume-wizard-design.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1368974a9aef48b942792777b3a7c7eaf60b106a",
+      "size": 9204,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/1368974a9aef48b942792777b3a7c7eaf60b106a"
+    },
+    {
+      "path": "docs/superpowers/specs/2026-06-04-resume-wizard-redesign-design.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4c543e0ad5c0e5e850c9aeb2d9612193f2cf3d1c",
+      "size": 13961,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/4c543e0ad5c0e5e850c9aeb2d9612193f2cf3d1c"
+    },
+    {
+      "path": "scripts",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "29860a5be17c990f7693703160225df6cfc84e7d",
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/trees/29860a5be17c990f7693703160225df6cfc84e7d"
+    },
+    {
+      "path": "scripts/check_locale_parity.py",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "a9c1ad1bcf476ebe873510651772767a1ff0ac45",
+      "size": 5837,
+      "url": "https://api.github.com/repos/srbhr/Resume-Matcher/git/blobs/a9c1ad1bcf476ebe873510651772767a1ff0ac45"
+    }
+  ],
+  "truncated": false
+}
