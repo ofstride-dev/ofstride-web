@@ -20,6 +20,7 @@ from core.api_contract import error_response, get_trace_id, ok_response, options
 from core.blob_rest import resolve_blob_config_with_reason, upload_blob
 from careers_agentic.jd_enhancer import enhance_jd_with_existing_llm
 from careers_agentic.resume_analyzer import ai_revalidate_analysis, analyze_application
+from careers_agentic.resume_builder.routes import route_resume_builder
 from persistence.careers_store import get_careers_store
 
 import logging as _lg
@@ -708,6 +709,10 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
     # ── POST /cleanup (clean stale drafts) ────────────────────────────────
     if req.method == "POST" and primary == "cleanup" and len(segments) == 1:
         return await _handle_cleanup(req, trace_id, admin)
+
+    # ── Resume Builder: resume-builder/* ─────────────────────────────────
+    if primary == "resume-builder":
+        return await route_resume_builder(req, trace_id=trace_id, admin=admin, segments=segments[1:])
 
     # ── Fallback 404 ──────────────────────────────────────────────────────
     return error_response(error_type="validation", message=f"Unknown careers/manage endpoint: {path}", trace_id=trace_id, req=req, status_code=404)

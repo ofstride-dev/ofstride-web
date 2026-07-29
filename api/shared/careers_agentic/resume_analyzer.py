@@ -209,6 +209,63 @@ def _safe_years_experience(value: Any) -> float:
             return 0.0
 
 
+def _coerce_str_list(value: Any, fallback: list[str]) -> list[str]:
+    """Coerce an LLM-returned value into a list of short bullet strings.
+
+    Accepts a JSON array of strings or a single string split on ; / bullet /
+    newline. Falls back to the supplied deterministic bullets when empty.
+    """
+    if isinstance(value, list):
+        out = [str(x).strip(" -•\t") for x in value if str(x).strip()]
+        if out:
+            return out[:8]
+        return list(fallback)
+    if isinstance(value, str) and value.strip():
+        parts = [p.strip(" -•\t") for p in re.split(r"[;\u2022\n]", value) if p.strip()]
+        if parts:
+            return parts[:8]
+    return list(fallback)
+
+
+def _clamp_num(value: Any, lo: float, hi: float, default: float) -> float:
+    try:
+        return max(lo, min(hi, round(float(value), 1)))
+    except (TypeError, ValueError):
+        return float(default)
+
+
+def _build_strengths_bullets(matched: list[str], required: list[str], years: float, recommendation: str) -> list[str]:
+    bullets: list[str] = []
+    if matched:
+        preview = ", ".join(matched[:4])
+        suffix = "" if len(matched) <= 4 else f" (+{len(matched) - 4} more)"
+        bullets.append(f"Matches {len(matched)}/{len(required)} critical skills: {preview}{suffix}.")
+    else:
+        bullets.append("No critical skills directly matched the job description keywords.")
+    if years >= 8:
+        bullets.append(f"Strong experience ({years:.1f} years) — above the typical mid-level expectation.")
+    elif years >= 3:
+        bullets.append(f"Solid experience ({years:.1f} years) relevant to the role.")
+    elif years > 0:
+        bullets.append(f"Early-career ({years:.1f} years); good growth potential with some upskilling.")
+    if recommendation == "shortlist":
+        bullets.append("Overall alignment supports progressing the candidate to interview.")
+    return bullets[:5]
+
+
+def _build_gaps_bullets(missing: list[str], required: list[str], years: float) -> list[str]:
+    bullets: list[str] = []
+    if missing:
+        preview = ", ".join(missing[:4])
+        suffix = "" if len(missing) <= 4 else f" (+{len(missing) - 4} more)"
+        bullets.append(f"Missing {len(missing)}/{len(required)} required skills: {preview}{suffix}.")
+    else:
+        bullets.append("No critical skill gaps identified against the JD.")
+    if 0 <= years < 3:
+        bullets.append("Years of experience may be below the role's seniority expectation.")
+    return bullets[:5]
+
+
 def analyze_application(*, job: dict[str, Any], application: dict[str, Any]) -> dict[str, Any]:
     jd_text = " ".join(
         [
@@ -245,15 +302,69 @@ def analyze_application(*, job: dict[str, Any], application: dict[str, Any]) -> 
     gaps = f"Missing {len(missing)} skills" + (f": {', '.join(missing)}." if missing else ".")
     fit_band = "high" if score >= 75 else ("medium" if score >= 60 else "low")
 
+    # ── Weighted dimension + composite scores (drives the frontend "Score
+    #    Breakout" tab). skills_fit is on a 0-40 scale, experience_fit 0-30,
+    #    education_fit 0-30. The composite keyword/semantic/overall scores are
+    #    0-100. The LLM revalidation step refines these against the evidence.
+    skills_fit = round(skill_ratio * 40)
+    experience_fit = round(min(experience_score, 30.0))
+    # Education is not parsed by the deterministic layer; use a conservative
+    # proxy so the dimension renders rather than being hidden.
+    education_fit = 18 if years >= 5 else (12 if years >= 2 else 6)
+    keyword_score = round(skill_ratio * 100)                                  # Layer 1 overlap (0-100)
+    semantic_score = round(min(100.0, skill_ratio * 70.0 + experience_score))  # proxy (0-100)
+    overall_score = round(score)                                               # composite (0-100)
+
+    strengths_list = _build_strengths_bullets(matched, required, years, recommendation)
+    gaps_list = _build_gaps_bullets(missing, required, years)
+
     structured_report = {
-        "summary": f"Candidate fit is {fit_band} with score {score:.1f}/100.",
+        "summary": (
+            f"Recommendation: {recommendation.upper()}. Candidate scores {score:.1f}/100 "
+            f"({fit_band} fit) — matched {len(matched)} of {len(required)} key skills "
+            f"with {years:.1f} years of experience."
+        ),
         "fit_band": fit_band,
         "score_breakdown": {
+            "skills_fit": skills_fit,
+            "skills_max": 40,
+            "experience_fit": experience_fit,
+            "experience_max": 30,
+            "education_fit": education_fit,
+            "education_max": 30,
+            "keyword_score": keyword_score,
+            "keyword_max": 100,
+            "semantic_score": semantic_score,
+            "semantic_max": 100,
+            "overall_score": overall_score,
+            "overall_max": 100,
+            # Legacy counters retained for backward compatibility.
             "experience_years": years,
             "matched_skills_count": len(matched),
             "missing_skills_count": len(missing),
         },
-        "recommendation_rationale": f"Recommendation '{recommendation}' based on skills and experience alignment.",
+        "recommendation_rationale": (
+            f"'{recommendation}' based on {len(matched)}/{len(required)} critical skill matches "
+            f"and {years:.1f} years of experience. See the Strengths & Gaps tab for evidence."
+        ),
+        "strengths": strengths_list,
+        "gaps": gaps_list,
+        "executive_summary": _build_executive_summary_structured(
+            score=score,
+            fit_band=fit_band,
+            recommendation=recommendation,
+            breakdown={
+                "skills_fit": skills_fit,
+                "skills_max": 40,
+                "experience_fit": experience_fit,
+                "experience_max": 30,
+                "education_fit": education_fit,
+                "education_max": 30,
+            },
+            matched=matched,
+            missing=missing,
+            years=years,
+        ),
     }
 
     return {
@@ -263,6 +374,8 @@ def analyze_application(*, job: dict[str, Any], application: dict[str, Any]) -> 
         "missing_skills": missing,
         "strengths_summary": strengths,
         "gaps_summary": gaps,
+        "strengths": strengths_list,
+        "gaps": gaps_list,
         "suggested_status": _score_to_status(score),
         "admin_summary": {
             "fit_band": fit_band,
@@ -271,6 +384,143 @@ def analyze_application(*, job: dict[str, Any], application: dict[str, Any]) -> 
             "top_gaps": missing[:5],
         },
         "structured_report": structured_report,
+    }
+
+
+def _merge_score_breakdown(
+    base: dict[str, Any], llm: dict[str, Any] | None, ai_score: float
+) -> dict[str, Any]:
+    """Merge the LLM-refined score breakdown over the deterministic base.
+
+    Each dimension/composite value is clamped to its valid range and the
+    composite ``overall_score`` is forced to equal the calibrated match score
+    so the UI's "Overall (Composite)" row always matches the headline score.
+    """
+    llm = llm or {}
+    base = base or {}
+
+    def _pick(key: str, lo: float, hi: float, default: float) -> float:
+        val = llm.get(key)
+        if val is None:
+            val = base.get(key, default)
+        return _clamp_num(val, lo, hi, default)
+
+    skills_fit = _pick("skills_fit", 0, 40, float(base.get("skills_fit", 0)))
+    experience_fit = _pick("experience_fit", 0, 30, float(base.get("experience_fit", 0)))
+    education_fit = _pick("education_fit", 0, 30, float(base.get("education_fit", 0)))
+    keyword_score = _pick("keyword_score", 0, 100, float(base.get("keyword_score", 0)))
+    semantic_score = _pick("semantic_score", 0, 100, float(base.get("semantic_score", 0)))
+
+    return {
+        "skills_fit": skills_fit,
+        "skills_max": 40,
+        "experience_fit": experience_fit,
+        "experience_max": 30,
+        "education_fit": education_fit,
+        "education_max": 30,
+        "keyword_score": keyword_score,
+        "keyword_max": 100,
+        "semantic_score": semantic_score,
+        "semantic_max": 100,
+        # Force the composite to equal the calibrated match score.
+        "overall_score": _clamp_num(ai_score, 0, 100, ai_score),
+        "overall_max": 100,
+        # Legacy counters retained for backward compatibility.
+        "experience_years": base.get("experience_years", 0.0),
+        "matched_skills_count": base.get("matched_skills_count", 0),
+        "missing_skills_count": base.get("missing_skills_count", 0),
+    }
+
+
+def _build_consistent_summary(
+    *,
+    ai_score: float,
+    fit_band: str,
+    recommendation: str,
+    breakdown: dict[str, Any],
+    matched: list[str],
+    missing: list[str],
+    years: float,
+) -> str:
+    """Build a humanized fallback executive summary whose stated scores are
+    guaranteed consistent with the calibrated match score and breakdown."""
+    skills_fit = breakdown.get("skills_fit", 0)
+    experience_fit = breakdown.get("experience_fit", 0)
+    education_fit = breakdown.get("education_fit", 0)
+    total_required = len(matched) + len(missing)
+    return (
+        f"Recommendation: {recommendation.upper()} ({fit_band} fit). "
+        f"The candidate scores {ai_score:.1f}/100 overall, driven by "
+        f"skills fit {skills_fit:.0f}/40, experience {experience_fit:.0f}/30 "
+        f"and education {education_fit:.0f}/30 — matching "
+        f"{len(matched)} of {total_required} critical skills with "
+        f"{years:.1f} years of experience."
+    )
+
+
+def _build_executive_summary_structured(
+    *,
+    score: float,
+    fit_band: str,
+    recommendation: str,
+    breakdown: dict[str, Any],
+    matched: list[str],
+    missing: list[str],
+    years: float,
+    narrative: str | None = None,
+) -> dict[str, Any]:
+    """Build a structured executive-summary object whose numbers are guaranteed
+    consistent with the calibrated match score and score breakdown.
+
+    Mirrors the structured "Score Breakout" by exposing the same weighted
+    dimension scores as labelled bars, plus a verdict headline, the top
+    matched (highlights) and missing (risks) skills, and a confidence band.
+    """
+    narrative = (narrative or "").strip() or _build_consistent_summary(
+        ai_score=score,
+        fit_band=fit_band,
+        recommendation=recommendation,
+        breakdown=breakdown,
+        matched=matched,
+        missing=missing,
+        years=years,
+    )
+    reco_norm = str(recommendation).lower()
+    reco_label = {
+        "shortlist": "Shortlist",
+        "review": "Review",
+        "hold": "Hold",
+    }.get(reco_norm, str(recommendation).capitalize() or "-")
+    band_label = str(fit_band).capitalize()
+    return {
+        "headline": f"{reco_label} · {band_label} fit · {round(float(score))}/100",
+        "narrative": narrative,
+        "recommendation": reco_norm,
+        "fit_band": str(fit_band),
+        "score": round(float(score)),
+        "dimensions": [
+            {
+                "label": "Skills Fit",
+                "score": float(breakdown.get("skills_fit", 0)),
+                "max": float(breakdown.get("skills_max", 40)),
+                "color": "indigo",
+            },
+            {
+                "label": "Experience",
+                "score": float(breakdown.get("experience_fit", 0)),
+                "max": float(breakdown.get("experience_max", 30)),
+                "color": "cyan",
+            },
+            {
+                "label": "Education",
+                "score": float(breakdown.get("education_fit", 0)),
+                "max": float(breakdown.get("education_max", 30)),
+                "color": "violet",
+            },
+        ],
+        "highlights": list(matched[:3]),
+        "risks": list(missing[:3]),
+        "confidence": str(fit_band),
     }
 
 
@@ -311,11 +561,21 @@ async def ai_revalidate_analysis(*, job: dict[str, Any], application: dict[str, 
                 "base_result": base_result,
                 "required_output": {
                     "match_score": "number between 0 and 100",
-                    "recommendation": "shortlist|review|hold",
-                    "summary": "short paragraph <= 240 chars",
-                    "strengths_summary": "short sentence",
-                    "gaps_summary": "short sentence",
-                    "recommendation_rationale": "short sentence",
+                    "recommendation": "shortlist | review | hold",
+                    "executive_summary": "2-3 sentence humanized narrative for an HR admin. MUST state the exact match_score number, the fit band (high/medium/low), the recommendation, and cite the skills_fit/experience_fit/education_fit dimension scores. Every number cited MUST exactly equal the corresponding value in score_breakdown and match_score - never invent, round, or approximate differently.",
+                    "strengths": "JSON array of 3-5 short bullet strings (each <= 90 chars), each an evidence-grounded strength",
+                    "gaps": "JSON array of 3-5 short bullet strings (each <= 90 chars), each an evidence-grounded gap or risk",
+                    "strengths_summary": "one-line summary of the top strengths",
+                    "gaps_summary": "one-line summary of the top gaps",
+                    "recommendation_rationale": "2-3 sentences with concrete evidence (skills matched, years of experience, education)",
+                    "score_breakdown": {
+                        "skills_fit": "number 0-40 (weighted critical-skills score)",
+                        "experience_fit": "number 0-30 (weighted experience/seniority score)",
+                        "education_fit": "number 0-30 (weighted education/certification score)",
+                        "keyword_score": "number 0-100 (Layer 1 keyword overlap)",
+                        "semantic_score": "number 0-100 (Layer 2 semantic similarity)",
+                        "overall_score": "number 0-100 (composite, must equal match_score)",
+                    },
                 },
             },
             ensure_ascii=True,
@@ -326,7 +586,7 @@ async def ai_revalidate_analysis(*, job: dict[str, Any], application: dict[str, 
             system_prompt=system_prompt,
             user_prompt=draft_prompt,
             temperature=0.25,
-            max_tokens=450,
+            max_tokens=900,
         )
 
         review_prompt = json.dumps(
@@ -347,11 +607,21 @@ async def ai_revalidate_analysis(*, job: dict[str, Any], application: dict[str, 
                 "draft_analysis": draft_data,
                 "required_output": {
                     "match_score": "number between 0 and 100",
-                    "recommendation": "shortlist|review|hold",
-                    "summary": "short paragraph <= 240 chars",
-                    "strengths_summary": "short sentence",
-                    "gaps_summary": "short sentence",
-                    "recommendation_rationale": "short sentence",
+                    "recommendation": "shortlist | review | hold",
+                    "executive_summary": "2-3 sentence humanized narrative for an HR admin. MUST state the exact match_score number, the fit band (high/medium/low), the recommendation, and cite the skills_fit/experience_fit/education_fit dimension scores. Every number cited MUST exactly equal the corresponding value in score_breakdown and match_score - never invent, round, or approximate differently.",
+                    "strengths": "JSON array of 3-5 short bullet strings (each <= 90 chars), each an evidence-grounded strength",
+                    "gaps": "JSON array of 3-5 short bullet strings (each <= 90 chars), each an evidence-grounded gap or risk",
+                    "strengths_summary": "one-line summary of the top strengths",
+                    "gaps_summary": "one-line summary of the top gaps",
+                    "recommendation_rationale": "2-3 sentences with concrete evidence (skills matched, years of experience, education)",
+                    "score_breakdown": {
+                        "skills_fit": "number 0-40 (weighted critical-skills score)",
+                        "experience_fit": "number 0-30 (weighted experience/seniority score)",
+                        "education_fit": "number 0-30 (weighted education/certification score)",
+                        "keyword_score": "number 0-100 (Layer 1 keyword overlap)",
+                        "semantic_score": "number 0-100 (Layer 2 semantic similarity)",
+                        "overall_score": "number 0-100 (composite, must equal match_score)",
+                    },
                 },
             },
             ensure_ascii=True,
@@ -362,7 +632,7 @@ async def ai_revalidate_analysis(*, job: dict[str, Any], application: dict[str, 
             system_prompt=system_prompt,
             user_prompt=review_prompt,
             temperature=0.1,
-            max_tokens=350,
+            max_tokens=800,
         )
         data = reviewed_data or draft_data
 
@@ -371,19 +641,57 @@ async def ai_revalidate_analysis(*, job: dict[str, Any], application: dict[str, 
         ai_reco = _normalize_recommendation(str(data.get("recommendation") or base_result["recommendation"]), ai_score)
 
         fit_band = "high" if ai_score >= 75 else ("medium" if ai_score >= 60 else "low")
+
+        base_breakdown = (
+            base_result.get("structured_report", {}).get("score_breakdown", {}) or {}
+        )
+        llm_breakdown = data.get("score_breakdown") if isinstance(data.get("score_breakdown"), dict) else {}
+        score_breakdown = _merge_score_breakdown(base_breakdown, llm_breakdown, ai_score)
+
+        executive_summary = str(
+            data.get("executive_summary") or data.get("summary") or ""
+        ).strip()
+        if not executive_summary:
+            executive_summary = _build_consistent_summary(
+                ai_score=ai_score,
+                fit_band=fit_band,
+                recommendation=ai_reco,
+                breakdown=score_breakdown,
+                matched=base_result.get("matched_skills", []),
+                missing=base_result.get("missing_skills", []),
+                years=base_result.get("admin_summary", {}).get("years_experience", 0.0),
+            )
+
+        strengths_list = _coerce_str_list(
+            data.get("strengths"),
+            base_result.get("structured_report", {}).get("strengths", []),
+        )
+        gaps_list = _coerce_str_list(
+            data.get("gaps"),
+            base_result.get("structured_report", {}).get("gaps", []),
+        )
+
         structured_report = {
-            "summary": str(data.get("summary") or base_result.get("structured_report", {}).get("summary") or "").strip(),
+            "summary": executive_summary,
             "fit_band": fit_band,
-            "score_breakdown": {
-                "experience_years": base_result.get("admin_summary", {}).get("years_experience", 0.0),
-                "matched_skills_count": len(base_result.get("matched_skills", [])),
-                "missing_skills_count": len(base_result.get("missing_skills", [])),
-            },
+            "score_breakdown": score_breakdown,
             "recommendation_rationale": str(
                 data.get("recommendation_rationale")
                 or base_result.get("structured_report", {}).get("recommendation_rationale")
                 or "AI-reviewed recommendation based on job and profile alignment."
             ).strip(),
+            "strengths": strengths_list,
+            "gaps": gaps_list,
+            "executive_summary": _build_executive_summary_structured(
+                score=ai_score,
+                fit_band=fit_band,
+                recommendation=ai_reco,
+                breakdown=score_breakdown,
+                matched=base_result.get("matched_skills", []),
+                missing=base_result.get("missing_skills", []),
+                years=base_result.get("admin_summary", {}).get("years_experience", 0.0),
+                narrative=executive_summary,
+            ),
         }
 
         return {
@@ -392,7 +700,9 @@ async def ai_revalidate_analysis(*, job: dict[str, Any], application: dict[str, 
             "recommendation": ai_reco,
             "strengths_summary": str(data.get("strengths_summary") or base_result["strengths_summary"]),
             "gaps_summary": str(data.get("gaps_summary") or base_result["gaps_summary"]),
-            "ai_summary": structured_report["summary"],
+            "strengths": strengths_list,
+            "gaps": gaps_list,
+            "ai_summary": executive_summary,
             "ai_used": True,
             "ai_provider": selection.provider.value,
             "ai_fallback_reason": selection.fallback_reason,

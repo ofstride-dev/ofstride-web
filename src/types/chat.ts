@@ -198,4 +198,144 @@ export interface AdminCareersDetail extends Record<string, unknown> {
   email?: string;
   submission_status?: string;
   analysis_status?: string;
+
+  // Enhanced fields for rich UX
+  match_score?: number | null;
+  recommendation?: string | null;
+  strengths_summary?: string | null;
+  gaps_summary?: string | null;
+  job_title?: string | null;
+  phone?: string | null;
+  linkedin_url?: string | null;
+  years_experience?: number | null;
+  cover_note?: string | null;
+
+  // Parsing / document health
+  resume_parse_error?: string | null;          // "corrupt" | "empty" | "unreadable" | null
+  parsing_completed_at?: string | null;
+  applicant_email_sent_at?: string | null;
+
+  // Human review state
+  reviewed_by_human_at?: string | null;        // null = unread / not yet reviewed
+  override_reason?: string | null;             // recruiter's reason when overriding AI
+  override_reason_label?: string | null;
+
+  // AI analysis structure
+  structured_report?: Record<string, unknown> | null;
+  skills_matrix?: Array<Record<string, unknown>>;
+  experience_analysis?: Record<string, unknown> | null;
+  education_analysis?: Record<string, unknown> | null;
+
+  // Resume download for inline preview
+  resume_signed_url?: string | null;
+  resume_original_name?: string | null;
+  resume_content_type?: string | null;
+
+  // Timeline / audit trail
+  created_at?: string | null;
+  updated_at?: string | null;
+  timeline_events?: Array<{
+    event_type: string;
+    event_label: string;
+    timestamp: string;
+    actor?: string;
+  }>;
+}
+
+// ── Resume Builder types ──────────────────────────────────────────────────
+
+export interface ResumeData {
+  personalInfo?: {
+    name?: string;
+    title?: string;
+    email?: string;
+    phone?: string;
+    location?: string;
+    website?: string | null;
+    linkedin?: string | null;
+    github?: string | null;
+  };
+  summary?: string;
+  workExperience?: Array<{
+    id?: number;
+    title?: string;
+    company?: string;
+    location?: string | null;
+    years?: string;
+    description?: string[];
+    descriptionStyles?: Array<"bullet" | "plain">;
+  }>;
+  education?: Array<{
+    id?: number;
+    institution?: string;
+    degree?: string;
+    years?: string;
+    description?: string | null;
+  }>;
+  personalProjects?: Array<{
+    id?: number;
+    name?: string;
+    role?: string;
+    years?: string;
+    github?: string | null;
+    website?: string | null;
+    description?: string[];
+    descriptionStyles?: Array<"bullet" | "plain">;
+  }>;
+  additional?: {
+    technicalSkills?: string[];
+    languages?: string[];
+    certificationsTraining?: string[];
+    awards?: string[];
+  };
+  sectionMeta?: Array<Record<string, unknown>>;
+  customSections?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+export interface ResumeBuilderAtsScore {
+  overall_score: number;
+  sub_scores: {
+    keyword_match: number;
+    skills_coverage: number;
+    section_completeness: number;
+  };
+  missing_keywords: string[];
+  injectable_keywords: string[];
+  recommendations: string[];
+}
+
+export interface ResumeBuilderDraft {
+  id: string;
+  created_by?: string | null;
+  title: string;
+  resume_data: ResumeData;
+  source_filename?: string | null;
+  source_blob_path?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface ResumeBuilderVersion {
+  id: string;
+  draft_id: string;
+  version_number: number;
+  jd_text?: string | null;
+  jd_keywords?: Record<string, unknown> | null;
+  tailored_resume: ResumeData;
+  ats_score: ResumeBuilderAtsScore;
+  applied_changes?: Array<Record<string, unknown>>;
+  skipped_changes?: Array<Record<string, unknown>>;
+  strategy_notes?: string | null;
+  ai_used?: boolean;
+  ai_provider?: string | null;
+  ai_error?: string | null;
+  overall_score?: number | null;
+  created_at?: string | null;
+}
+
+export interface ResumeBuilderListResponse {
+  items: ResumeBuilderDraft[];
+  count: number;
+  requested_by?: string;
 }

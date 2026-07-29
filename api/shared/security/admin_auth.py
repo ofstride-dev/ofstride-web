@@ -202,33 +202,66 @@ def _verify_supabase_jwt(token: str) -> dict[str, Any]:
 
 def _verify_via_supabase_auth_api(token: str, supabase_url: str) -> dict[str, Any] | None:
     """Validate access token using Supabase Auth API and map response to JWT-like claims."""
-    api_key = _env("SUPABASE_SERVICE_ROLE_KEY") or _env("SUPABASE_SERVICE_KEY")
-    if not api_key:
-        _logger.error("Supabase auth API check skipped: no SUPABASE_SERVICE_ROLE_KEY/SUPABASE_SERVICE_KEY configured.")
+    key_candidates = [
+        _env("SUPABASE_SERVICE_ROLE_KEY"),
+        _env("SUPABASE_SERVICE_KEY"),
+        _env("SUPABASE_ANON_KEY"),
+    ]
+    api_keys: list[str] = []
+    seen: set[str] = set()
+    for key in key_candidates:
+        normalized = (key or "").strip()
+        if normalized and normalized not in seen:
+            seen.add(normalized)
+            api_keys.append(normalized)
+
+    if not api_keys:
+        _logger.error(
+            "Supabase auth API check skipped: no SUPABASE_SERVICE_ROLE_KEY, SUPABASE_SERVICE_KEY, or SUPABASE_ANON_KEY configured."
+        )
         return None
 
     user_url = supabase_url.rstrip("/") + "/auth/v1/user"
-    req = urlrequest.Request(
-        user_url,
-        headers={
-            "Authorization": f"Bearer {token}",
-            "apikey": api_key,
-        },
-        method="GET",
-    )
+    user_obj: dict[str, Any] | None = None
 
-    try:
-        with urlrequest.urlopen(req, timeout=15) as response:
-            if response.status != 200:
-                _logger.warning("Supabase auth API rejected token with status %s", response.status)
-                return None
-            raw = response.read().decode("utf-8")
-            user_obj = json.loads(raw)
-    except urlerror.HTTPError as exc:
-        _logger.warning("Supabase auth API rejected token: HTTP %s %s", exc.code, exc.reason)
-        return None
-    except (urlerror.URLError, TimeoutError, json.JSONDecodeError) as exc:
-        _logger.error("Supabase auth API check failed: %s", exc)
+    for idx, api_key in enumerate(api_keys):
+        req = urlrequest.Request(
+            user_url,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "apikey": api_key,
+            },
+            method="GET",
+        )
+        try:
+            with urlrequest.urlopen(req, timeout=15) as response:
+                if response.status != 200:
+                    _logger.warning("Supabase auth API rejected token with status %s", response.status)
+                    continue
+                raw = response.read().decode("utf-8")
+                parsed = json.loads(raw)
+                if isinstance(parsed, dict):
+                    user_obj = parsed
+                    break
+        except urlerror.HTTPError as exc:
+            body = ""
+            try:
+                body = exc.read().decode("utf-8", errors="ignore")
+            except Exception:
+                body = ""
+            _logger.warning(
+                "Supabase auth API rejected token: HTTP %s %s (key_index=%s)%s",
+                exc.code,
+                exc.reason,
+                idx,
+                f" body={body[:200]}" if body else "",
+            )
+            continue
+        except (urlerror.URLError, TimeoutError, json.JSONDecodeError) as exc:
+            _logger.error("Supabase auth API check failed: %s", exc)
+            continue
+
+    if user_obj is None:
         return None
 
     if not isinstance(user_obj, dict):
