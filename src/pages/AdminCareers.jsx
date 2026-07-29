@@ -12,6 +12,7 @@ import {
   ApiClientError,
 } from "../services/api";
 import AdminAnalysisReport from "../components/AdminAnalysisReport";
+import ResumeBuilder from "../components/resume-builder/ResumeBuilder.jsx";
 import {
   supabase,
   signInWithEmail,
@@ -228,7 +229,7 @@ function AdminCareers() {
   const [analysisMessage, setAnalysisMessage] = useState("");
   const [jdPreview, setJdPreview] = useState(null);
   const [showJobEditor, setShowJobEditor] = useState(false);
-  const [workspaceView, setWorkspaceView] = useState("triage"); // triage | jobs
+  const [workspaceView, setWorkspaceView] = useState("triage"); // triage | jobs | builder
   const [detailTab, setDetailTab] = useState("profile"); // profile | review | audit
   const [showOverrideModal, setShowOverrideModal] = useState(false);
   const [overrideTargetStatus, setOverrideTargetStatus] = useState("");
@@ -751,6 +752,13 @@ function AdminCareers() {
           >
             JD Studio
           </button>
+          <button
+            type="button"
+            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${workspaceView === "builder" ? "border-secondary bg-blue-50 text-secondary" : "border-slate-300 bg-white hover:bg-slate-50"}`}
+            onClick={() => setWorkspaceView("builder")}
+          >
+            Resume Builder
+          </button>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-3">
@@ -772,7 +780,9 @@ function AdminCareers() {
 
         {error && <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-amber-800 text-sm">{error}</div>}
 
-        {workspaceView === "triage" ? (
+        {workspaceView === "builder" ? (
+          <ResumeBuilder />
+        ) : workspaceView === "triage" ? (
           <div className="space-y-4">
             <div className="bg-white rounded-xl shadow-sm p-4 border border-slate-100">
               <div className="flex flex-wrap items-end gap-3">

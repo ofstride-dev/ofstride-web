@@ -241,3 +241,101 @@ export interface AdminCareersDetail extends Record<string, unknown> {
     actor?: string;
   }>;
 }
+
+// ── Resume Builder types ──────────────────────────────────────────────────
+
+export interface ResumeData {
+  personalInfo?: {
+    name?: string;
+    title?: string;
+    email?: string;
+    phone?: string;
+    location?: string;
+    website?: string | null;
+    linkedin?: string | null;
+    github?: string | null;
+  };
+  summary?: string;
+  workExperience?: Array<{
+    id?: number;
+    title?: string;
+    company?: string;
+    location?: string | null;
+    years?: string;
+    description?: string[];
+    descriptionStyles?: Array<"bullet" | "plain">;
+  }>;
+  education?: Array<{
+    id?: number;
+    institution?: string;
+    degree?: string;
+    years?: string;
+    description?: string | null;
+  }>;
+  personalProjects?: Array<{
+    id?: number;
+    name?: string;
+    role?: string;
+    years?: string;
+    github?: string | null;
+    website?: string | null;
+    description?: string[];
+    descriptionStyles?: Array<"bullet" | "plain">;
+  }>;
+  additional?: {
+    technicalSkills?: string[];
+    languages?: string[];
+    certificationsTraining?: string[];
+    awards?: string[];
+  };
+  sectionMeta?: Array<Record<string, unknown>>;
+  customSections?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+export interface ResumeBuilderAtsScore {
+  overall_score: number;
+  sub_scores: {
+    keyword_match: number;
+    skills_coverage: number;
+    section_completeness: number;
+  };
+  missing_keywords: string[];
+  injectable_keywords: string[];
+  recommendations: string[];
+}
+
+export interface ResumeBuilderDraft {
+  id: string;
+  created_by?: string | null;
+  title: string;
+  resume_data: ResumeData;
+  source_filename?: string | null;
+  source_blob_path?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface ResumeBuilderVersion {
+  id: string;
+  draft_id: string;
+  version_number: number;
+  jd_text?: string | null;
+  jd_keywords?: Record<string, unknown> | null;
+  tailored_resume: ResumeData;
+  ats_score: ResumeBuilderAtsScore;
+  applied_changes?: Array<Record<string, unknown>>;
+  skipped_changes?: Array<Record<string, unknown>>;
+  strategy_notes?: string | null;
+  ai_used?: boolean;
+  ai_provider?: string | null;
+  ai_error?: string | null;
+  overall_score?: number | null;
+  created_at?: string | null;
+}
+
+export interface ResumeBuilderListResponse {
+  items: Array<Record<string, unknown>>;
+  count: number;
+  requested_by?: string;
+}

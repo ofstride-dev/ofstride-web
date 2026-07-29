@@ -19,6 +19,9 @@ import type {
   CareersCompleteResponse,
   AdminCareersListResponse,
   AdminCareersDetail,
+  ResumeBuilderDraft,
+  ResumeBuilderVersion,
+  ResumeBuilderListResponse,
 } from "../types/chat";
 import { getAccessToken } from "./supabase";
 
@@ -580,6 +583,101 @@ export async function adminGetAnalysisStatus(
     status: string;
     results?: Array<Record<string, unknown>>;
   }>(response);
+}
+
+// ── Resume Builder (careers/manage resume-builder/*) ─────────────────────
+
+function rbPath(segments: string): string {
+  const query = new URLSearchParams({ _path: segments });
+  return `${CAREER_API_BASE}/careers/manage?${query.toString()}`;
+}
+
+export async function rbUploadMasterResume(payload: {
+  filename: string;
+  content_base64: string;
+  title?: string;
+}): Promise<{ draft: ResumeBuilderDraft; extracted_text_chars: number }> {
+  const response = await fetch(rbPath("resume-builder/master-resume"), {
+    method: "POST",
+    headers: await authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  return parseEnvelope<{ draft: ResumeBuilderDraft; extracted_text_chars: number }>(response);
+}
+
+export async function rbListMasterResumes(): Promise<ResumeBuilderListResponse> {
+  const response = await fetch(rbPath("resume-builder/master-resume"), {
+    method: "GET",
+    headers: await authHeaders(),
+  });
+  return parseEnvelope<ResumeBuilderListResponse>(response);
+}
+
+export async function rbGetMasterResume(
+  draftId: string
+): Promise<{ draft: ResumeBuilderDraft }> {
+  const response = await fetch(
+    rbPath(`resume-builder/master-resume/${encodeURIComponent(draftId)}`),
+    { method: "GET", headers: await authHeaders() }
+  );
+  return parseEnvelope<{ draft: ResumeBuilderDraft }>(response);
+}
+
+export async function rbDeleteMasterResume(
+  draftId: string
+): Promise<{ deleted: boolean; draft_id: string }> {
+  const response = await fetch(
+    rbPath(`resume-builder/master-resume/${encodeURIComponent(draftId)}/delete`),
+    { method: "POST", headers: await authHeaders() }
+  );
+  return parseEnvelope<{ deleted: boolean; draft_id: string }>(response);
+}
+
+export async function rbTailorResume(payload: {
+  draft_id: string;
+  jd_text: string;
+}): Promise<{
+  version: ResumeBuilderVersion;
+  ats_score: ResumeBuilderVersion["ats_score"];
+  jd_keywords: Record<string, unknown>;
+  tailored_resume: ResumeBuilderVersion["tailored_resume"];
+  applied_changes: Array<Record<string, unknown>>;
+  skipped_changes: Array<Record<string, unknown>>;
+  strategy_notes: string;
+  ai_used: boolean;
+  ai_provider: string | null;
+  ai_fallback_reason: string | null;
+  ai_error: string | null;
+}> {
+  const response = await fetch(rbPath("resume-builder/tailor"), {
+    method: "POST",
+    headers: await authHeaders(),
+    body: JSON.stringify(payload),
+  });
+  return parseEnvelope(response);
+}
+
+export async function rbListVersions(
+  draftId: string
+): Promise<{ items: ResumeBuilderVersion[]; count: number; draft_id: string }> {
+  const response = await fetch(
+    rbPath(`resume-builder/versions/${encodeURIComponent(draftId)}`),
+    { method: "GET", headers: await authHeaders() }
+  );
+  return parseEnvelope<{ items: ResumeBuilderVersion[]; count: number; draft_id: string }>(response);
+}
+
+export async function rbGetVersion(
+  draftId: string,
+  versionId: string
+): Promise<{ version: ResumeBuilderVersion }> {
+  const response = await fetch(
+    rbPath(
+      `resume-builder/versions/${encodeURIComponent(draftId)}/${encodeURIComponent(versionId)}`
+    ),
+    { method: "GET", headers: await authHeaders() }
+  );
+  return parseEnvelope<{ version: ResumeBuilderVersion }>(response);
 }
 
 export function buildAadLoginUrl(postLoginRedirectPath: string): string {
