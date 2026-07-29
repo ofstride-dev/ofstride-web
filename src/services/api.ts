@@ -680,6 +680,28 @@ export async function rbGetVersion(
   return parseEnvelope<{ version: ResumeBuilderVersion }>(response);
 }
 
+export async function rbSaveVersionEdits(payload: {
+  draft_id: string;
+  version_id: string;
+  tailored_resume: ResumeBuilderVersion["tailored_resume"];
+  edit_note?: string;
+}): Promise<{ version: ResumeBuilderVersion }> {
+  const response = await fetch(
+    rbPath(
+      `resume-builder/versions/${encodeURIComponent(payload.draft_id)}/${encodeURIComponent(payload.version_id)}/save-edits`
+    ),
+    {
+      method: "POST",
+      headers: await authHeaders(),
+      body: JSON.stringify({
+        tailored_resume: payload.tailored_resume,
+        edit_note: payload.edit_note ?? "",
+      }),
+    }
+  );
+  return parseEnvelope<{ version: ResumeBuilderVersion }>(response);
+}
+
 export function buildAadLoginUrl(postLoginRedirectPath: string): string {
   const normalized = postLoginRedirectPath.startsWith("/")
     ? postLoginRedirectPath

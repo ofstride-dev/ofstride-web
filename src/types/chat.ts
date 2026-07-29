@@ -335,7 +335,7 @@ export interface ResumeBuilderVersion {
 }
 
 export interface ResumeBuilderListResponse {
-  items: Array<Record<string, unknown>>;
+  items: ResumeBuilderDraft[];
   count: number;
   requested_by?: string;
 }

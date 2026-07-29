@@ -63,6 +63,8 @@
     "CAREERS_JD_BLOB_CONTAINER": "careers-jd",
     "CAREERS_RESUME_BLOB_CONTAINER": "careers-resumes",
     "CAREERS_BLOB_CONTAINER": "careers-resumes",
+    "CAREERS_MASTER_RESUME_BLOB_CONTAINER": "careers-master-resumes",
+    "CAREERS_TAILORED_RESUME_BLOB_CONTAINER": "careers-tailored-resumes",
     "VETERAN_RESUME_BLOB_CONTAINER": "veteran-resume",
     "CAREERS_HR_EMAIL": "hr@ofstrideservices.com",
     "CAREERS_HR_WEBHOOK_URL": ""

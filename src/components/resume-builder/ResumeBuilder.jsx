@@ -11,6 +11,8 @@ import { useCallback, useEffect, useState } from "react";
 import {
   rbListMasterResumes,
   rbGetMasterResume,
+  rbGetVersion,
+  rbSaveVersionEdits,
   rbUploadMasterResume,
   rbDeleteMasterResume,
   rbTailorResume,
@@ -43,6 +45,12 @@ export default function ResumeBuilder() {
   const [selectedVersion, setSelectedVersion] = useState(null);
   const [aiMeta, setAiMeta] = useState(null);
   const [jdText, setJdText] = useState("");
+  const [versionLoading, setVersionLoading] = useState(false);
+  const [isResumeExpanded, setIsResumeExpanded] = useState(false);
+  const [isEditingResume, setIsEditingResume] = useState(false);
+  const [editableResume, setEditableResume] = useState(null);
+  const [editNote, setEditNote] = useState("");
+  const [savingEdits, setSavingEdits] = useState(false);
 
   const [uploading, setUploading] = useState(false);
   const [tailoring, setTailoring] = useState(false);
@@ -70,11 +78,18 @@ export default function ResumeBuilder() {
       setVersions([]);
       setSelectedVersion(null);
       setAiMeta(null);
+      setIsEditingResume(false);
+      setEditableResume(null);
+      setEditNote("");
       return;
     }
     setSelectedDraftId(draftId);
     setSelectedVersion(null);
     setAiMeta(null);
+    setIsResumeExpanded(false);
+    setIsEditingResume(false);
+    setEditableResume(null);
+    setEditNote("");
     setError("");
     try {
       const [detail, vers] = await Promise.all([
@@ -82,11 +97,54 @@ export default function ResumeBuilder() {
         rbListVersions(draftId),
       ]);
       setSelectedDraft(detail?.draft || null);
-      setVersions(Array.isArray(vers.items) ? vers.items : []);
+      const versionItems = Array.isArray(vers.items) ? vers.items : [];
+      setVersions(versionItems);
+
+      if (versionItems.length > 0 && versionItems[0]?.id) {
+        try {
+          setVersionLoading(true);
+          const latest = await rbGetVersion(draftId, String(versionItems[0].id));
+          setSelectedVersion(latest?.version || null);
+          setEditableResume(latest?.version?.tailored_resume || null);
+          setAiMeta({
+            ai_used: latest?.version?.ai_used,
+            ai_provider: latest?.version?.ai_provider ?? null,
+            ai_fallback_reason: null,
+            ai_error: latest?.version?.ai_error ?? null,
+          });
+        } finally {
+          setVersionLoading(false);
+        }
+      }
     } catch (exc) {
       setError(exc instanceof ApiClientError ? exc.message : "Failed to load resume.");
     }
   }, []);
+
+  const handleSelectVersion = useCallback(async (versionSummary) => {
+    if (!selectedDraftId || !versionSummary?.id) return;
+    setError("");
+    setIsResumeExpanded(false);
+    setIsEditingResume(false);
+    setEditableResume(null);
+    setEditNote("");
+    try {
+      setVersionLoading(true);
+      const detail = await rbGetVersion(selectedDraftId, String(versionSummary.id));
+      setSelectedVersion(detail?.version || null);
+      setEditableResume(detail?.version?.tailored_resume || null);
+      setAiMeta({
+        ai_used: detail?.version?.ai_used,
+        ai_provider: detail?.version?.ai_provider ?? null,
+        ai_fallback_reason: null,
+        ai_error: detail?.version?.ai_error ?? null,
+      });
+    } catch (exc) {
+      setError(exc instanceof ApiClientError ? exc.message : "Failed to load version.");
+    } finally {
+      setVersionLoading(false);
+    }
+  }, [selectedDraftId]);
 
   const handleUpload = useCallback(async (file) => {
     if (!file) return;
@@ -113,6 +171,9 @@ export default function ResumeBuilder() {
     try {
       const result = await rbTailorResume({ draft_id: selectedDraftId, jd_text: jdText.trim() });
       setSelectedVersion(result?.version || null);
+      setEditableResume(result?.version?.tailored_resume || null);
+      setIsEditingResume(false);
+      setEditNote("");
       setAiMeta({
         ai_used: result?.ai_used,
         ai_provider: result?.ai_provider ?? null,
@@ -140,12 +201,106 @@ export default function ResumeBuilder() {
         setVersions([]);
         setSelectedVersion(null);
         setAiMeta(null);
+        setIsEditingResume(false);
+        setEditableResume(null);
+        setEditNote("");
       }
       await loadDrafts();
     } catch (exc) {
       setError(exc instanceof ApiClientError ? exc.message : "Delete failed.");
     }
   }, [selectedDraftId, loadDrafts]);
+
+  const beginEdit = useCallback(() => {
+    const base = selectedVersion?.tailored_resume || selectedDraft?.resume_data || null;
+    if (!base) return;
+    setEditableResume(JSON.parse(JSON.stringify(base)));
+    setIsEditingResume(true);
+    setEditNote("");
+    setIsResumeExpanded(true);
+  }, [selectedVersion, selectedDraft]);
+
+  const cancelEdit = useCallback(() => {
+    setEditableResume(selectedVersion?.tailored_resume || null);
+    setIsEditingResume(false);
+    setEditNote("");
+  }, [selectedVersion]);
+
+  const updateSummary = useCallback((value) => {
+    setEditableResume((prev) => ({ ...(prev || {}), summary: value }));
+  }, []);
+
+  const updateSkillsCsv = useCallback((value) => {
+    const skills = value
+      .split(",")
+      .map((v) => v.trim())
+      .filter(Boolean);
+    setEditableResume((prev) => ({
+      ...(prev || {}),
+      additional: {
+        ...(prev?.additional || {}),
+        technicalSkills: skills,
+      },
+    }));
+  }, []);
+
+  const updateExperienceField = useCallback((index, field, value) => {
+    setEditableResume((prev) => {
+      const next = JSON.parse(JSON.stringify(prev || {}));
+      const list = Array.isArray(next.workExperience) ? next.workExperience : [];
+      if (!list[index]) return next;
+      list[index][field] = value;
+      next.workExperience = list;
+      return next;
+    });
+  }, []);
+
+  const updateExperienceBullets = useCallback((index, value) => {
+    const lines = value
+      .split(/\r?\n/)
+      .map((v) => v.trim())
+      .filter(Boolean);
+    setEditableResume((prev) => {
+      const next = JSON.parse(JSON.stringify(prev || {}));
+      const list = Array.isArray(next.workExperience) ? next.workExperience : [];
+      if (!list[index]) return next;
+      list[index].description = lines;
+      next.workExperience = list;
+      return next;
+    });
+  }, []);
+
+  const handleSaveEdits = useCallback(async () => {
+    if (!selectedDraftId || !selectedVersion?.id || !editableResume) return;
+    setSavingEdits(true);
+    setError("");
+    try {
+      const out = await rbSaveVersionEdits({
+        draft_id: selectedDraftId,
+        version_id: String(selectedVersion.id),
+        tailored_resume: editableResume,
+        edit_note: editNote.trim(),
+      });
+
+      setSelectedVersion(out?.version || null);
+      setEditableResume(out?.version?.tailored_resume || null);
+      setIsEditingResume(false);
+      setEditNote("");
+      setAiMeta({
+        ai_used: out?.version?.ai_used,
+        ai_provider: out?.version?.ai_provider ?? null,
+        ai_fallback_reason: null,
+        ai_error: out?.version?.ai_error ?? null,
+      });
+
+      const vers = await rbListVersions(selectedDraftId);
+      setVersions(Array.isArray(vers.items) ? vers.items : []);
+    } catch (exc) {
+      setError(exc instanceof ApiClientError ? exc.message : "Failed to save edits.");
+    } finally {
+      setSavingEdits(false);
+    }
+  }, [selectedDraftId, selectedVersion, editableResume, editNote]);
 
   return (
     <div className="space-y-4">
@@ -222,7 +377,133 @@ export default function ResumeBuilder() {
                     <h2 className="font-semibold text-primary">{selectedVersion ? "Tailored Resume" : "Master Resume"}</h2>
                     {selectedVersion ? <span className="text-xs text-muted">v{selectedVersion.version_number}</span> : null}
                   </div>
-                  <ResumePreview resume={selectedVersion ? selectedVersion.tailored_resume : selectedDraft.resume_data} />
+                  <div className="relative">
+                    <div className={isResumeExpanded ? "" : "max-h-[560px] overflow-hidden"}>
+                      {versionLoading ? (
+                        <p className="text-sm text-muted">Loading version...</p>
+                      ) : (
+                        <ResumePreview resume={isEditingResume ? editableResume : (selectedVersion ? selectedVersion.tailored_resume : selectedDraft.resume_data)} />
+                      )}
+                    </div>
+
+                    {!isResumeExpanded ? (
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white via-white/95 to-transparent" />
+                    ) : null}
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setIsResumeExpanded((prev) => !prev)}
+                      className="px-4 py-2 rounded-lg border border-slate-300 text-sm font-medium text-primary bg-white hover:bg-slate-50"
+                    >
+                      {isResumeExpanded ? "Show Less" : "View Full Resume"}
+                    </button>
+                  </div>
+
+                  {selectedVersion ? (
+                    <div className="mt-3 pt-3 border-t border-slate-100 space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="text-sm font-semibold text-primary">Edit Tailored Resume</h3>
+                        {!isEditingResume ? (
+                          <button
+                            type="button"
+                            onClick={beginEdit}
+                            className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-medium bg-white hover:bg-slate-50"
+                          >
+                            Edit In Place
+                          </button>
+                        ) : null}
+                      </div>
+
+                      {isEditingResume ? (
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-xs font-medium text-muted">Summary</label>
+                            <textarea
+                              rows={4}
+                              value={String(editableResume?.summary || "")}
+                              onChange={(e) => updateSummary(e.target.value)}
+                              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-xs font-medium text-muted">Technical Skills (comma separated)</label>
+                            <input
+                              type="text"
+                              value={Array.isArray(editableResume?.additional?.technicalSkills) ? editableResume.additional.technicalSkills.join(", ") : ""}
+                              onChange={(e) => updateSkillsCsv(e.target.value)}
+                              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                            />
+                          </div>
+
+                          {Array.isArray(editableResume?.workExperience) && editableResume.workExperience.length ? (
+                            <div className="space-y-3">
+                              {editableResume.workExperience.map((job, idx) => (
+                                <div key={idx} className="rounded-lg border border-slate-200 p-3 space-y-2">
+                                  <div className="grid sm:grid-cols-2 gap-2">
+                                    <input
+                                      type="text"
+                                      value={String(job?.title || "")}
+                                      onChange={(e) => updateExperienceField(idx, "title", e.target.value)}
+                                      placeholder="Role Title"
+                                      className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                                    />
+                                    <input
+                                      type="text"
+                                      value={String(job?.company || "")}
+                                      onChange={(e) => updateExperienceField(idx, "company", e.target.value)}
+                                      placeholder="Company"
+                                      className="rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                                    />
+                                  </div>
+                                  <textarea
+                                    rows={4}
+                                    value={Array.isArray(job?.description) ? job.description.join("\n") : ""}
+                                    onChange={(e) => updateExperienceBullets(idx, e.target.value)}
+                                    placeholder="One bullet per line"
+                                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          ) : null}
+
+                          <div>
+                            <label className="text-xs font-medium text-muted">Edit note (optional)</label>
+                            <input
+                              type="text"
+                              value={editNote}
+                              onChange={(e) => setEditNote(e.target.value)}
+                              placeholder="What did you change?"
+                              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                            />
+                          </div>
+
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={cancelEdit}
+                              className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-medium bg-white hover:bg-slate-50"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="button"
+                              disabled={savingEdits}
+                              onClick={handleSaveEdits}
+                              className="px-3 py-1.5 rounded-lg bg-secondary text-white text-xs font-medium disabled:opacity-50"
+                            >
+                              {savingEdits ? "Saving..." : "Save as New Version"}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-muted">Click "Edit In Place" to update the tailored resume and save a new version.</p>
+                      )}
+                    </div>
+                  ) : null}
                 </div>
                 <div className="space-y-4">
                   {selectedVersion ? (
@@ -255,10 +536,7 @@ export default function ResumeBuilder() {
                     <VersionHistory
                       versions={versions}
                       selectedVersionId={selectedVersion?.id}
-                      onSelect={(v) => {
-                        setSelectedVersion(v);
-                        setAiMeta({ ai_used: v.ai_used, ai_provider: v.ai_provider ?? null, ai_fallback_reason: null, ai_error: v.ai_error ?? null });
-                      }}
+                      onSelect={handleSelectVersion}
                     />
                   </div>
                 </div>

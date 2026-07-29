@@ -38,6 +38,11 @@ export default function ResumePreview({ resume, className = "" }) {
   const certs = Array.isArray(additional.certificationsTraining) ? additional.certificationsTraining : [];
   const awards = Array.isArray(additional.awards) ? additional.awards : [];
   const languages = Array.isArray(additional.languages) ? additional.languages : [];
+  const customSections = resume.customSections && typeof resume.customSections === "object"
+    ? resume.customSections
+    : {};
+
+  const customEntries = Object.entries(customSections).filter(([, section]) => section && typeof section === "object");
 
   return (
     <div className={`text-sm ${className}`}>
@@ -50,6 +55,7 @@ export default function ResumePreview({ resume, className = "" }) {
           {pi.location ? <span>{pi.location}</span> : null}
           {pi.linkedin ? <span className="truncate max-w-[180px]">{pi.linkedin}</span> : null}
           {pi.github ? <span className="truncate max-w-[180px]">{pi.github}</span> : null}
+          {pi.website ? <span className="truncate max-w-[180px]">{pi.website}</span> : null}
         </div>
       </header>
 
@@ -132,6 +138,48 @@ export default function ResumePreview({ resume, className = "" }) {
           ) : null}
         </Section>
       ) : null}
+
+      {customEntries.map(([key, section], index) => {
+        const sectionType = String(section.sectionType || "");
+        const title = String(key || `Section ${index + 1}`).replace(/([A-Z])/g, " $1").trim();
+
+        if (sectionType === "itemList" && Array.isArray(section.items) && section.items.length) {
+          return (
+            <Section key={key} title={title}>
+              <div className="space-y-3">
+                {section.items.map((item, i) => (
+                  <div key={i}>
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <div className="font-semibold text-text">{item.title || ""}{item.subtitle ? ` — ${item.subtitle}` : ""}</div>
+                      {item.years ? <div className="text-xs text-muted">{item.years}</div> : null}
+                    </div>
+                    {item.location ? <div className="text-xs text-muted">{item.location}</div> : null}
+                    <Bullets items={item.description} />
+                  </div>
+                ))}
+              </div>
+            </Section>
+          );
+        }
+
+        if (sectionType === "stringList" && Array.isArray(section.strings) && section.strings.length) {
+          return (
+            <Section key={key} title={title}>
+              <Bullets items={section.strings} />
+            </Section>
+          );
+        }
+
+        if (sectionType === "text" && section.text) {
+          return (
+            <Section key={key} title={title}>
+              <p className="text-sm text-text leading-snug">{section.text}</p>
+            </Section>
+          );
+        }
+
+        return null;
+      })}
     </div>
   );
 }

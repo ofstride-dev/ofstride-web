@@ -127,6 +127,84 @@ def _extract_json_object(raw: str) -> dict[str, Any]:
     return {}
 
 
+def _first_nonempty_line(text: str) -> str:
+    for line in text.splitlines():
+        clean = line.strip()
+        if clean:
+            return clean
+    return ""
+
+
+def _extract_contact(text: str) -> tuple[str, str]:
+    email_match = re.search(r"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}", text, re.IGNORECASE)
+    phone_match = re.search(r"(?:\+?\d[\d\s().-]{7,}\d)", text)
+    email = email_match.group(0).strip() if email_match else ""
+    phone = phone_match.group(0).strip() if phone_match else ""
+    return email, phone
+
+
+def _extract_skill_tokens(text: str, max_items: int = 20) -> list[str]:
+    common_skills = [
+        "python", "java", "javascript", "typescript", "react", "node", "sql", "postgresql",
+        "mysql", "mongodb", "azure", "aws", "docker", "kubernetes", "git", "linux",
+        "fastapi", "django", "flask", "rest", "api", "power bi", "tableau", "excel",
+    ]
+    lowered = text.lower()
+    seen: set[str] = set()
+    out: list[str] = []
+    for skill in common_skills:
+        if skill in lowered and skill not in seen:
+            seen.add(skill)
+            out.append(skill.title() if " " not in skill else " ".join(p.capitalize() for p in skill.split()))
+            if len(out) >= max_items:
+                break
+    return out
+
+
+def _fallback_resume_json(markdown_text: str) -> dict[str, Any]:
+    """Best-effort non-LLM parser used when provider calls fail.
+
+    Keeps upload flow functional in local/dev or transient provider outages.
+    """
+    text = (markdown_text or "").strip()
+    name_guess = _first_nonempty_line(text)
+    if len(name_guess) > 80:
+        name_guess = name_guess[:80].strip()
+    email, phone = _extract_contact(text)
+
+    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    summary_lines = [ln for ln in lines[:12] if len(ln) >= 30 and "@" not in ln]
+    summary = " ".join(summary_lines[:2])[:600] if summary_lines else ""
+
+    skills = _extract_skill_tokens(text)
+
+    fallback = {
+        "personalInfo": {
+            "name": name_guess,
+            "title": "",
+            "email": email,
+            "phone": phone,
+            "location": "",
+            "website": None,
+            "linkedin": None,
+            "github": None,
+        },
+        "summary": summary,
+        "workExperience": [],
+        "education": [],
+        "personalProjects": [],
+        "additional": {
+            "technicalSkills": skills,
+            "languages": [],
+            "certificationsTraining": [],
+            "awards": [],
+        },
+        "sectionMeta": [],
+        "customSections": {},
+    }
+    return normalize_resume_data(fallback)
+
+
 async def _llm_json(*, system_prompt: str, user_prompt: str, max_tokens: int = 4096) -> dict[str, Any]:
     """Call the LLM factory in JSON mode and parse the result defensively."""
     factory = get_llm_factory()
@@ -151,7 +229,8 @@ async def _llm_json(*, system_prompt: str, user_prompt: str, max_tokens: int = 4
         factory.mark_provider_result(selection.provider, success=True)
     except Exception as exc:
         factory.mark_provider_result(selection.provider, success=False)
-        raise RuntimeError(f"LLM JSON call failed: {exc}") from exc
+        detail = str(exc).strip() or exc.__class__.__name__
+        raise RuntimeError(f"LLM JSON call failed: {detail}") from exc
 
     parsed = _extract_json_object(raw)
     if not parsed:
@@ -199,14 +278,24 @@ def parse_resume_document(content: bytes, filename: str) -> str:
 
 
 async def parse_resume_to_json(markdown_text: str) -> dict[str, Any]:
-    """Parse resume markdown to structured ResumeData JSON via LLM."""
+    """Parse resume markdown to structured ResumeData JSON via LLM.
+
+    Falls back to a deterministic local parser if LLM extraction fails.
+    """
     prompt = PARSE_RESUME_PROMPT.format(
         schema=RESUME_SCHEMA_EXAMPLE,
         resume_text=markdown_text[:12000],
     )
-    result = await _llm_json(system_prompt=PARSE_SYSTEM_PROMPT, user_prompt=prompt, max_tokens=4096)
-    result = restore_dates_from_markdown(result, markdown_text)
-    result = normalize_resume_data(result)
-    validated = ResumeData.model_validate(result)
-    return validated.model_dump()
+
+    try:
+        result = await _llm_json(system_prompt=PARSE_SYSTEM_PROMPT, user_prompt=prompt, max_tokens=4096)
+        result = restore_dates_from_markdown(result, markdown_text)
+        result = normalize_resume_data(result)
+        validated = ResumeData.model_validate(result)
+        return validated.model_dump()
+    except Exception as exc:
+        logger.warning("LLM resume parsing unavailable, using fallback parser: %s", exc)
+        fallback = _fallback_resume_json(markdown_text)
+        validated = ResumeData.model_validate(fallback)
+        return validated.model_dump()
 

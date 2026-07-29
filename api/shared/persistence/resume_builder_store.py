@@ -260,6 +260,21 @@ class ResumeBuilderSupabaseStore:
         self._url = (os.getenv("SUPABASE_URL") or "").rstrip("/")
         self._service_key = (os.getenv("SUPABASE_SERVICE_KEY") or "").strip()
         self._available = bool(self._url and self._service_key)
+        if self._available:
+            try:
+                # Schema probe: if resume-builder tables are not provisioned yet,
+                # treat Supabase store as unavailable and let caller fall back.
+                self._request(
+                    "GET",
+                    "careers_resume_drafts",
+                    params={"select": "id", "limit": "1"},
+                )
+            except Exception as exc:
+                _logger.warning(
+                    "Supabase resume builder schema unavailable; falling back to SQLite: %s",
+                    exc,
+                )
+                self._available = False
 
     @property
     def is_available(self) -> bool:
@@ -378,6 +393,52 @@ def get_resume_builder_store():
     except Exception as exc:
         _logger.warning("Supabase resume builder store init failed (will retry): %s", exc)
     return _sqlite_store
+
+
+def get_resume_builder_store_for_draft(draft_id: str):
+    """Resolve (store, draft) by checking active store then alternate store.
+
+    This smooths local transitions where older drafts may exist in SQLite while
+    Supabase just became available (or vice versa).
+    """
+    primary = get_resume_builder_store()
+
+    # 1) Try the currently selected store first.
+    try:
+        if primary.is_available:
+            draft = primary.get_master_resume(draft_id)
+            if draft:
+                return primary, draft
+    except Exception as exc:
+        _logger.warning("Primary resume builder store lookup failed (%s): %s", draft_id, exc)
+
+    # 2) Probe the alternate store.
+    alternates = []
+    if isinstance(primary, ResumeBuilderSQLiteStore):
+        try:
+            sup = ResumeBuilderSupabaseStore()
+            if sup.is_available:
+                alternates.append(sup)
+        except Exception as exc:
+            _logger.warning("Alternate Supabase resume builder store init failed: %s", exc)
+    else:
+        if _sqlite_store.is_available:
+            alternates.append(_sqlite_store)
+
+    for alt in alternates:
+        try:
+            draft = alt.get_master_resume(draft_id)
+            if draft:
+                _logger.info(
+                    "Resolved draft %s from alternate store %s",
+                    draft_id,
+                    type(alt).__name__,
+                )
+                return alt, draft
+        except Exception as exc:
+            _logger.warning("Alternate resume builder store lookup failed (%s): %s", draft_id, exc)
+
+    return primary, None
 
 
 
