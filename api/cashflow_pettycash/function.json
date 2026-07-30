@@ -7,7 +7,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["get", "post"],
-      "route": "cashflow/pettycash"
+      "route": "cashflow/pettycash/{action?}"
     },
     {
       "type": "http",

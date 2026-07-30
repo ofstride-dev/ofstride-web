@@ -27,6 +27,8 @@ def get_or_create_customer(supabase, customer_name: str, gstin: str = None) -> s
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Processing Accounts Receivable request.')
     action = req.route_params.get("action")
+    if not action and req.method == "GET":
+        action = "list"
 
     auth = validate_identity_headers(req)
     if not auth["ok"]:
@@ -100,6 +102,12 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             # You would add logic here to compare transaction totals vs invoice total
             
             return func.HttpResponse(json.dumps({"ok": True, "data": response.data[0]}), mimetype="application/json")
+
+        return func.HttpResponse(
+            json.dumps({"ok": False, "error": f"Unsupported AR route action '{action}' for method {req.method}"}),
+            mimetype="application/json",
+            status_code=404,
+        )
 
     except Exception as e:
         logging.error(f"Error in AR API: {str(e)}")

@@ -7,7 +7,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["get", "post"],
-      "route": "cashflow/payments"
+      "route": "cashflow/payments/{action?}"
     },
     {
       "type": "http",

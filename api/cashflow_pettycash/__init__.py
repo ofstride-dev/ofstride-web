@@ -16,6 +16,7 @@ def ai_categorize_expense(description: str) -> tuple[str, bool]:
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Processing Petty Cash request.')
+    action = req.route_params.get("action")
 
     auth = validate_identity_headers(req)
     if not auth["ok"]:
@@ -29,7 +30,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         supabase = get_supabase_client()
         method = req.method
 
-        if method == "GET":
+        if method == "GET" and (not action or action == "list"):
             # Correct table: cashflow_petty_cash
             response = supabase.table('cashflow_petty_cash').select('*').order('entry_date', desc=True).execute()
             return func.HttpResponse(
@@ -38,7 +39,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 status_code=200
             )
 
-        elif method == "POST":
+        elif method == "POST" and (not action or action == "create"):
             req_body = req.get_json()
             description = req_body.get('description', '')
             category = req_body.get('category')
@@ -66,6 +67,12 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 mimetype="application/json",
                 status_code=201
             )
+
+        return func.HttpResponse(
+            json.dumps({"ok": False, "error": f"Unsupported petty cash route action '{action}' for method {method}"}),
+            mimetype="application/json",
+            status_code=404,
+        )
 
     except Exception as e:
         logging.error(f"Error in Petty Cash API: {str(e)}")

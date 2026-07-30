@@ -29,6 +29,8 @@ def get_or_create_vendor(supabase, vendor_name: str, gstin: str = None) -> str:
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Processing Accounts Payable request.')
     action = req.route_params.get("action")
+    if not action and req.method == "GET":
+        action = "list"
 
     auth = validate_identity_headers(req)
     if not auth["ok"]:
@@ -120,6 +122,12 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             bill_with_vendor = supabase.table('cashflow_bills').select('*, cashflow_entities(id, name, gstin)').eq('id', response.data[0]['id']).single().execute()
             
             return func.HttpResponse(json.dumps({"ok": True, "data": bill_with_vendor.data}), mimetype="application/json")
+
+        return func.HttpResponse(
+            json.dumps({"ok": False, "error": f"Unsupported AP route action '{action}' for method {req.method}"}),
+            mimetype="application/json",
+            status_code=404,
+        )
 
     except Exception as e:
         logging.error(f"Error in AP API: {str(e)}")

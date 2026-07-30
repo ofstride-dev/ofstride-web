@@ -10,7 +10,7 @@
         "get",
         "post"
       ],
-      "route": "cashflow/ap/{action}"
+      "route": "cashflow/ap/{action?}"
     },
     {
       "type": "http",
