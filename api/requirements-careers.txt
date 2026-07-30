@@ -10,3 +10,6 @@ openai>=1.0.0
 google-generativeai>=0.8.0
 supabase>=2.4.0
 python-multipart>=0.0.9
+pypdf>=4.0.0
+docx2txt>=0.8
+azure-ai-formrecognizer==3.3.0

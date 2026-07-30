@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import Layout from './components/Layout.jsx'
 import Home from './pages/Home.jsx'
@@ -21,6 +21,13 @@ import MyExpenses from './pages/expenses/MyExpenses.jsx'
 import SubmitExpense from './pages/expenses/SubmitExpense.jsx'
 import ExpenseDetail from './pages/expenses/ExpenseDetail.jsx'
 import AdminExpenseQueue from './pages/expenses/AdminExpenseQueue.jsx'
+
+// Cashflow Module Imports
+import CashflowLayout from './components/cashflow/CashflowLayout.jsx'
+import CashflowDashboard from './components/cashflow/CashflowDashboard.jsx'
+import AccountsPayable from './components/cashflow/AccountsPayable.jsx'
+import AccountsReceivable from './components/cashflow/AccountsReceivable.jsx'
+import PettyCash from './components/cashflow/PettyCash.jsx'
 
 function App() {
   const location = useLocation()
@@ -45,10 +52,20 @@ function App() {
       '/expenses': 'My Expenses | Expense Portal',
       '/expenses/new': 'Submit Claim | Expense Portal',
       '/expenses/admin': 'Admin Queue | Expense Portal',
+      '/cashflow': 'Cash Flow Suite | Ofstride Services LLP',
+      '/cashflow/dashboard': 'Dashboard | Cash Flow Suite',
+      '/cashflow/ap': 'Accounts Payable | Cash Flow Suite',
+      '/cashflow/ar': 'Accounts Receivable | Cash Flow Suite',
+      '/cashflow/pettycash': 'Petty Cash | Cash Flow Suite',
     }
 
     if (location.pathname.startsWith('/services/')) {
       document.title = 'Service Details | Ofstride Services LLP'
+      return
+    }
+
+    if (location.pathname.startsWith('/cashflow')) {
+      document.title = routeTitleMap[location.pathname] || 'Cash Flow Suite | Ofstride Services LLP'
       return
     }
 
@@ -57,6 +74,7 @@ function App() {
 
   return (
     <Routes>
+      {/* PUBLIC MARKETING WEBSITE ROUTES */}
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="services" element={<Services />} />
@@ -72,9 +90,9 @@ function App() {
         <Route path="admin/careers" element={<AdminCareers />} />
         <Route path="book-call" element={<BookCall />} />
         <Route path="contact-form" element={<ContactForm />} />
-        {/* Backward-compatible alias for older links */}
         <Route path="career-connect" element={<CareerForm />} />
 
+        {/* Expenses Route */}
         <Route path="expenses" element={<ExpensesAuthLayout />}>
           <Route path="login" element={<ExpensesLogin />} />
           <Route
@@ -110,6 +128,15 @@ function App() {
             }
           />
         </Route>
+      </Route>
+
+      {/* STANDALONE CASHFLOW PORTAL ROUTE (OUTSIDE PUBLIC LAYOUT) */}
+      <Route path="/cashflow" element={<CashflowLayout />}>
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<CashflowDashboard />} />
+        <Route path="ap" element={<AccountsPayable />} />
+        <Route path="ar" element={<AccountsReceivable />} />
+        <Route path="pettycash" element={<PettyCash />} />
       </Route>
     </Routes>
   )
