@@ -2,6 +2,7 @@ import azure.functions as func
 import json
 import logging
 from shared.db import get_supabase_client
+from shared.admin_auth import validate_identity_headers
 
 def ai_categorize_expense(description: str) -> tuple[str, bool]:
     desc_lower = description.lower()
@@ -15,6 +16,14 @@ def ai_categorize_expense(description: str) -> tuple[str, bool]:
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Processing Petty Cash request.')
+
+    auth = validate_identity_headers(req)
+    if not auth["ok"]:
+        return func.HttpResponse(
+            json.dumps({"ok": False, "error": auth["error"]}),
+            mimetype="application/json",
+            status_code=auth["status_code"],
+        )
     
     try:
         supabase = get_supabase_client()

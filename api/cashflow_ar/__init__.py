@@ -3,6 +3,7 @@ import json
 import logging
 from datetime import datetime, timedelta
 from shared.db import get_supabase_client
+from shared.admin_auth import validate_identity_headers
 
 def get_or_create_customer(supabase, customer_name: str, gstin: str = None) -> str:
     """Finds existing customer by name or creates a new one in cashflow_entities."""
@@ -26,6 +27,14 @@ def get_or_create_customer(supabase, customer_name: str, gstin: str = None) -> s
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Processing Accounts Receivable request.')
     action = req.route_params.get("action")
+
+    auth = validate_identity_headers(req)
+    if not auth["ok"]:
+        return func.HttpResponse(
+            json.dumps({"ok": False, "error": auth["error"]}),
+            mimetype="application/json",
+            status_code=auth["status_code"],
+        )
     
     try:
         supabase = get_supabase_client()
