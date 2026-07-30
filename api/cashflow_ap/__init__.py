@@ -5,7 +5,7 @@ import os
 import base64
 from datetime import datetime, timedelta
 from shared.db import get_supabase_client
-from shared.tax_engine import calculate_tds, calculate_msme_due_date
+from shared.tax_engine_interface import calculate_tds, calculate_msme_due_date
 from shared.admin_auth import validate_identity_headers
 
 def get_or_create_vendor(supabase, vendor_name: str, gstin: str = None) -> str:

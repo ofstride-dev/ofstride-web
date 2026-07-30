@@ -4,6 +4,7 @@
 // Replace this file with your existing logic if you've made changes after sharing it.
 
 import React, { useState, useEffect } from 'react';
+import { cashflowFetch } from '../../services/cashflowApi';
 
 export default function AccountsPayable() {
   const [invoices, setInvoices] = useState([]);
@@ -23,7 +24,7 @@ export default function AccountsPayable() {
 
   const fetchInvoices = async () => {
     try {
-      const res = await fetch('/api/cashflow/ap/list');
+      const res = await cashflowFetch('/cashflow/ap/list');
       const json = await res.json();
       if (json.ok) setInvoices(json.data || []);
     } finally { setLoading(false); }
@@ -37,7 +38,7 @@ export default function AccountsPayable() {
     reader.readAsDataURL(file);
     reader.onload = async () => {
       try {
-        const res = await fetch('/api/cashflow/ap/ocr',{
+        const res = await cashflowFetch('/cashflow/ap/ocr',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify({file:reader.result})
@@ -52,7 +53,7 @@ export default function AccountsPayable() {
 
   const handleSaveInvoice=async(e)=>{
     e.preventDefault();
-    const res=await fetch('/api/cashflow/ap/save',{
+    const res=await cashflowFetch('/cashflow/ap/save',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(formData)

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { cashflowFetch } from '../../services/cashflowApi';
 
 export default function AccountsReceivable() {
   const [invoices, setInvoices] = useState([]);
@@ -15,7 +16,7 @@ export default function AccountsReceivable() {
 
   const fetchInvoices = async () => {
     try {
-      const res = await fetch('/api/cashflow/ar/list');
+      const res = await cashflowFetch('/cashflow/ar/list');
       if (!res.ok) throw new Error(`Server returned ${res.status}`);
       const json = await res.json();
       if (json.ok) setInvoices(json.data || []);
@@ -35,7 +36,7 @@ export default function AccountsReceivable() {
     e.preventDefault();
     setSaving(true);
     try {
-      const res = await fetch('/api/cashflow/ar/create', {
+      const res = await cashflowFetch('/cashflow/ar/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -66,7 +67,7 @@ export default function AccountsReceivable() {
     if (!paymentAmount) return;
 
     try {
-      const res = await fetch('/api/cashflow/ar/collect', {
+      const res = await cashflowFetch('/cashflow/ar/collect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

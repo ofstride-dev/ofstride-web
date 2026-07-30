@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { cashflowFetch } from '../../services/cashflowApi';
 
 export default function CashflowDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/cashflow/dashboard', {
-      headers: { 'X-App-Role': 'admin', 'X-User-Id': 'usr-admin-1' }
-    })
+    cashflowFetch('/cashflow/dashboard')
       .then(res => res.json())
       .then(res => {
         if (res.ok) setData(res.data);

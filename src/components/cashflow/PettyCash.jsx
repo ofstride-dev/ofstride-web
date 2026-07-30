@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { cashflowFetch } from '../../services/cashflowApi';
 
 export default function PettyCash() {
   const [entries, setEntries] = useState([]);
@@ -20,7 +21,7 @@ export default function PettyCash() {
 
   const fetchLedger = async () => {
     try {
-      const res = await fetch('/api/cashflow/pettycash');
+      const res = await cashflowFetch('/cashflow/pettycash');
       const json = await res.json();
       if (json.ok) setEntries(json.data || []);
     } catch (err) {
@@ -38,7 +39,7 @@ export default function PettyCash() {
     e.preventDefault();
     setSaving(true);
     try {
-      const res = await fetch('/api/cashflow/pettycash', {
+      const res = await cashflowFetch('/cashflow/pettycash', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
