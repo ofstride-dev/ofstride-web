@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { cashflowFetch } from '../../services/cashflowApi';
+import { cashflowFetch, parseCashflowResponse } from '../../services/cashflowApi';
 
 export default function AccountsReceivable() {
   const [invoices, setInvoices] = useState([]);
@@ -17,9 +17,9 @@ export default function AccountsReceivable() {
   const fetchInvoices = async () => {
     try {
       const res = await cashflowFetch('/cashflow/ar/list');
-      if (!res.ok) throw new Error(`Server returned ${res.status}`);
-      const json = await res.json();
-      if (json.ok) setInvoices(json.data || []);
+      const parsed = await parseCashflowResponse(res);
+      if (parsed.ok) setInvoices(parsed.data || []);
+      else throw new Error(parsed.error || `Server returned ${parsed.status}`);
     } catch (err) {
       console.error("Fetch invoices failed:", err);
     } finally {
@@ -41,15 +41,16 @@ export default function AccountsReceivable() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-      if (!res.ok) throw new Error(`Server error ${res.status}`);
-      const json = await res.json();
-      if (json.ok) {
-        setInvoices([json.data, ...invoices]);
+      const parsed = await parseCashflowResponse(res);
+      if (parsed.ok) {
+        setInvoices([parsed.data, ...invoices]);
         setFormData({ 
           customer_name: '', customer_gstin: '', invoice_number: '', 
           invoice_date: new Date().toISOString().split('T')[0], 
           amount: '', gst_amount: '', irn_number: '', is_proforma: false, notes: '' 
         });
+      } else {
+        throw new Error(parsed.error || `Server error ${parsed.status}`);
       }
     } catch (err) {
       console.error("Save Failed:", err);
@@ -76,10 +77,12 @@ export default function AccountsReceivable() {
           payment_mode: 'bank_transfer'
         })
       });
-      const json = await res.json();
-      if (json.ok) {
+      const parsed = await parseCashflowResponse(res);
+      if (parsed.ok) {
         alert("Payment recorded successfully!");
         fetchInvoices(); 
+      } else {
+        throw new Error(parsed.error || `Server error ${parsed.status}`);
       }
     } catch (err) {
       console.error("Payment Failed:", err);

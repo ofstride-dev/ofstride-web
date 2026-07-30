@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { cashflowFetch } from '../../services/cashflowApi';
+import { cashflowFetch, parseCashflowResponse } from '../../services/cashflowApi';
 
 export default function PettyCash() {
   const [entries, setEntries] = useState([]);
@@ -22,8 +22,9 @@ export default function PettyCash() {
   const fetchLedger = async () => {
     try {
       const res = await cashflowFetch('/cashflow/pettycash');
-      const json = await res.json();
-      if (json.ok) setEntries(json.data || []);
+      const parsed = await parseCashflowResponse(res);
+      if (parsed.ok) setEntries(parsed.data || []);
+      else throw new Error(parsed.error || `Server returned ${parsed.status}`);
     } catch (err) {
       console.error("Failed to fetch ledger", err);
     } finally {
@@ -44,10 +45,12 @@ export default function PettyCash() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-      const json = await res.json();
-      if (json.ok) {
-        setEntries([json.data, ...entries]); // Add new entry to top of list
+      const parsed = await parseCashflowResponse(res);
+      if (parsed.ok) {
+        setEntries([parsed.data, ...entries]); // Add new entry to top of list
         setFormData({ ...formData, amount: '', description: '', category: '' }); // Reset form
+      } else {
+        throw new Error(parsed.error || `Server returned ${parsed.status}`);
       }
     } catch (err) {
       console.error("Failed to save entry", err);

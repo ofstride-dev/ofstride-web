@@ -21,6 +21,12 @@ on:
       - 'api/ingest/**'
       - 'api/keep_warm/**'
       - 'api/reminder_worker/**'
+      # Cashflow Module Endpoints
+      - 'api/cashflow_ap/**'
+      - 'api/cashflow_ar/**'
+      - 'api/cashflow_dashboard/**'
+      - 'api/cashflow_payments/**'
+      - 'api/cashflow_pettycash/**'
       - 'api/shared/**'
       - 'api/requirements.txt'
       - 'api/host.json'
@@ -48,10 +54,7 @@ jobs:
           cp -r api/jd_upload __staged_careers/
           cp -r api/submit_profile __staged_careers/
           cp -r api/veteran_careers __staged_careers/
-          # Functions formerly co-located with the SWA (moved here because the
-          # SWA's managed-Functions deploy has a hard 100MB package limit that
-          # the full dependency set exceeds; this dedicated Function App has
-          # no such limit).
+          # Functions formerly co-located with the SWA
           cp -r api/cal_webhook __staged_careers/
           cp -r api/chat __staged_careers/
           cp -r api/consultants __staged_careers/
@@ -61,11 +64,18 @@ jobs:
           cp -r api/ingest __staged_careers/
           cp -r api/keep_warm __staged_careers/
           cp -r api/reminder_worker __staged_careers/
+
+          # Staging Cashflow Module Functions
+          cp -r api/cashflow_ap __staged_careers/
+          cp -r api/cashflow_ar __staged_careers/
+          cp -r api/cashflow_dashboard __staged_careers/
+          cp -r api/cashflow_payments __staged_careers/
+          cp -r api/cashflow_pettycash __staged_careers/
+
           cp -r api/shared __staged_careers/
           cp -r api/data __staged_careers/
           cp api/host.json __staged_careers/
-          # Use the full requirements (superset covering both career and
-          # chat/RAG dependencies) now that everything is staged here.
+          # Requirements superset covering career, chat/RAG, and cashflow
           cp api/requirements.txt __staged_careers/requirements.txt
           cp api/.python-version __staged_careers/ 2>/dev/null || true
           echo "=== Staged requirements.txt ==="
@@ -88,8 +98,6 @@ jobs:
             echo "ERROR: Could not resolve resource group for Function App func-ofs-carrer-001"
             exit 1
           fi
-          # Flex Consumption / some SKUs do not support these deployment build flags.
-          # Remove them explicitly to prevent OneDeploy failure.
           az functionapp config appsettings delete \
             --name func-ofs-carrer-001 \
             --resource-group "$RG" \
@@ -139,9 +147,6 @@ jobs:
           add_setting "LLM_PROVIDER" "$LLM_PROVIDER"
           add_setting "MODEL_NAME" "$MODEL_NAME"
           add_setting "OPENAI_API_KEY" "$OPENAI_API_KEY"
-          # AZURE_OPENAI_API_KEY intentionally NOT synced: this app authenticates
-          # to Azure OpenAI/Foundry via the mid-ofs-foundry-001 managed identity
-          # only (see AZURE_CLIENT_ID app setting + shared/core/llm_factory.py).
           add_setting "AZURE_OPENAI_ENDPOINT" "$AZURE_OPENAI_ENDPOINT"
           add_setting "AZURE_OPENAI_DEPLOYMENT" "$AZURE_OPENAI_DEPLOYMENT"
           add_setting "AZURE_OPENAI_EMBEDDING_DEPLOYMENT" "$AZURE_OPENAI_EMBEDDING_DEPLOYMENT"
@@ -174,5 +179,11 @@ jobs:
           echo ""
           echo "=== Health check: /health ==="
           curl -sS -m 30 "${BASE}/health?_t=$(date +%s)" | head -c 500 || echo "health endpoint not ready yet"
+          echo ""
+          echo "=== Health check: /cashflow/dashboard ==="
+          curl -sS -m 30 "${BASE}/cashflow/dashboard?_t=$(date +%s)" | head -c 500 || echo "cashflow dashboard endpoint not ready yet"
+          echo ""
+          echo "=== Health check: /cashflow/ap/list ==="
+          curl -sS -m 30 "${BASE}/cashflow/ap/list?_t=$(date +%s)" | head -c 500 || echo "cashflow AP list endpoint not ready yet"
           echo ""
           echo "=== Deployment complete ==="

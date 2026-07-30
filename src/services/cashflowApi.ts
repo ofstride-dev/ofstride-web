@@ -50,3 +50,48 @@ export async function cashflowFetch(
     headers: mergedHeaders,
   });
 }
+
+export async function parseCashflowResponse<T = any>(res: Response): Promise<{
+  ok: boolean;
+  status: number;
+  data: T | null;
+  error: string | null;
+}> {
+  const contentType = res.headers.get("content-type") || "";
+  const raw = await res.text();
+
+  let payload: any = null;
+  if (raw && contentType.toLowerCase().includes("application/json")) {
+    try {
+      payload = JSON.parse(raw);
+    } catch {
+      payload = null;
+    }
+  }
+
+  if (res.ok && payload?.ok === true) {
+    return {
+      ok: true,
+      status: res.status,
+      data: (payload.data ?? null) as T | null,
+      error: null,
+    };
+  }
+
+  const messageFromPayload =
+    payload?.error?.message
+    || payload?.error
+    || payload?.message
+    || null;
+
+  const fallback = raw
+    ? `HTTP ${res.status}: ${raw.slice(0, 240)}`
+    : `HTTP ${res.status}: Empty response`;
+
+  return {
+    ok: false,
+    status: res.status,
+    data: null,
+    error: String(messageFromPayload || fallback),
+  };
+}

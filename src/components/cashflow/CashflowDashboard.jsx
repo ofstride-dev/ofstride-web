@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { cashflowFetch } from '../../services/cashflowApi';
+import { cashflowFetch, parseCashflowResponse } from '../../services/cashflowApi';
 
 export default function CashflowDashboard() {
   const [data, setData] = useState(null);
@@ -7,9 +7,10 @@ export default function CashflowDashboard() {
 
   useEffect(() => {
     cashflowFetch('/cashflow/dashboard')
-      .then(res => res.json())
-      .then(res => {
-        if (res.ok) setData(res.data);
+      .then(res => parseCashflowResponse(res))
+      .then(parsed => {
+        if (parsed.ok) setData(parsed.data);
+        else throw new Error(parsed.error || `Server returned ${parsed.status}`);
       })
       .catch(() => {
         // Fallback UI data if API is offline

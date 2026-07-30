@@ -4,7 +4,7 @@
 // Replace this file with your existing logic if you've made changes after sharing it.
 
 import React, { useState, useEffect } from 'react';
-import { cashflowFetch } from '../../services/cashflowApi';
+import { cashflowFetch, parseCashflowResponse } from '../../services/cashflowApi';
 
 export default function AccountsPayable() {
   const [invoices, setInvoices] = useState([]);
@@ -25,8 +25,9 @@ export default function AccountsPayable() {
   const fetchInvoices = async () => {
     try {
       const res = await cashflowFetch('/cashflow/ap/list');
-      const json = await res.json();
-      if (json.ok) setInvoices(json.data || []);
+      const parsed = await parseCashflowResponse(res);
+      if (parsed.ok) setInvoices(parsed.data || []);
+      else console.error('AP list failed:', parsed.error);
     } finally { setLoading(false); }
   };
 
@@ -43,8 +44,9 @@ export default function AccountsPayable() {
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify({file:reader.result})
         });
-        const json=await res.json();
-        if(json.ok) setFormData(p=>({...p,...json.data}));
+        const parsed = await parseCashflowResponse(res);
+        if(parsed.ok) setFormData(p=>({...p,...parsed.data}));
+        else console.error('AP OCR failed:', parsed.error);
       } finally { setOcrLoading(false); }
     };
   };
@@ -58,10 +60,12 @@ export default function AccountsPayable() {
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(formData)
     });
-    const json=await res.json();
-    if(json.ok){
-      setInvoices([json.data,...invoices]);
+    const parsed = await parseCashflowResponse(res);
+    if(parsed.ok){
+      setInvoices([parsed.data,...invoices]);
       setFormData({vendor_name:'',bill_number:'',bill_date:'',amount:'',gst_amount:'',tds_section:'NONE'});
+    } else {
+      console.error('AP save failed:', parsed.error);
     }
   };
 
