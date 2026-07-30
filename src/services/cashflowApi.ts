@@ -10,11 +10,16 @@ export const CASHFLOW_API_BASE =
 
 async function cashflowIdentityHeaders(): Promise<HeadersInit> {
   const { data } = await supabase.auth.getSession();
-  const user = data.session?.user || null;
+  const session = data.session || null;
+  const user = session?.user || null;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
+
+  if (session?.access_token) {
+    headers["Authorization"] = `Bearer ${session.access_token}`;
+  }
 
   if (!user?.id) {
     return headers;
