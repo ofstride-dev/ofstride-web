@@ -643,11 +643,11 @@ function Layout() {
                   Admin Careers
                 </Link>
                 <Link
-                  to="/expenses/login"
+                  to="/cashflow"  /* Changed from /expenses/login */
                   className="inline-flex items-center gap-2 border border-slate-500 text-slate-300 px-4 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-white/10 transition-colors"
                 >
-                  <Receipt className="w-4 h-4" />
-                  Expense Portal
+                  <Briefcase className="w-4 h-4" />
+                  Cashflow Manager
                 </Link>
                 <Link 
                   to="/contact-form"
