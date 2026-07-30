@@ -4,7 +4,7 @@ from typing import Any
 import azure.functions as func
 
 
-ALLOWED_ROLES = {"admin", "finance"}
+ALLOWED_ROLES = {"admin", "finance", "employer"}
 
 
 def _get_header(req: func.HttpRequest, name: str) -> str | None:
@@ -42,9 +42,9 @@ def validate_identity_headers(req: func.HttpRequest) -> dict[str, Any]:
     # Supabase bearer auth and role using the shared security auth module.
     if not user_id or not role:
         try:
-            from shared.security.admin_auth import AdminAuthError, require_role
+            from shared.security.admin_auth import require_role
 
-            auth = require_role(req, ["admin", "finance"])
+            auth = require_role(req, ["admin", "finance", "employer"])
             bearer_user_id = str(auth.get("user_id") or "").strip()
             bearer_role = str(auth.get("role") or "").strip().lower()
 
@@ -87,7 +87,7 @@ def validate_identity_headers(req: func.HttpRequest) -> dict[str, Any]:
         return {
             "ok": False,
             "status_code": 403,
-            "error": "Unauthorized: Finance or Admin role required",
+            "error": "Unauthorized: Admin, Finance, or Employer role required",
         }
 
     return {

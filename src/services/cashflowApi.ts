@@ -33,7 +33,7 @@ async function cashflowIdentityHeaders(): Promise<HeadersInit> {
 
   // Keep cashflow auth strict and explicit. We only pass roles expected by
   // backend validator so malformed/unknown roles are rejected cleanly.
-  if (rawRole === "admin" || rawRole === "finance") {
+  if (rawRole === "admin" || rawRole === "finance" || rawRole === "employer") {
     headers["x-app-role"] = rawRole;
   }
 
