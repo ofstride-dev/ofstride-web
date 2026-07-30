@@ -42,6 +42,7 @@
     "CHAT_REMINDER_STATE_FILE": "api/.runtime/chat_reminder_state.json",
     "CHAT_REMINDER_BATCH_SIZE": "20",
     "CHAT_WEBHOOK_URL": "",
+    "CAREERS_NOTIFY_URL": "http://localhost:7072/api/career-notify",
     "CONTACT_WEBHOOK_URL": "",
     "ZAPIER_WEBHOOK_URL": "",
 

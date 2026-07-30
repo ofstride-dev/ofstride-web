@@ -387,9 +387,11 @@ async def _handle_notify_application(req: func.HttpRequest, trace_id: str, admin
         return error_response(error_type="validation", message="Application does not have a valid applicant email.", trace_id=trace_id, req=req, status_code=400)
 
     target = (
-        (os.getenv("CONTACT_WEBHOOK_URL") or "").strip()
+        (os.getenv("CAREERS_NOTIFY_URL") or "").strip()
+        or (os.getenv("CONTACT_WEBHOOK_URL") or "").strip()
         or (os.getenv("MAKE_WEBHOOK_CHAT_URL") or "").strip()
         or (os.getenv("CAREERS_HR_WEBHOOK_URL") or "").strip()
+        or "https://func-ofs-comms-001.azurewebsites.net/api/career-notify"
     )
     if not target:
         return error_response(error_type="infra", message="No webhook configured for notifications.", trace_id=trace_id, req=req, status_code=503)

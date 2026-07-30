@@ -224,6 +224,7 @@ function AdminCareers() {
   const [jdFile, setJdFile] = useState(null);
   const [uploadingJd, setUploadingJd] = useState(false);
   const [notifyMessage, setNotifyMessage] = useState("");
+  const [notifyState, setNotifyState] = useState("idle"); // idle | success | error
   const [enhancingJd, setEnhancingJd] = useState(false);
   const [enhanceMessage, setEnhanceMessage] = useState("");
   const [analysisMessage, setAnalysisMessage] = useState("");
@@ -357,6 +358,11 @@ function AdminCareers() {
 
   useEffect(() => {
     if (selectedId) loadDetail(selectedId);
+  }, [selectedId]);
+
+  useEffect(() => {
+    setNotifyMessage("");
+    setNotifyState("idle");
   }, [selectedId]);
 
   // ── Actions ───────────────────────────────────────────────────────────
@@ -580,19 +586,24 @@ function AdminCareers() {
   const onSendFurtherDiscussionMail = async () => {
     if (!selectedId) return;
     setNotifyMessage("");
+    setNotifyState("idle");
     try {
       const res = await adminSendFurtherDiscussionMail(selectedId);
       if (res.sent) {
         setNotifyMessage("Follow-up discussion mail sent to applicant.");
+        setNotifyState("success");
       } else {
         setNotifyMessage(`Mail not sent: ${res.error || "unknown error"}`);
+        setNotifyState("error");
       }
       await loadDetail(selectedId);
     } catch (e) {
       if (e instanceof ApiClientError) {
         setNotifyMessage(e.message);
+        setNotifyState("error");
       } else {
         setNotifyMessage("Could not send follow-up mail.");
+        setNotifyState("error");
       }
     }
   };
@@ -902,14 +913,27 @@ function AdminCareers() {
                           <div className={`text-xs font-semibold ${textStyles[v] || textStyles.primary}`}>Suggested Next Action</div>
                           <div className={`text-sm font-semibold mt-1 ${textStyles[v] || textStyles.primary}`}>{sa.title}</div>
                           <div className={`text-xs mt-1 ${descStyles[v] || descStyles.primary}`}>{sa.description}</div>
-                          {sa.key !== "none" && (
-                            <button
-                              onClick={onRunSuggestedAction}
-                              disabled={detailLoading || statusActionLoading}
-                              className={`mt-2 px-3 py-1.5 rounded-lg text-white text-xs transition-opacity disabled:opacity-50 ${btnStyles[v] || btnStyles.primary}`}
-                            >
-                              {sa.key === "run-analysis" && detailLoading ? "Analyzing..." : statusActionLoading ? "Updating..." : "Proceed"}
-                            </button>
+                          {(sa.key !== "none" || notifyMessage) && (
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                              {sa.key !== "none" && (
+                                <button
+                                  onClick={onRunSuggestedAction}
+                                  disabled={detailLoading || statusActionLoading}
+                                  className={`px-3 py-1.5 rounded-lg text-white text-xs transition-opacity disabled:opacity-50 ${btnStyles[v] || btnStyles.primary}`}
+                                >
+                                  {sa.key === "run-analysis" && detailLoading ? "Analyzing..." : statusActionLoading ? "Updating..." : "Proceed"}
+                                </button>
+                              )}
+                              {notifyMessage && (
+                                <span className={`px-2 py-1 rounded text-[11px] border ${
+                                  notifyState === "success"
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : "bg-rose-50 text-rose-700 border-rose-200"
+                                }`}>
+                                  {notifyState === "success" ? "Mail sent" : notifyMessage}
+                                </span>
+                              )}
+                            </div>
                           )}
                         </div>
                       );
@@ -1100,7 +1124,7 @@ function AdminCareers() {
                     )}
 
                     {analysisMessage && <div className="text-xs text-muted">{analysisMessage}</div>}
-                    {notifyMessage && <div className="text-xs text-muted">{notifyMessage}</div>}
+                    {notifyMessage && notifyState !== "success" && <div className="text-xs text-muted">{notifyMessage}</div>}
                   </div>
                 )}
               </section>
