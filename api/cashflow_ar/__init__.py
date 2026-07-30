@@ -5,6 +5,17 @@ from datetime import datetime, timedelta
 from shared.db import get_supabase_client
 from shared.admin_auth import validate_identity_headers
 
+
+def _to_float(value, default: float = 0.0) -> float:
+    if value is None:
+        return default
+    if isinstance(value, str) and not value.strip():
+        return default
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
 def get_or_create_customer(supabase, customer_name: str, gstin: str = None) -> str:
     """Finds existing customer by name or creates a new one in cashflow_entities."""
     if not customer_name:
@@ -56,8 +67,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             
             customer_id = get_or_create_customer(supabase, data.get("customer_name"), data.get("customer_gstin"))
 
-            amount = float(data.get("amount", 0))
-            gst_amount = float(data.get("gst_amount", 0))
+            amount = _to_float(data.get("amount"), 0.0)
+            gst_amount = _to_float(data.get("gst_amount"), 0.0)
 
             invoice_date = data.get("invoice_date") or datetime.now().strftime("%Y-%m-%d")
             # Default due date to 15 days if not specified
@@ -91,7 +102,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             new_transaction = {
                 "invoice_id": data.get("invoice_id"),
                 "transaction_date": data.get("transaction_date", datetime.now().strftime("%Y-%m-%d")),
-                "amount": float(data.get("amount", 0)),
+                "amount": _to_float(data.get("amount"), 0.0),
                 "payment_mode": data.get("payment_mode", "bank_transfer"),
                 "reference_no": data.get("reference_no", "")
             }
