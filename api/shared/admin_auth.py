@@ -42,20 +42,31 @@ def validate_identity_headers(req: func.HttpRequest) -> dict[str, Any]:
     # Supabase bearer auth and role using the shared security auth module.
     if not user_id or not role:
         try:
-            from shared.security.admin_auth import require_role
+            from shared.security.admin_auth import require_authenticated_user
 
-            auth = require_role(req, ["admin", "finance", "employer"])
+            auth = require_authenticated_user(req)
             bearer_user_id = str(auth.get("user_id") or "").strip()
             bearer_role = str(auth.get("role") or "").strip().lower()
 
-            if bearer_user_id and bearer_role in ALLOWED_ROLES and _is_valid_uuid(bearer_user_id):
+            # If role is absent or outside cashflow's explicit role list, treat
+            # authenticated users as employer for cashflow operations.
+            effective_role = bearer_role if bearer_role in ALLOWED_ROLES else "employer"
+
+            # Respect a supplied x-user-id when present; otherwise use JWT user id.
+            resolved_user_id = user_id or bearer_user_id
+
+            if (
+                bearer_user_id
+                and resolved_user_id == bearer_user_id
+                and _is_valid_uuid(bearer_user_id)
+            ):
                 return {
                     "ok": True,
                     "status_code": 200,
                     "error": None,
                     "identity": {
                         "user_id": bearer_user_id,
-                        "role": bearer_role,
+                        "role": effective_role,
                     },
                 }
         except Exception:
