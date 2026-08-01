@@ -137,7 +137,7 @@ function SubmitExpense() {
         await uploadReceipt(receiptFile, user.id, expense.id);
       }
 
-      navigate(`/expenses/${expense.id}`);
+      navigate(`/cashflow/expense/${expense.id}`);
     } catch (error) {
       setSubmitError(error?.message || "Submission failed. Please try again.");
     } finally {

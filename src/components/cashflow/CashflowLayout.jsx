@@ -9,7 +9,7 @@ export default function CashflowLayout() {
     { label: 'Payables (AP)', path: '/cashflow/ap' },
     { label: 'Receivables (AR)', path: '/cashflow/ar' },
     { label: 'Petty Cash', path: '/cashflow/pettycash' },
-    { label: 'Expense Portal', path: '/expenses' }, // <-- Added seamlessly here
+    { label: 'Expense Portal', path: '/cashflow/expense' },
   ];
 
   return (
@@ -22,9 +22,8 @@ export default function CashflowLayout() {
           </div>
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {navItems.map((item) => {
-              // Check if active: handles exact match or paths starting with /expenses for the portal
-              const isActive = item.path === '/expenses' 
-                ? location.pathname.startsWith('/expenses') 
+              const isActive = item.path === '/cashflow/expense' 
+                ? location.pathname.startsWith('/cashflow/expense') 
                 : location.pathname === item.path;
 
               return (

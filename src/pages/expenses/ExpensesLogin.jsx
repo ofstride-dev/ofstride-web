@@ -20,7 +20,7 @@ function ExpensesLogin() {
   const [submitting, setSubmitting] = useState(false);
 
   if (!loading && session) {
-    return <Navigate to="/expenses" replace />;
+    return <Navigate to="/cashflow/expense" replace />;
   }
 
   const switchMode = (next) => {
@@ -41,7 +41,7 @@ function ExpensesLogin() {
           setError(signInError);
           return;
         }
-        navigate("/expenses");
+        navigate("/cashflow/expense");
       } else {
         // "signup" -> employee, "admin_signup" -> admin
         const role = mode === "admin_signup" ? "admin" : "employee";
@@ -76,8 +76,8 @@ function ExpensesLogin() {
       : "Create an account";
 
   return (
-    <div className="pt-12 sm:pt-16 min-h-screen bg-surface">
-      <section className="py-10 sm:py-14 lg:py-16">
+    <div className="bg-surface">
+      <section className="py-4 sm:py-6 lg:py-8">
         <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <h1 className="text-2xl font-semibold text-primary mb-1">{heading}</h1>

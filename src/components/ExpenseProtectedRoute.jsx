@@ -14,7 +14,7 @@ function ExpenseProtectedRoute({ children, adminOnly = false }) {
   }
 
   if (!session) {
-    return <Navigate to="/expenses/login" replace />;
+    return <Navigate to="/cashflow/expense/login" replace />;
   }
 
   // If we have a session but the profile query failed (e.g. RLS misconfig /
@@ -33,7 +33,7 @@ function ExpenseProtectedRoute({ children, adminOnly = false }) {
               in the Supabase SQL editor and sign in again.
             </p>
             <a
-              href="/expenses/login"
+              href="/cashflow/expense/login"
               className="inline-flex items-center justify-center bg-primary text-white px-5 py-2.5 rounded-xl font-semibold text-sm"
             >
               Back to sign in
@@ -45,7 +45,7 @@ function ExpenseProtectedRoute({ children, adminOnly = false }) {
   }
 
   if (adminOnly && profile?.role !== "admin") {
-    return <Navigate to="/expenses" replace />;
+    return <Navigate to="/cashflow/expense" replace />;
   }
 
   return children;

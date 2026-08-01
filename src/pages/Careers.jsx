@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Briefcase, CheckCircle2, ChevronDown, ChevronRight, FileText, ShieldCheck, UploadCloud, Users } from "lucide-react";
+import LivePipelineMetrics from "../components/careers/LivePipelineMetrics";
 import {
   completeCareersUpload,
   initCareersUpload,
@@ -47,6 +48,14 @@ function uniqueSorted(values) {
   return Array.from(new Set(values.filter(Boolean).map((value) => String(value).trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b));
 }
 
+const DEFAULT_PUBLIC_METRICS = {
+  jobs_posted_total: 0,
+  departments_count: 0,
+  resumes_received_total: 0,
+  resumes_last_24h: 0,
+  shortlisted_total: 0,
+};
+
 function Careers() {
   const [jobs, setJobs] = useState([]);
   const [jobsLoading, setJobsLoading] = useState(true);
@@ -59,6 +68,7 @@ function Careers() {
   const [pageSize] = useState(12);
   const [totalPages, setTotalPages] = useState(1);
   const [facetData, setFacetData] = useState({ departments: [], locations: [], employment_types: [] });
+  const [publicMetrics, setPublicMetrics] = useState(DEFAULT_PUBLIC_METRICS);
 
   const [formData, setFormData] = useState({
     job_id: "",
@@ -108,6 +118,12 @@ function Careers() {
       setPage(response.page || nextPage);
       setTotalPages(response.total_pages || 1);
       setFacetData(response.facets || { departments: [], locations: [], employment_types: [] });
+      setPublicMetrics({
+        ...DEFAULT_PUBLIC_METRICS,
+        jobs_posted_total: Array.isArray(nextJobs) ? nextJobs.length : 0,
+        departments_count: Array.isArray(response?.facets?.departments) ? response.facets.departments.length : 0,
+        ...(response.metrics || {}),
+      });
       if (nextJobs.length > 0) {
         setExpandedJobId((prev) => (nextJobs.some((job) => job.id === prev) ? prev : nextJobs[0].id));
         setFormData((prev) => ({ ...prev, job_id: nextJobs.some((job) => job.id === prev.job_id) ? prev.job_id : nextJobs[0].id }));
@@ -316,6 +332,7 @@ function Careers() {
 
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-blue-50 rounded-2xl p-10 sm:p-12">
+          <LivePipelineMetrics metrics={publicMetrics} />
           <h2 className="text-4xl sm:text-5xl font-bold text-primary text-center mb-10">Apply now</h2>
           <div className="mt-8 max-w-md">
           <div className="relative">

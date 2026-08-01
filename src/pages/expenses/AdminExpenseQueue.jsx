@@ -45,7 +45,7 @@ function AdminExpenseQueue() {
               <h1 className="text-2xl font-semibold text-primary">Admin Expense Queue</h1>
               <p className="text-sm text-muted mt-1">All submitted claims across the company</p>
             </div>
-            <Link to="/expenses" className="text-sm text-secondary font-medium">
+            <Link to="/cashflow/expense" className="text-sm text-secondary font-medium">
               ← My Claims
             </Link>
           </div>
@@ -85,7 +85,7 @@ function AdminExpenseQueue() {
               {expenses.map((expense) => (
                 <Link
                   key={expense.id}
-                  to={`/expenses/${expense.id}`}
+                  to={`/cashflow/expense/${expense.id}`}
                   className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-surface transition-colors"
                 >
                   <div className="min-w-0">

@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
+import { Routes, Route, useLocation, Navigate, useParams } from 'react-router-dom'
 import { useEffect } from 'react'
 import Layout from './components/Layout.jsx'
 import Home from './pages/Home.jsx'
@@ -14,6 +14,16 @@ import AdminCareers from './pages/AdminCareers.jsx'
 import CareersUpload from './pages/CareersUpload.jsx'
 import EmployerCareers from './pages/EmployerCareers.jsx'
 import CareerForm from './pages/vat-career-form.jsx'
+function ExpenseIdRedirect() {
+  const { id } = useParams()
+  return <Navigate to={`/cashflow/expense/${id || ''}`} replace />
+}
+
+import CashflowLayout from './components/cashflow/CashflowLayout.jsx'
+import CashflowDashboard from './components/cashflow/CashflowDashboard.jsx'
+import AccountsPayable from './components/cashflow/AccountsPayable.jsx'
+import AccountsReceivable from './components/cashflow/AccountsReceivable.jsx'
+import PettyCash from './components/cashflow/PettyCash.jsx'
 import ExpensesAuthLayout from './components/ExpensesAuthLayout.jsx'
 import ExpenseProtectedRoute from './components/ExpenseProtectedRoute.jsx'
 import ExpensesLogin from './pages/expenses/ExpensesLogin.jsx'
@@ -21,13 +31,6 @@ import MyExpenses from './pages/expenses/MyExpenses.jsx'
 import SubmitExpense from './pages/expenses/SubmitExpense.jsx'
 import ExpenseDetail from './pages/expenses/ExpenseDetail.jsx'
 import AdminExpenseQueue from './pages/expenses/AdminExpenseQueue.jsx'
-
-// Cashflow Module Imports
-import CashflowLayout from './components/cashflow/CashflowLayout.jsx'
-import CashflowDashboard from './components/cashflow/CashflowDashboard.jsx'
-import AccountsPayable from './components/cashflow/AccountsPayable.jsx'
-import AccountsReceivable from './components/cashflow/AccountsReceivable.jsx'
-import PettyCash from './components/cashflow/PettyCash.jsx'
 
 function App() {
   const location = useLocation()
@@ -57,6 +60,7 @@ function App() {
       '/cashflow/ap': 'Accounts Payable | Cash Flow Suite',
       '/cashflow/ar': 'Accounts Receivable | Cash Flow Suite',
       '/cashflow/pettycash': 'Petty Cash | Cash Flow Suite',
+      '/cashflow/expense': 'Expense Portal | Cash Flow Suite',
     }
 
     if (location.pathname.startsWith('/services/')) {
@@ -92,9 +96,16 @@ function App() {
         <Route path="contact-form" element={<ContactForm />} />
         <Route path="career-connect" element={<CareerForm />} />
 
-        {/* Expenses Route */}
-        <Route path="expenses" element={<ExpensesAuthLayout />}>
-          <Route path="login" element={<ExpensesLogin />} />
+      </Route>
+
+      {/* STANDALONE CASHFLOW PORTAL ROUTE (OUTSIDE PUBLIC LAYOUT) */}
+      <Route path="/cashflow" element={<CashflowLayout />}>
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<CashflowDashboard />} />
+        <Route path="ap" element={<AccountsPayable />} />
+        <Route path="ar" element={<AccountsReceivable />} />
+        <Route path="pettycash" element={<PettyCash />} />
+        <Route path="expense" element={<ExpensesAuthLayout />}>
           <Route
             index
             element={
@@ -103,6 +114,7 @@ function App() {
               </ExpenseProtectedRoute>
             }
           />
+          <Route path="login" element={<ExpensesLogin />} />
           <Route
             path="new"
             element={
@@ -130,14 +142,11 @@ function App() {
         </Route>
       </Route>
 
-      {/* STANDALONE CASHFLOW PORTAL ROUTE (OUTSIDE PUBLIC LAYOUT) */}
-      <Route path="/cashflow" element={<CashflowLayout />}>
-        <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<CashflowDashboard />} />
-        <Route path="ap" element={<AccountsPayable />} />
-        <Route path="ar" element={<AccountsReceivable />} />
-        <Route path="pettycash" element={<PettyCash />} />
-      </Route>
+      <Route path="/expenses" element={<Navigate to="/cashflow/expense" replace />} />
+      <Route path="/expenses/login" element={<Navigate to="/cashflow/expense/login" replace />} />
+      <Route path="/expenses/new" element={<Navigate to="/cashflow/expense/new" replace />} />
+      <Route path="/expenses/admin" element={<Navigate to="/cashflow/expense/admin" replace />} />
+      <Route path="/expenses/:id" element={<ExpenseIdRedirect />} />
     </Routes>
   )
 }

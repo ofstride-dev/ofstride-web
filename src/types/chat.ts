@@ -142,6 +142,13 @@ export interface CareersJobsResponse {
     location?: string | null;
     employment_type?: string | null;
   };
+  metrics?: {
+    jobs_posted_total: number;
+    departments_count?: number;
+    resumes_received_total: number;
+    resumes_last_24h?: number;
+    shortlisted_total: number;
+  };
 }
 
 export interface CareersInitUploadRequest {

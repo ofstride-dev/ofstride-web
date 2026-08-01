@@ -125,7 +125,7 @@ function ExpenseDetail() {
           <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
             {error || "Expense claim not found."}
           </div>
-          <Link to="/expenses" className="inline-block mt-4 text-sm text-secondary font-medium">
+          <Link to="/cashflow/expense" className="inline-block mt-4 text-sm text-secondary font-medium">
             ← Back to my claims
           </Link>
         </div>
@@ -139,7 +139,7 @@ function ExpenseDetail() {
     <div className="pt-12 sm:pt-16 min-h-screen bg-surface">
       <section className="py-10 sm:py-14 lg:py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          <Link to="/expenses" className="text-sm text-secondary font-medium">
+          <Link to="/cashflow/expense" className="text-sm text-secondary font-medium">
             ← Back to my claims
           </Link>
 

@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 import traceback
+from datetime import datetime, timedelta, timezone
 
 import azure.functions as func
 
@@ -51,6 +52,87 @@ def _matches_filters(
         if norm(expected) and norm(expected) != norm(actual):
             return False
     return True
+
+
+def _count_applications_by_status(store, *, status: str, batch_size: int = 500) -> int:
+    """Count applications by status using paged list reads for store compatibility."""
+    total = 0
+    offset = 0
+
+    # Cap scan to prevent runaway loops if a store returns repeating pages.
+    max_offsets = 400
+    for _ in range(max_offsets):
+        rows = store.list_applications(status=status, limit=batch_size, offset=offset)
+        count = len(rows)
+        total += count
+        if count < batch_size:
+            break
+        offset += batch_size
+    return total
+
+
+def _parse_iso_datetime(value: object) -> datetime | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    # Normalize trailing Z for Python's fromisoformat.
+    if text.endswith("Z"):
+        text = f"{text[:-1]}+00:00"
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _count_recent_applications(store, *, hours: int = 24, batch_size: int = 500) -> int:
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
+    total = 0
+    offset = 0
+
+    # Cap scan to prevent runaway loops if a store returns repeating pages.
+    max_offsets = 400
+    for _ in range(max_offsets):
+        rows = store.list_applications(status=None, limit=batch_size, offset=offset)
+        if not rows:
+            break
+
+        page_recent = 0
+        for row in rows:
+            created_at = _parse_iso_datetime(row.get("created_at") or row.get("submitted_at"))
+            if created_at and created_at >= cutoff:
+                page_recent += 1
+        total += page_recent
+
+        oldest_row_time = _parse_iso_datetime(rows[-1].get("created_at") or rows[-1].get("submitted_at"))
+        if len(rows) < batch_size or (oldest_row_time and oldest_row_time < cutoff):
+            break
+        offset += batch_size
+
+    return total
+
+
+def _public_metrics(store, *, jobs_count: int, departments_count: int) -> dict[str, int]:
+    """Compute public hiring metrics for the jobseeker experience."""
+    statuses = ("submitted", "under_review", "shortlisted", "rejected")
+    counts = {
+        status: _count_applications_by_status(store, status=status)
+        for status in statuses
+    }
+
+    resumes_received_total = sum(counts.values())
+    shortlisted_total = counts["shortlisted"]
+    resumes_last_24h = _count_recent_applications(store, hours=24)
+
+    return {
+        "jobs_posted_total": int(jobs_count),
+        "departments_count": int(departments_count),
+        "resumes_received_total": int(resumes_received_total),
+        "resumes_last_24h": int(resumes_last_24h),
+        "shortlisted_total": int(shortlisted_total),
+    }
 
 
 async def main(req: func.HttpRequest) -> func.HttpResponse:
@@ -105,6 +187,13 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
     departments = sorted({str(job.get("department") or "").strip() for job in all_jobs if str(job.get("department") or "").strip()}, key=lambda value: value.lower())
     locations = sorted({str(job.get("location") or "").strip() for job in all_jobs if str(job.get("location") or "").strip()}, key=lambda value: value.lower())
     employment_types = sorted({str(job.get("employment_type") or "").strip() for job in all_jobs if str(job.get("employment_type") or "").strip()}, key=lambda value: value.lower())
+    metrics = _public_metrics(store, jobs_count=len(all_jobs), departments_count=len(departments)) if store.is_available else {
+        "jobs_posted_total": 0,
+        "departments_count": 0,
+        "resumes_received_total": 0,
+        "resumes_last_24h": 0,
+        "shortlisted_total": 0,
+    }
 
     jobs = [
         job
@@ -148,5 +237,6 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
                 "location": location,
                 "employment_type": employment_type,
             },
+            "metrics": metrics,
         },
     )

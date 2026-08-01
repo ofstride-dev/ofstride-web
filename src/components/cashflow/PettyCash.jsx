@@ -66,21 +66,22 @@ export default function PettyCash() {
     return acc + cashIn - cashOut;
   }, 0);
 
+  const headerStyles = {
+    headerRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', gap: '1rem', flexWrap: 'wrap' },
+    title: { margin: 0, color: '#0f172a', fontSize: '1.75rem', fontWeight: '700', letterSpacing: '-0.025em' },
+    metricCard: { padding: '1rem 1.5rem', backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)', border: '1px solid #f1f5f9' },
+    metricText: { color: '#64748b', fontSize: '0.875rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 0.25rem 0' },
+    metricValue: { color: '#0ea5e9', fontSize: '1.5rem', fontWeight: '700', margin: 0 }
+  };
+
   return (
     <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '1rem' }}>
       
-      {/* Header & Balance Card */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <h2 style={{ margin: 0, color: '#0f172a' }}>Petty Cash Ledger</h2>
-        <div style={{ 
-          padding: '0.75rem 1.5rem', 
-          backgroundColor: balance >= 0 ? '#dcfce7' : '#fee2e2', 
-          borderRadius: '8px', 
-          border: `1px solid ${balance >= 0 ? '#86efac' : '#fca5a5'}` 
-        }}>
-          <span style={{ color: balance >= 0 ? '#166534' : '#991b1b', fontWeight: 600, fontSize: '1.1rem' }}>
-            Current Balance: ₹{balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-          </span>
+      <div style={headerStyles.headerRow}>
+        <h2 style={headerStyles.title}>Petty Cash</h2>
+        <div style={headerStyles.metricCard}>
+          <p style={headerStyles.metricText}>Available Balance</p>
+          <p style={headerStyles.metricValue}>₹{balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
         </div>
       </div>
 

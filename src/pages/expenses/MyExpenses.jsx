@@ -67,18 +67,14 @@ function MyExpenses() {
   };
 
   return (
-    <div className="pt-12 sm:pt-16 min-h-screen bg-surface">
-      <section className="py-10 sm:py-14 lg:py-16">
+    <div className="bg-surface">
+      <section className="py-2 sm:py-3 lg:py-4">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-            <div>
-              <h1 className="text-2xl font-semibold text-primary">My Expense Claims</h1>
-              <p className="text-sm text-muted mt-1">{profile?.full_name || user?.email}</p>
-            </div>
+          <div className="flex flex-wrap items-center justify-end gap-2 mb-8">
             <div className="flex items-center gap-2">
               {profile?.role === "admin" && (
                 <Link
-                  to="/expenses/admin"
+                  to="/cashflow/expense/admin"
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-medium text-text hover:bg-surface"
                 >
                   <ShieldCheck className="w-4 h-4" />
@@ -86,7 +82,7 @@ function MyExpenses() {
                 </Link>
               )}
               <Link
-                to="/expenses/new"
+                to="/cashflow/expense/new"
                 className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-xl font-semibold text-sm"
               >
                 <Plus className="w-4 h-4" />
@@ -124,7 +120,7 @@ function MyExpenses() {
                   className="flex items-center justify-between gap-4 px-6 py-4 hover:bg-surface transition-colors"
                 >
                   <Link
-                    to={`/expenses/${expense.id}`}
+                    to={`/cashflow/expense/${expense.id}`}
                     className="flex items-center gap-4 min-w-0 flex-1"
                   >
                     <div className="min-w-0">
