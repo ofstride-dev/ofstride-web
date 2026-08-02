@@ -14,7 +14,8 @@ export default function BusinessGrowthLayout() {
 							</div>
 							<div>
 								<p className="text-sm font-semibold uppercase tracking-wider text-secondary mb-2">Solutions</p>
-								<h1 className="text-3xl sm:text-4xl font-bold text-primary">Business Growth</h1>
+								<h1 className="text-3xl sm:text-4xl font-bold text-primary">Growth Execution Planner</h1>
+								<p className="text-xs sm:text-sm font-semibold uppercase tracking-wide text-secondary mt-2">From Audit to Execution Plan</p>
 								<p className="text-text mt-3 max-w-3xl">
 									A structured growth engine from intake to consultant-approved roadmap.
 									Track maturity, resolve blockers, and execute measurable growth actions.

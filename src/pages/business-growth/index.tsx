@@ -85,9 +85,10 @@ export default function BusinessGrowthOverviewPage() {
 						<BarChart3 className="w-5 h-5" />
 					</div>
 					<div>
-						<h2 className="text-xl sm:text-2xl font-bold text-primary">Analytical Growth Dashboard</h2>
+						<h2 className="text-xl sm:text-2xl font-bold text-primary">Growth Execution Planner Dashboard</h2>
+						<p className="text-xs sm:text-sm font-semibold uppercase tracking-wide text-secondary mt-1">From Audit to Execution Plan</p>
 						<p className="text-text mt-2 max-w-3xl">
-							A single command center for your business growth lifecycle: intake, audit, diagnosis,
+							A single command center for your growth lifecycle: intake, audit, diagnosis,
 							roadmap, and consultant review.
 						</p>
 					</div>

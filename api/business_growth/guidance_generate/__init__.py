@@ -101,7 +101,7 @@ def _template_for_item(item: dict, issues: list[dict], cms: str) -> dict:
     if domain in {"content", "technical"}:
         snippets.append({
             "label": "Meta title and description",
-            "code": "<title>Business Growth Strategy | Ofstride</title>\n<meta name=\"description\" content=\"Clear positioning, stronger conversion, and measurable growth.\" />",
+            "code": "<title>Growth Execution Plan | Ofstride</title>\n<meta name=\"description\" content=\"Clear positioning, stronger conversion, and measurable growth.\" />",
         })
     if domain == "conversion":
         snippets.append({

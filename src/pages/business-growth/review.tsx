@@ -203,7 +203,7 @@ export default function BusinessGrowthReviewPage() {
 						</div>
 						<div className="p-3 bg-white">
 							<iframe
-								title="Business Growth Report Preview"
+								title="Growth Execution Planner Report Preview"
 								srcDoc={reportHtml}
 								className="w-full h-[560px] border border-slate-200 rounded-lg"
 							/>

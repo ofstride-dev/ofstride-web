@@ -71,7 +71,7 @@ def _render_report(payload: dict) -> str:
 <head>
   <meta charset='utf-8' />
   <meta name='viewport' content='width=device-width,initial-scale=1' />
-  <title>Business Growth Report Preview</title>
+    <title>Growth Execution Planner Report Preview</title>
   <style>
     body {{ font-family: 'Segoe UI', Tahoma, sans-serif; margin: 32px; color: #0f172a; background: #f8fafc; }}
     .report {{ background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 28px; }}
@@ -182,7 +182,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 examples.append({
                     "type": "Title",
                     "before": evidence.get("title") or "(missing title)",
-                    "after": "Business Growth Strategy | Ofstride",
+                    "after": "Growth Execution Plan | Ofstride",
                 })
             if rule_id == "meta_description_weak":
                 examples.append({
@@ -194,7 +194,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 examples.append({
                     "type": "H1",
                     "before": "No H1",
-                    "after": "Accelerate Business Growth With a 90-Day Plan",
+                    "after": "Execute Your Growth Plan With a 90-Day Roadmap",
                 })
             if len(examples) >= 4:
                 break

@@ -70,12 +70,12 @@ function App() {
       '/cashflow/ar': 'Accounts Receivable | Cash Flow Suite',
       '/cashflow/pettycash': 'Petty Cash | Cash Flow Suite',
       '/cashflow/expense': 'Expense Portal | Cash Flow Suite',
-      '/business-growth': 'Business Growth | Ofstride Services LLP',
-      '/business-growth/intake': 'Business Growth Intake | Ofstride Services LLP',
-      '/business-growth/audit': 'Business Growth Audit | Ofstride Services LLP',
-      '/business-growth/diagnosis': 'Business Growth Diagnosis | Ofstride Services LLP',
-      '/business-growth/roadmap': 'Business Growth Roadmap | Ofstride Services LLP',
-      '/business-growth/review': 'Business Growth Review | Ofstride Services LLP',
+      '/business-growth': 'Growth Execution Planner | Ofstride Services LLP',
+      '/business-growth/intake': 'Growth Execution Planner Intake | Ofstride Services LLP',
+      '/business-growth/audit': 'Growth Execution Planner Audit | Ofstride Services LLP',
+      '/business-growth/diagnosis': 'Growth Execution Planner Diagnosis | Ofstride Services LLP',
+      '/business-growth/roadmap': 'Growth Execution Planner Roadmap | Ofstride Services LLP',
+      '/business-growth/review': 'Growth Execution Planner Review | Ofstride Services LLP',
     }
 
     if (location.pathname.startsWith('/services/')) {
