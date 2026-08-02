@@ -141,52 +141,12 @@ async def _llm_narrative(guidance_items: list[dict], cms: str) -> dict:
         "Use bullet points and include expected impact and implementation order."
     )
 
-    try:
-        message = await selection.client.agenerate(
-            system_prompt=system_prompt,
-            user_prompt=json.dumps(user_prompt),
-            temperature=0.2,
-            max_tokens=700,
-        )
-    except Exception as primary_exc:
-        # Keep managed-identity auth; only swap to a known compatible deployment
-        # when the configured deployment does not support this chat path.
-        fallback_message = None
-        fallback_error = str(primary_exc)
-        try:
-            from openai import AsyncAzureOpenAI
-            from azure.identity import DefaultAzureCredential, get_bearer_token_provider
-
-            import os
-
-            endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT", "").strip()
-            if endpoint:
-                token_provider = get_bearer_token_provider(
-                    DefaultAzureCredential(),
-                    "https://cognitiveservices.azure.com/.default",
-                )
-                client = AsyncAzureOpenAI(
-                    azure_endpoint=endpoint,
-                    azure_ad_token_provider=token_provider,
-                    api_version=os.environ.get("AZURE_OPENAI_API_VERSION", "2024-12-01-preview"),
-                )
-                completion = await client.chat.completions.create(
-                    model="gpt-5-mini",
-                    temperature=0.2,
-                    max_tokens=700,
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": json.dumps(user_prompt)},
-                    ],
-                )
-                fallback_message = (completion.choices[0].message.content or "").strip()
-        except Exception as fallback_exc:
-            fallback_error = f"{fallback_error} | fallback_failed: {str(fallback_exc)}"
-
-        if fallback_message:
-            message = fallback_message
-        else:
-            raise RuntimeError(fallback_error)
+    message = await selection.client.agenerate(
+        system_prompt=system_prompt,
+        user_prompt=json.dumps(user_prompt),
+        temperature=0.2,
+        max_tokens=700,
+    )
 
     return {
         "provider": selection.provider.value,
