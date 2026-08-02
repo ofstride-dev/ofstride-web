@@ -110,17 +110,35 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r __staged_careers/requirements.txt \
+            --platform manylinux2014_x86_64 \
+            --implementation cp \
+            --python-version 3.12 \
+            --only-binary=:all: \
             --target "__staged_careers/.python_packages/lib/site-packages"
           # Ensure critical runtime deps are physically present in the deploy package.
           python -m pip install --upgrade --force-reinstall \
+            --platform manylinux2014_x86_64 \
+            --implementation cp \
+            --python-version 3.12 \
+            --only-binary=:all: \
             --target "__staged_careers/.python_packages/lib/site-packages" \
             azure-storage-queue azure-storage-blob azure-identity supabase
+          # Prune non-runtime and host-specific files that inflate ZIP size and can
+          # break Kudu OneDeploy package extraction.
+          find __staged_careers/.python_packages/lib/site-packages -maxdepth 1 -type d \( -name "tests" -o -name "test" -o -name "__pycache__" \) -prune -exec rm -rf {} + || true
+          rm -rf __staged_careers/.python_packages/lib/site-packages/win32 \
+                 __staged_careers/.python_packages/lib/site-packages/win32com \
+                 __staged_careers/.python_packages/lib/site-packages/win32comext \
+                 __staged_careers/.python_packages/lib/site-packages/pythonwin \
+                 __staged_careers/.python_packages/lib/site-packages/PyWin32.chm || true
           echo "=== Packaged dependency count ==="
           python - <<'PY'
           from pathlib import Path
           site = Path("__staged_careers/.python_packages/lib/site-packages")
           print(len(list(site.glob("*"))))
           PY
+          echo "=== Staged package size (MB) ==="
+          du -sm __staged_careers | cut -f1
       - name: Verify Critical Python Dependencies
         shell: bash
         run: |
