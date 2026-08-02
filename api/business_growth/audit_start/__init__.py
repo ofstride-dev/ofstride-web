@@ -13,6 +13,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     except Exception:
         return error_response(req, "Invalid JSON", status_code=400)
 
+    if not isinstance(body, dict):
+        return error_response(req, "Invalid JSON object", status_code=400)
+
     assessment_session_id = body.get("assessment_session_id")
     root_url = body.get("root_url")
 
@@ -36,7 +39,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     try:
         try:
             from azure.storage.queue import QueueClient
-            from azure.core.exceptions import ResourceNotFoundError
+            from azure.core.exceptions import ResourceNotFoundError, ResourceExistsError
         except ModuleNotFoundError as dep_exc:
             try:
                 supa.table("audit_run").update({"status": "failed"}).eq("id", audit_run_id).execute()
@@ -63,7 +66,11 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "max_depth": 3
         })
 
-        queue_client.create_queue()
+        try:
+            queue_client.create_queue()
+        except ResourceExistsError:
+            pass
+
         try:
             queue_client.send_message(payload)
         except ResourceNotFoundError:
