@@ -32,6 +32,13 @@ import MyExpenses from './pages/expenses/MyExpenses.jsx'
 import SubmitExpense from './pages/expenses/SubmitExpense.jsx'
 import ExpenseDetail from './pages/expenses/ExpenseDetail.jsx'
 import AdminExpenseQueue from './pages/expenses/AdminExpenseQueue.jsx'
+import BusinessGrowthLayout from './components/business_growth/shared/BusinessGrowthLayout'
+import BusinessGrowthOverviewPage from './pages/business-growth/index'
+import BusinessGrowthIntakePage from './pages/business-growth/intake'
+import BusinessGrowthAuditPage from './pages/business-growth/audit'
+import BusinessGrowthDiagnosisPage from './pages/business-growth/diagnosis'
+import BusinessGrowthRoadmapPage from './pages/business-growth/roadmap'
+import BusinessGrowthReviewPage from './pages/business-growth/review'
 
 function App() {
   const location = useLocation()
@@ -63,6 +70,12 @@ function App() {
       '/cashflow/ar': 'Accounts Receivable | Cash Flow Suite',
       '/cashflow/pettycash': 'Petty Cash | Cash Flow Suite',
       '/cashflow/expense': 'Expense Portal | Cash Flow Suite',
+      '/business-growth': 'Growth Execution Planner | Ofstride Services LLP',
+      '/business-growth/intake': 'Growth Execution Planner Intake | Ofstride Services LLP',
+      '/business-growth/audit': 'Growth Execution Planner Audit | Ofstride Services LLP',
+      '/business-growth/diagnosis': 'Growth Execution Planner Diagnosis | Ofstride Services LLP',
+      '/business-growth/roadmap': 'Growth Execution Planner Roadmap | Ofstride Services LLP',
+      '/business-growth/review': 'Growth Execution Planner Review | Ofstride Services LLP',
     }
 
     if (location.pathname.startsWith('/services/')) {
@@ -141,6 +154,15 @@ function App() {
                 }
               />
             </Route>
+          </Route>
+
+          <Route path="business-growth" element={<BusinessGrowthLayout />}>
+            <Route index element={<BusinessGrowthOverviewPage />} />
+            <Route path="intake" element={<BusinessGrowthIntakePage />} />
+            <Route path="audit" element={<BusinessGrowthAuditPage />} />
+            <Route path="diagnosis" element={<BusinessGrowthDiagnosisPage />} />
+            <Route path="roadmap" element={<BusinessGrowthRoadmapPage />} />
+            <Route path="review" element={<BusinessGrowthReviewPage />} />
           </Route>
 
       </Route>

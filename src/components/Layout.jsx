@@ -2,7 +2,8 @@ import { Outlet, Link, NavLink, useLocation, useNavigate } from 'react-router-do
 import { useState, useEffect, useRef } from 'react'
 import { 
   Menu, X, ChevronDown, Phone, Mail, MapPin, Calendar, Home, 
-  Briefcase, Users, Info, MessageCircle, FileText, Bot, Receipt
+  Briefcase, Users, Info, MessageCircle, FileText, Bot, Receipt, BarChart3,
+  Landmark, Gavel, Search, FileCheck, Globe, Monitor, Cpu, Target, ShieldCheck
 } from 'lucide-react'
 import { ChatWidget } from './chat/ChatWidget'
 
@@ -108,41 +109,45 @@ function Layout() {
   const serviceGroups = [
     {
       category: 'Finance & Compliance',
+      categoryIcon: Landmark,
       services: [
-        { name: 'Financial Consulting & Virtual CFO', slug: 'financial-consulting-virtual-cfo' },
-        { name: 'GST & Tax Advisory', slug: 'gst-tax-advisory' },
-        { name: 'Legal & Regulatory Compliance', slug: 'legal-regulatory-compliance' },
+        { name: 'Financial Consulting & Virtual CFO', slug: 'financial-consulting-virtual-cfo', icon: Landmark },
+        { name: 'GST & Tax Advisory', slug: 'gst-tax-advisory', icon: Receipt },
+        { name: 'Legal & Regulatory Compliance', slug: 'legal-regulatory-compliance', icon: Gavel },
       ],
     },
     {
       category: 'People & Workforce',
+      categoryIcon: Users,
       services: [
-        { name: 'Human Resource Consulting', slug: 'human-resource-consulting' },
-        { name: 'Executive Search & Recruitment', slug: 'executive-search-recruitment' },
-        { name: 'Payroll & HR Compliance', slug: 'payroll-hr-compliance' },
-        { name: 'Employer of Record & Workforce', slug: 'employer-of-record-workforce' },
+        { name: 'Human Resource Consulting', slug: 'human-resource-consulting', icon: Users },
+        { name: 'Executive Search & Recruitment', slug: 'executive-search-recruitment', icon: Search },
+        { name: 'Payroll & HR Compliance', slug: 'payroll-hr-compliance', icon: FileCheck },
+        { name: 'Employer of Record & Workforce', slug: 'employer-of-record-workforce', icon: Globe },
       ],
     },
     {
       category: 'Technology & Growth',
+      categoryIcon: Cpu,
       services: [
-        { name: 'IT Consulting & Digital Transformation', slug: 'it-consulting-digital-transformation' },
-        { name: 'AI & Data Science Consulting', slug: 'ai-data-science-consulting' },
+        { name: 'IT Consulting & Digital Transformation', slug: 'it-consulting-digital-transformation', icon: Monitor },
+        { name: 'AI & Data Science Consulting', slug: 'ai-data-science-consulting', icon: Cpu },
       ],
     },
     {
       category: 'Strategy & Operations',
+      categoryIcon: Target,
       services: [
-        { name: 'Business Strategy & Process Improvement', slug: 'business-strategy-process-improvement' },
+        { name: 'Business Strategy & Process Improvement', slug: 'business-strategy-process-improvement', icon: Target },
       ],
     },
   ]
   const services = serviceGroups.flatMap((g) => g.services)
 
   const careersItems = [
-    { name: 'Apply For Jobs', to: '/careers/jobs' },
-    { name: 'Veteran Connect', to: '/careers/veteran-transition' },
-    { name: 'Employer Login', to: '/employer' },
+    { name: 'Apply For Jobs', to: '/careers/jobs', icon: Briefcase },
+    { name: 'Veteran Connect', to: '/careers/veteran-transition', icon: ShieldCheck },
+    { name: 'Employer Login', to: '/employer', icon: Users },
   ]
 
   const openServices = () => {
@@ -330,22 +335,29 @@ function Layout() {
                               onFocus={() => setActiveServiceCategory(group.category)}
                               onClick={() => setActiveServiceCategory(group.category)}
                             >
-                              {group.category}
+                              <span className="flex items-center gap-2">
+                                {group.categoryIcon ? <group.categoryIcon className="w-4 h-4" /> : null}
+                                {group.category}
+                              </span>
                             </button>
                           ))}
                         </div>
                       </div>
                       <div className="pl-1">
-                        <p className="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">{activeGroup.category}</p>
+                        <p className="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                          {activeGroup.categoryIcon ? <activeGroup.categoryIcon className="w-3.5 h-3.5" /> : null}
+                          {activeGroup.category}
+                        </p>
                         <div className="space-y-1 pb-2 pr-1" style={{ maxHeight: '390px', overflowY: 'auto' }}>
                           {activeGroup.services.map((service) => (
                             <Link
                               key={service.slug}
                               to={`/services/${service.slug}`}
                               role="menuitem"
-                              className="block px-4 py-2 text-sm text-text hover:bg-surface hover:text-secondary rounded-lg transition-colors"
+                              className="flex items-center gap-2 px-4 py-2 text-sm text-text hover:bg-surface hover:text-secondary rounded-lg transition-colors"
                               onClick={() => setIsServicesOpen(false)}
                             >
+                              {service.icon ? <service.icon className="w-4 h-4" /> : null}
                               {service.name}
                             </Link>
                           ))}
@@ -394,7 +406,10 @@ function Layout() {
                           onFocus={openSolutionCareers}
                           onClick={() => setIsSolutionCareersOpen((prev) => !prev)}
                         >
-                          <span>Careers</span>
+                          <span className="flex items-center gap-2">
+                            <Users className="w-4 h-4" />
+                            Careers
+                          </span>
                           <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isSolutionCareersOpen ? '-rotate-90' : ''}`} />
                         </button>
 
@@ -406,12 +421,13 @@ function Layout() {
                                   key={item.to}
                                   to={item.to}
                                   role="menuitem"
-                                  className="block px-3 py-2 text-sm text-text hover:bg-surface hover:text-secondary rounded-lg transition-colors"
+                                  className="flex items-center gap-2 px-3 py-2 text-sm text-text hover:bg-surface hover:text-secondary rounded-lg transition-colors"
                                   onClick={() => {
                                     setIsCareersOpen(false)
                                     setIsSolutionCareersOpen(false)
                                   }}
                                 >
+                                  {item.icon ? <item.icon className="w-4 h-4" /> : null}
                                   {item.name}
                                 </Link>
                               ))}
@@ -423,13 +439,26 @@ function Layout() {
                       <Link
                         to="/cashflow"
                         role="menuitem"
-                        className="block px-4 py-2 text-sm text-text hover:bg-surface hover:text-secondary rounded-lg transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-text hover:bg-surface hover:text-secondary rounded-lg transition-colors"
                         onClick={() => {
                           setIsCareersOpen(false)
                           setIsSolutionCareersOpen(false)
                         }}
                       >
+                        <Receipt className="w-4 h-4" />
                         Cashflow Management
+                      </Link>
+                      <Link
+                        to="/business-growth"
+                        role="menuitem"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-text hover:bg-surface hover:text-secondary rounded-lg transition-colors"
+                        onClick={() => {
+                          setIsCareersOpen(false)
+                          setIsSolutionCareersOpen(false)
+                        }}
+                      >
+                        <BarChart3 className="w-4 h-4" />
+                        Growth Execution Planner
                       </Link>
                     </div>
                   </div>
@@ -498,21 +527,26 @@ function Layout() {
                   <div className="pl-4 sm:pl-8 space-y-1 mt-1" style={{ maxHeight: '360px', overflowY: 'auto' }}>
                     <a
                       href="/services"
-                      className="block w-full min-h-[44px] py-3 px-4 text-base font-semibold text-primary cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
+                      className="flex items-center gap-2 w-full min-h-[44px] py-3 px-4 text-base font-semibold text-primary cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
                       onClick={(e) => handleMobileNav(e, '/services')}
                     >
+                      <Briefcase className="w-4 h-4" />
                       All Services Overview
                     </a>
                     {serviceGroups.map((group) => (
                       <div key={group.category} className="space-y-0.5">
-                        <p className="px-1 mt-2 mb-0.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">{group.category}</p>
+                        <p className="px-1 mt-2 mb-0.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                          {group.categoryIcon ? <group.categoryIcon className="w-3.5 h-3.5" /> : null}
+                          {group.category}
+                        </p>
                         {group.services.map((s) => (
                           <a
                             key={s.slug}
                             href={`/services/${s.slug}`}
-                            className="block w-full min-h-[44px] py-3 px-4 text-base font-medium text-text cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
+                              className="flex items-center gap-2 w-full min-h-[44px] py-3 px-4 text-base font-medium text-text cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
                             onClick={(e) => handleMobileNav(e, `/services/${s.slug}`)}
                           >
+                              {s.icon ? <s.icon className="w-4 h-4" /> : null}
                             {s.name}
                           </a>
                         ))}
@@ -541,6 +575,7 @@ function Layout() {
                       onClick={() => setIsSolutionCareersOpen((prev) => !prev)}
                       className="flex items-center w-full min-h-[44px] py-3 px-4 text-base font-semibold text-primary cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
                     >
+                      <Users className="w-4 h-4 mr-2" />
                       Careers
                       <ChevronDown className={`w-4 h-4 ml-auto transition-transform duration-200 ${isSolutionCareersOpen ? 'rotate-180' : ''}`} />
                     </button>
@@ -551,9 +586,10 @@ function Layout() {
                           <a
                             key={item.to}
                             href={item.to}
-                            className="block w-full min-h-[44px] py-3 px-4 text-base font-medium text-text cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
+                            className="flex items-center gap-2 w-full min-h-[44px] py-3 px-4 text-base font-medium text-text cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
                             onClick={(e) => handleMobileNav(e, item.to)}
                           >
+                            {item.icon ? <item.icon className="w-4 h-4" /> : null}
                             {item.name}
                           </a>
                         ))}
@@ -562,10 +598,19 @@ function Layout() {
 
                     <a
                       href="/cashflow"
-                      className="block w-full min-h-[44px] py-3 px-4 text-base font-medium text-text cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
+                      className="flex items-center gap-2 w-full min-h-[44px] py-3 px-4 text-base font-medium text-text cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
                       onClick={(e) => handleMobileNav(e, '/cashflow')}
                     >
+                      <Receipt className="w-4 h-4" />
                       Cashflow Management
+                    </a>
+                    <a
+                      href="/business-growth"
+                      className="flex items-center gap-2 w-full min-h-[44px] py-3 px-4 text-base font-medium text-text cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
+                      onClick={(e) => handleMobileNav(e, '/business-growth')}
+                    >
+                      <BarChart3 className="w-4 h-4" />
+                      Growth Execution Planner
                     </a>
                   </div>
                 )}
@@ -644,8 +689,9 @@ function Layout() {
               <ul className="space-y-2">
                 {services.slice(0, 6).map((s) => (
                   <li key={s.slug}>
-                    <Link to={`/services/${s.slug}`} className="text-slate-300 hover:text-white text-xs sm:text-sm transition-colors">
-                      {s.name}
+                    <Link to={`/services/${s.slug}`} className="inline-flex items-center gap-2 text-slate-300 hover:text-white text-xs sm:text-sm transition-colors">
+                      {s.icon ? <s.icon className="w-3.5 h-3.5 shrink-0" /> : null}
+                      <span>{s.name}</span>
                     </Link>
                   </li>
                 ))}
@@ -658,8 +704,9 @@ function Layout() {
               <ul className="space-y-2">
                 {services.slice(6).map((s) => (
                   <li key={s.slug}>
-                    <Link to={`/services/${s.slug}`} className="text-slate-300 hover:text-white text-xs sm:text-sm transition-colors">
-                      {s.name}
+                    <Link to={`/services/${s.slug}`} className="inline-flex items-center gap-2 text-slate-300 hover:text-white text-xs sm:text-sm transition-colors">
+                      {s.icon ? <s.icon className="w-3.5 h-3.5 shrink-0" /> : null}
+                      <span>{s.name}</span>
                     </Link>
                   </li>
                 ))}
