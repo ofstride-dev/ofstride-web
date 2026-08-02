@@ -75,7 +75,7 @@ function MyExpenses() {
               {profile?.role === "admin" && (
                 <Link
                   to="/cashflow/expense/admin"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-medium text-text hover:bg-surface"
+                  className="btn-ui btn-ui-info"
                 >
                   <ShieldCheck className="w-4 h-4" />
                   Admin Queue
@@ -83,7 +83,7 @@ function MyExpenses() {
               )}
               <Link
                 to="/cashflow/expense/new"
-                className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-xl font-semibold text-sm"
+                className="btn-ui btn-ui-primary"
               >
                 <Plus className="w-4 h-4" />
                 New Claim
@@ -91,7 +91,7 @@ function MyExpenses() {
               <button
                 type="button"
                 onClick={signOut}
-                className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-medium text-text hover:bg-surface"
+                className="btn-ui btn-ui-neutral"
               >
                 Sign Out
               </button>

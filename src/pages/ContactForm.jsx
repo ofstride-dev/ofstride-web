@@ -162,19 +162,30 @@ function ContactForm() {
   return (
     <div className="pt-12 sm:pt-16 min-h-screen bg-surface">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+        <div className="rounded-2xl border border-slate-200 bg-white/90 backdrop-blur-sm shadow-sm px-5 sm:px-7 py-5 sm:py-6 mb-8">
+          <div className="flex items-start gap-3">
+            <div className="w-11 h-11 rounded-xl bg-blue-50 text-secondary flex items-center justify-center shrink-0">
+              <MessageSquare className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="inline-block text-secondary text-sm font-semibold uppercase tracking-wider mb-3">
+                Contact Us
+              </span>
+              <h1 className="text-2xl sm:text-4xl font-bold text-primary mb-4">
+                Let&apos;s Start a Conversation
+              </h1>
+              <p className="text-text max-w-2xl">
+                Tell us about your business challenges. We will recommend the right solution — 
+                starting with a free consultation.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="grid lg:grid-cols-5 gap-8 sm:gap-12">
           {/* Left: Info */}
           <div className="lg:col-span-2">
-            <span className="inline-block text-secondary text-sm font-semibold uppercase tracking-wider mb-3">
-              Contact Us
-            </span>
-            <h1 className="text-2xl sm:text-4xl font-bold text-primary mb-4">
-              Let&apos;s Start a Conversation
-            </h1>
-            <p className="text-text mb-8">
-              Tell us about your business challenges. We will recommend the right solution — 
-              starting with a free consultation.
-            </p>
+            <h2 className="text-lg font-bold text-primary mb-4">Reach Us Directly</h2>
 
             <div className="space-y-6 mb-8">
               <div className="flex items-start gap-4">
