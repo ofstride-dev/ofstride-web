@@ -3,6 +3,19 @@ import { supabase } from "./supabase";
 const DEFAULT_FUNC_API_BASE =
   "https://func-ofs-carrer-001-dzd4h9andncbhfha.southindia-01.azurewebsites.net/api";
 
+const CASHFLOW_LOCAL_ID_KEY = "ofstride_cashflow_user_id";
+
+function getOrCreateCashflowLocalId(): string {
+  const existing = localStorage.getItem(CASHFLOW_LOCAL_ID_KEY);
+  if (existing) {
+    return existing;
+  }
+
+  const nextId = crypto.randomUUID();
+  localStorage.setItem(CASHFLOW_LOCAL_ID_KEY, nextId);
+  return nextId;
+}
+
 export const CASHFLOW_API_BASE =
   (import.meta.env.VITE_CASHFLOW_API_URL as string | undefined)
   || (import.meta.env.VITE_CAREER_API_URL as string | undefined)
@@ -21,20 +34,19 @@ async function cashflowIdentityHeaders(): Promise<HeadersInit> {
     headers["Authorization"] = `Bearer ${session.access_token}`;
   }
 
-  if (!user?.id) {
-    return headers;
-  }
-
-  headers["x-user-id"] = user.id;
+  const resolvedUserId = user?.id || getOrCreateCashflowLocalId();
+  headers["x-user-id"] = resolvedUserId;
 
   const rawRole = String(
-    user.user_metadata?.role || user.app_metadata?.role || ""
+    user?.user_metadata?.role || user?.app_metadata?.role || ""
   ).toLowerCase();
 
   // Keep cashflow auth strict and explicit. We only pass roles expected by
   // backend validator so malformed/unknown roles are rejected cleanly.
   if (rawRole === "admin" || rawRole === "finance" || rawRole === "employer") {
     headers["x-app-role"] = rawRole;
+  } else {
+    headers["x-app-role"] = "employer";
   }
 
   return headers;
