@@ -49,5 +49,12 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     if not module_name:
         return error_response(req, f"Unknown business growth route: {path}", status_code=404)
 
-    module = importlib.import_module(f"business_growth.{module_name}.__init__")
-    return module.main(req)
+    try:
+        module = importlib.import_module(f"business_growth.{module_name}.__init__")
+    except Exception as exc:
+        return error_response(req, f"Route load failure for '{path}': {str(exc)}", status_code=500)
+
+    try:
+        return module.main(req)
+    except Exception as exc:
+        return error_response(req, f"Route execution failure for '{path}': {str(exc)}", status_code=500)

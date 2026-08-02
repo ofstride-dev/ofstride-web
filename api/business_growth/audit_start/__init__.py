@@ -21,14 +21,19 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     if not assessment_session_id or not root_url:
         return error_response(req, "Missing assessment_session_id or root_url", status_code=400)
 
-    supa = get_supabase()
-    run = supa.table("audit_run").insert({
-        "assessment_session_id": assessment_session_id,
-        "status": "queued",
-        "root_url": root_url,
-        "page_count": 0,
-    }).execute()
-    audit_run_id = run.data[0]["id"]
+    try:
+        supa = get_supabase()
+        run = supa.table("audit_run").insert({
+            "assessment_session_id": assessment_session_id,
+            "status": "queued",
+            "root_url": root_url,
+            "page_count": 0,
+        }).execute()
+        if not run.data:
+            return error_response(req, "Audit run could not be created", status_code=500)
+        audit_run_id = run.data[0]["id"]
+    except Exception as exc:
+        return error_response(req, f"Failed to create audit run: {str(exc)}", status_code=500)
 
     try:
         connection_string = os.environ.get("AzureWebJobsStorage", "").strip()
