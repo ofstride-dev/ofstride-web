@@ -54,10 +54,7 @@ export default function LivePipelineMetrics({ metrics }) {
   };
 
   return (
-    <div className="relative my-8 w-full max-w-6xl mx-auto overflow-hidden rounded-[2rem] border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-blue-50 p-4 md:p-5 shadow-[0_14px_35px_rgba(14,165,233,0.10)]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(125,211,252,0.24),_transparent_36%),radial-gradient(circle_at_bottom_right,_rgba(147,197,253,0.22),_transparent_40%)]" />
-      <div className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-sky-200/40 blur-3xl" />
-      <div className="pointer-events-none absolute -left-12 bottom-2 h-28 w-28 rounded-full bg-blue-200/35 blur-3xl" />
+    <div className="relative my-8 w-full max-w-6xl mx-auto p-0">
 
       <div className="relative mb-4 flex items-center gap-3">
         <div className="relative flex items-center gap-2.5 rounded-full border border-sky-200 bg-white/90 px-3.5 py-1.5">

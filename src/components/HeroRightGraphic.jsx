@@ -239,7 +239,7 @@ export default function HeroRightGraphic() {
             <span className="text-[12px] font-mono tracking-widest text-slate-100 mt-2 uppercase font-semibold text-center leading-tight px-1">
               Ofstride<br />Core Engine
             </span>
-            <span className="text-[8px] font-mono tracking-[0.3em] text-cyan-300/70 uppercase mt-1">v2.4</span>
+            <span className="text-[8px] font-mono tracking-[0.3em] text-cyan-300/70 uppercase mt-1"></span>
           </div>
         </motion.div>
 

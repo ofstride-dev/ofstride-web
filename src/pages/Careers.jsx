@@ -323,16 +323,26 @@ function Careers() {
           </p>
 
           <div className="mt-6 grid sm:grid-cols-3 gap-3 text-sm text-primary">
-            <div className="rounded-xl bg-white border border-slate-200 px-4 py-3"><ShieldCheck className="w-4 h-4 inline mr-2" />Secure upload flow</div>
-            <div className="rounded-xl bg-white border border-slate-200 px-4 py-3"><Users className="w-4 h-4 inline mr-2" />Manual recruiter review</div>
-            <div className="rounded-xl bg-white border border-slate-200 px-4 py-3"><FileText className="w-4 h-4 inline mr-2" />AI-assisted screening</div>
+            <div className="group relative overflow-hidden rounded-xl border border-blue-400/70 bg-gradient-to-br from-sky-700 via-blue-700 to-indigo-700 px-4 py-3 text-white shadow-[inset_0_1px_0_rgba(191,219,254,0.45),0_10px_18px_rgba(37,99,235,0.35)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(191,219,254,0.6),0_14px_24px_rgba(37,99,235,0.42)]">
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.24),rgba(255,255,255,0.05)_40%,rgba(56,189,248,0.28))]" />
+              <span className="relative inline-flex items-center"><ShieldCheck className="w-4 h-4 mr-2 text-sky-100" />Secure Smart Upload</span>
+            </div>
+            <div className="group relative overflow-hidden rounded-xl border border-blue-400/70 bg-gradient-to-br from-sky-700 via-blue-700 to-indigo-700 px-4 py-3 text-white shadow-[inset_0_1px_0_rgba(191,219,254,0.45),0_10px_18px_rgba(37,99,235,0.35)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(191,219,254,0.6),0_14px_24px_rgba(37,99,235,0.42)]">
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.24),rgba(255,255,255,0.05)_40%,rgba(29,78,216,0.32))]" />
+              <span className="relative inline-flex items-center"><Users className="w-4 h-4 mr-2 text-sky-100" />Dual AI-assisted match engine</span>
+            </div>
+            <div className="group relative overflow-hidden rounded-xl border border-blue-400/70 bg-gradient-to-br from-sky-700 via-blue-700 to-indigo-700 px-4 py-3 text-white shadow-[inset_0_1px_0_rgba(191,219,254,0.45),0_10px_18px_rgba(37,99,235,0.35)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(191,219,254,0.6),0_14px_24px_rgba(37,99,235,0.42)]">
+              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(199,210,254,0.3),rgba(255,255,255,0.05)_45%,rgba(14,116,144,0.28))]" />
+              <span className="relative inline-flex items-center"><FileText className="w-4 h-4 mr-2 text-sky-100" />Human-Verified Alerts</span>
+            </div>
           </div>
         </div>
       </section>
 
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-blue-50 rounded-2xl p-10 sm:p-12">
-          <LivePipelineMetrics metrics={publicMetrics} />
+        <LivePipelineMetrics metrics={publicMetrics} />
+
+        <div className="mt-12 bg-blue-50 rounded-2xl p-10 sm:p-12">
           <h2 className="text-4xl sm:text-5xl font-bold text-primary text-center mb-10">Apply now</h2>
           <div className="mt-8 max-w-md">
           <div className="relative">

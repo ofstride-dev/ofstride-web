@@ -11,6 +11,7 @@ function Layout() {
   const [isServicesOpen, setIsServicesOpen] = useState(false)
   const [activeServiceCategory, setActiveServiceCategory] = useState('Finance & Compliance')
   const [isCareersOpen, setIsCareersOpen] = useState(false)
+  const [isSolutionCareersOpen, setIsSolutionCareersOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
   const location = useLocation()
@@ -19,10 +20,13 @@ function Layout() {
   const closeTimerRef = useRef(null)
   const careersRef = useRef(null)
   const careersCloseTimerRef = useRef(null)
+  const solutionCareersCloseTimerRef = useRef(null)
   const forceSolidHeader = location.pathname === '/careers/veteran-transition' || location.pathname === '/career-connect'
+  const isHomePage = location.pathname === '/'
+  const desktopNavPad = isHomePage ? 'px-2' : 'px-2.5'
 
   const navLinkClass = ({ isActive }) => {
-    const base = 'flex items-center gap-1.5 transition-colors font-medium px-2 py-1 rounded-lg'
+    const base = `flex items-center gap-1.5 transition-colors font-medium ${desktopNavPad} py-1 rounded-lg`
     return isActive
       ? `${base} text-secondary bg-surface`
       : `${base} text-text hover:text-secondary hover:bg-surface`
@@ -54,6 +58,7 @@ function Layout() {
     setIsMenuOpen(false)
     setIsServicesOpen(false)
     setIsCareersOpen(false)
+    setIsSolutionCareersOpen(false)
     window.scrollTo(0, 0)
     setIsChatOpen(false)
   }, [location.pathname])
@@ -69,6 +74,7 @@ function Layout() {
       if (event.key === 'Escape') {
         setIsServicesOpen(false)
         setIsCareersOpen(false)
+        setIsSolutionCareersOpen(false)
         setIsMenuOpen(false)
         setIsChatOpen(false)
       }
@@ -92,6 +98,9 @@ function Layout() {
       }
       if (careersCloseTimerRef.current) {
         clearTimeout(careersCloseTimerRef.current)
+      }
+      if (solutionCareersCloseTimerRef.current) {
+        clearTimeout(solutionCareersCloseTimerRef.current)
       }
     }
   }, [])
@@ -131,10 +140,9 @@ function Layout() {
   const services = serviceGroups.flatMap((g) => g.services)
 
   const careersItems = [
-    { name: 'Upload Resume / JD', to: '/careers/upload' },
-    { name: 'Jobseeker', to: '/careers/jobs' },
+    { name: 'Apply For Jobs', to: '/careers/jobs' },
     { name: 'Veteran Connect', to: '/careers/veteran-transition' },
-    { name: 'Employer / Admin', to: '/employer' },
+    { name: 'Employer Login', to: '/employer' },
   ]
 
   const openServices = () => {
@@ -142,6 +150,7 @@ function Layout() {
       clearTimeout(closeTimerRef.current)
     }
     setIsCareersOpen(false)
+    setIsSolutionCareersOpen(false)
     setActiveServiceCategory((prev) => prev || serviceGroups[0].category)
     setIsServicesOpen(true)
   }
@@ -169,6 +178,7 @@ function Layout() {
     }
     setIsServicesOpen(false)
     setIsCareersOpen(true)
+    setIsSolutionCareersOpen(true)
   }
 
   const closeCareers = () => {
@@ -177,17 +187,39 @@ function Layout() {
     }
     careersCloseTimerRef.current = setTimeout(() => {
       setIsCareersOpen(false)
+      setIsSolutionCareersOpen(false)
     }, 120)
   }
 
   const toggleCareers = () => {
     setIsServicesOpen(false)
-    setIsCareersOpen((prev) => !prev)
+    setIsCareersOpen((prev) => {
+      const next = !prev
+      setIsSolutionCareersOpen(next)
+      return next
+    })
+  }
+
+  const openSolutionCareers = () => {
+    if (solutionCareersCloseTimerRef.current) {
+      clearTimeout(solutionCareersCloseTimerRef.current)
+    }
+    setIsSolutionCareersOpen(true)
+  }
+
+  const closeSolutionCareers = () => {
+    if (solutionCareersCloseTimerRef.current) {
+      clearTimeout(solutionCareersCloseTimerRef.current)
+    }
+    solutionCareersCloseTimerRef.current = setTimeout(() => {
+      setIsSolutionCareersOpen(false)
+    }, 120)
   }
 
   const closeAllMenus = () => {
     setIsServicesOpen(false)
     setIsCareersOpen(false)
+    setIsSolutionCareersOpen(false)
     setIsMenuOpen(false)
   }
 
@@ -271,7 +303,7 @@ function Layout() {
                   aria-expanded={isServicesOpen}
                   aria-haspopup="menu"
                   aria-label="Open services menu"
-                  className="flex items-center gap-1 text-text hover:text-secondary transition-colors font-medium px-2 py-1 rounded-lg hover:bg-surface"
+                  className={`flex items-center gap-1 text-text hover:text-secondary transition-colors font-medium ${desktopNavPad} py-1 rounded-lg hover:bg-surface`}
                 >
                   <Briefcase className="w-4 h-4" />
                   Services
@@ -335,33 +367,70 @@ function Layout() {
                   onFocus={openCareers}
                   aria-expanded={isCareersOpen}
                   aria-haspopup="menu"
-                  aria-label="Open careers menu"
-                  className="flex items-center gap-1 text-text hover:text-secondary transition-colors font-medium px-2 py-1 rounded-lg hover:bg-surface"
+                  aria-label="Open solutions menu"
+                  className={`flex items-center gap-1 text-text hover:text-secondary transition-colors font-medium ${desktopNavPad} py-1 rounded-lg hover:bg-surface`}
                 >
                   <FileText className="w-4 h-4" />
-                  Careers
+                  Solutions
                   <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isCareersOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {isCareersOpen && (
                   <div
-                    className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 p-2 z-50"
+                    className="absolute top-full left-0 mt-2 w-60 bg-white rounded-xl shadow-xl border border-slate-100 p-2 z-50"
                     role="menu"
                     onMouseEnter={openCareers}
                     onMouseLeave={closeCareers}
                   >
-                    <div className="space-y-0.5">
-                      {careersItems.map((item) => (
-                        <Link
-                          key={item.to}
-                          to={item.to}
-                          role="menuitem"
-                          className="block px-4 py-2 text-sm text-text hover:bg-surface hover:text-secondary rounded-lg transition-colors"
-                          onClick={() => setIsCareersOpen(false)}
+                    <div className="space-y-1">
+                      <div
+                        className="relative"
+                        onMouseEnter={openSolutionCareers}
+                        onMouseLeave={closeSolutionCareers}
+                      >
+                        <button
+                          type="button"
+                          className="w-full flex items-center justify-between px-4 py-2 text-sm text-text hover:bg-surface hover:text-secondary rounded-lg transition-colors"
+                          onFocus={openSolutionCareers}
+                          onClick={() => setIsSolutionCareersOpen((prev) => !prev)}
                         >
-                          {item.name}
-                        </Link>
-                      ))}
+                          <span>Careers</span>
+                          <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isSolutionCareersOpen ? '-rotate-90' : ''}`} />
+                        </button>
+
+                        {isSolutionCareersOpen && (
+                          <div className="absolute left-full top-0 ml-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 p-2">
+                            <div className="space-y-0.5">
+                              {careersItems.map((item) => (
+                                <Link
+                                  key={item.to}
+                                  to={item.to}
+                                  role="menuitem"
+                                  className="block px-3 py-2 text-sm text-text hover:bg-surface hover:text-secondary rounded-lg transition-colors"
+                                  onClick={() => {
+                                    setIsCareersOpen(false)
+                                    setIsSolutionCareersOpen(false)
+                                  }}
+                                >
+                                  {item.name}
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <Link
+                        to="/cashflow"
+                        role="menuitem"
+                        className="block px-4 py-2 text-sm text-text hover:bg-surface hover:text-secondary rounded-lg transition-colors"
+                        onClick={() => {
+                          setIsCareersOpen(false)
+                          setIsSolutionCareersOpen(false)
+                        }}
+                      >
+                        Cashflow Management
+                      </Link>
                     </div>
                   </div>
                 )}
@@ -458,32 +527,46 @@ function Layout() {
                   type="button"
                   onClick={toggleCareers}
                   aria-expanded={isCareersOpen}
-                  aria-label="Toggle careers in mobile menu"
+                  aria-label="Toggle solutions in mobile menu"
                   className="flex min-h-[44px] items-center gap-2 px-2 py-2 text-text hover:text-secondary transition-colors font-medium w-full cursor-pointer"
                 >
-                  <FileText className="w-5 h-5" /> Careers
+                  <FileText className="w-5 h-5" /> Solutions
                   <ChevronDown className={`w-4 h-4 ml-auto transition-transform duration-200 ${isCareersOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {isCareersOpen && (
                   <div className="pl-4 sm:pl-8 space-y-1 mt-1">
-                    <a
-                      href="/careers"
-                      className="block w-full min-h-[44px] py-3 px-4 text-base font-semibold text-primary cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
-                      onClick={(e) => handleMobileNav(e, '/careers')}
+                    <button
+                      type="button"
+                      onClick={() => setIsSolutionCareersOpen((prev) => !prev)}
+                      className="flex items-center w-full min-h-[44px] py-3 px-4 text-base font-semibold text-primary cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
                     >
-                      Careers Overview
+                      Careers
+                      <ChevronDown className={`w-4 h-4 ml-auto transition-transform duration-200 ${isSolutionCareersOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {isSolutionCareersOpen && (
+                      <div className="pl-4 space-y-1">
+                        {careersItems.map((item) => (
+                          <a
+                            key={item.to}
+                            href={item.to}
+                            className="block w-full min-h-[44px] py-3 px-4 text-base font-medium text-text cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
+                            onClick={(e) => handleMobileNav(e, item.to)}
+                          >
+                            {item.name}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+
+                    <a
+                      href="/cashflow"
+                      className="block w-full min-h-[44px] py-3 px-4 text-base font-medium text-text cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
+                      onClick={(e) => handleMobileNav(e, '/cashflow')}
+                    >
+                      Cashflow Management
                     </a>
-                    {careersItems.map((item) => (
-                      <a
-                        key={item.to}
-                        href={item.to}
-                        className="block w-full min-h-[44px] py-3 px-4 text-base font-medium text-text cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
-                        onClick={(e) => handleMobileNav(e, item.to)}
-                      >
-                        {item.name}
-                      </a>
-                    ))}
                   </div>
                 )}
               </div>

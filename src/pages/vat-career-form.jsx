@@ -298,8 +298,7 @@ export default function CareerForm() {
     <div className="bg-surface min-h-screen pt-28 sm:pt-32 pb-12 px-4">
       <div className="max-w-3xl mx-auto rounded-2xl border border-slate-200 bg-white shadow-lg overflow-hidden">
         <div className="bg-primary px-8 py-6 text-white">
-          <p className="text-xs tracking-[0.16em] uppercase text-blue-100">Career Connect</p>
-          <h2 className="text-2xl font-bold tracking-tight mt-1">Veteran Connect</h2>
+          <h2 className="text-[1.7rem] font-bold tracking-tight">Veteran Connect</h2>
           <p className="text-blue-100 text-sm mt-1">Secure profile intake for transition-ready veterans.</p>
         </div>
 
