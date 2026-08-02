@@ -114,7 +114,7 @@ jobs:
           # Ensure critical runtime deps are physically present in the deploy package.
           python -m pip install --upgrade --force-reinstall \
             --target "__staged_careers/.python_packages/lib/site-packages" \
-            azure-storage-queue azure-storage-blob supabase
+            azure-storage-queue azure-storage-blob azure-identity supabase
           echo "=== Packaged dependency count ==="
           python - <<'PY'
           from pathlib import Path
@@ -132,7 +132,7 @@ jobs:
           sys.path.insert(0, str(site))
 
           missing = []
-          for mod in ("azure.storage.queue", "azure.storage.blob", "supabase"):
+          for mod in ("azure.storage.queue", "azure.storage.blob", "azure.identity", "supabase"):
             try:
               __import__(mod)
             except Exception:
