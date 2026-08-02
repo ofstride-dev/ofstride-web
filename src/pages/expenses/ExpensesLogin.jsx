@@ -87,10 +87,10 @@ function ExpensesLogin() {
               <button
                 type="button"
                 onClick={() => switchMode("signin")}
-                className={`flex-1 px-4 py-2 rounded-xl text-sm font-medium border ${
+                className={`flex-1 btn-ui ${
                   mode === "signin"
-                    ? "bg-primary text-white border-primary"
-                    : "bg-white text-text border-slate-200"
+                    ? "btn-ui-primary"
+                    : "btn-ui-neutral"
                 }`}
               >
                 Sign In
@@ -98,10 +98,10 @@ function ExpensesLogin() {
               <button
                 type="button"
                 onClick={() => switchMode("signup")}
-                className={`flex-1 px-4 py-2 rounded-xl text-sm font-medium border ${
+                className={`flex-1 btn-ui ${
                   mode === "signup"
-                    ? "bg-primary text-white border-primary"
-                    : "bg-white text-text border-slate-200"
+                    ? "btn-ui-primary"
+                    : "btn-ui-neutral"
                 }`}
               >
                 Sign Up
@@ -109,10 +109,10 @@ function ExpensesLogin() {
               <button
                 type="button"
                 onClick={() => switchMode("admin_signup")}
-                className={`flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border ${
+                className={`flex-1 btn-ui ${
                   mode === "admin_signup"
-                    ? "bg-primary text-white border-primary"
-                    : "bg-white text-text border-slate-200"
+                    ? "btn-ui-primary"
+                    : "btn-ui-neutral"
                 }`}
               >
                 <ShieldCheck className="w-4 h-4" />
@@ -178,7 +178,7 @@ function ExpensesLogin() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full inline-flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold disabled:opacity-60"
+                className="w-full btn-ui btn-ui-primary"
               >
                 {submitting
                   ? "Please wait..."

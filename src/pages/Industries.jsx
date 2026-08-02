@@ -93,18 +93,27 @@ function Industries() {
     <div className="pt-14">
       {/* Hero */}
       <section className="py-14 lg:py-20 bg-surface">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <span className="inline-block text-secondary text-sm font-semibold uppercase tracking-wider mb-3">
-            Industries
-          </span>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-primary mb-6">
-            Built for Every Sector.<br />
-            <span className="gradient-text">Powered by Intelligence.</span>
-          </h1>
-          <p className="text-xl text-text max-w-2xl mx-auto">
-            From manufacturing floors to GCC boardrooms — sector-specific solutions 
-            with AI at the centre.
-          </p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-2xl border border-slate-200 bg-white/90 backdrop-blur-sm shadow-sm px-5 sm:px-7 py-5 sm:py-6 text-center sm:text-left">
+            <div className="flex items-start gap-3 justify-center sm:justify-start">
+              <div className="w-11 h-11 rounded-xl bg-blue-50 text-secondary flex items-center justify-center shrink-0">
+                <Building2 className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="inline-block text-secondary text-sm font-semibold uppercase tracking-wider mb-3">
+                  Industries
+                </span>
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-primary mb-6">
+                  Built for Every Sector.<br />
+                  <span className="gradient-text">Powered by Intelligence.</span>
+                </h1>
+                <p className="text-xl text-text max-w-2xl mx-auto sm:mx-0">
+                  From manufacturing floors to GCC boardrooms — sector-specific solutions 
+                  with AI at the centre.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

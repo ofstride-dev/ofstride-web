@@ -88,19 +88,28 @@ function About() {
       {/* Hero */}
       <section className="py-10 sm:py-14 lg:py-20 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
-            About Us
-          </span>
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-primary mb-4 sm:mb-6 max-w-4xl">
-            Defence Discipline.<br />
-            Corporate Leadership.<br />
-            <span className="gradient-text">Intelligent Systems.</span>
-          </h1>
-          <p className="text-base sm:text-xl text-text max-w-2xl leading-relaxed">
-            Established in 2019, Ofstride Services LLP is a multidisciplinary business consulting firm 
-            providing integrated solutions in Human Resources, Finance, Legal, IT, Business Strategy, 
-            Artificial Intelligence, and Workforce Development.
-          </p>
+          <div className="rounded-2xl border border-slate-200 bg-white/90 backdrop-blur-sm shadow-sm px-5 sm:px-7 py-5 sm:py-6">
+            <div className="flex items-start gap-3">
+              <div className="w-11 h-11 rounded-xl bg-blue-50 text-secondary flex items-center justify-center shrink-0">
+                <Shield className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
+                  About Us
+                </span>
+                <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-primary mb-4 sm:mb-6 max-w-4xl">
+                  Defence Discipline.<br />
+                  Corporate Leadership.<br />
+                  <span className="gradient-text">Intelligent Systems.</span>
+                </h1>
+                <p className="text-base sm:text-xl text-text max-w-2xl leading-relaxed">
+                  Established in 2019, Ofstride Services LLP is a multidisciplinary business consulting firm 
+                  providing integrated solutions in Human Resources, Finance, Legal, IT, Business Strategy, 
+                  Artificial Intelligence, and Workforce Development.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

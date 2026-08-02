@@ -339,10 +339,10 @@ function Careers() {
         </div>
       </section>
 
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
         <LivePipelineMetrics metrics={publicMetrics} />
 
-        <div className="mt-12 bg-blue-50 rounded-2xl p-10 sm:p-12">
+        <div className="mt-8 sm:mt-9 bg-blue-50 rounded-2xl p-10 sm:p-12">
           <h2 className="text-4xl sm:text-5xl font-bold text-primary text-center mb-10">Apply now</h2>
           <div className="mt-8 max-w-md">
           <div className="relative">
@@ -403,7 +403,7 @@ function Careers() {
           <button
             type="button"
             onClick={clearFilters}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm font-medium text-secondary hover:bg-blue-50"
+            className="w-full btn-ui btn-ui-neutral"
           >
             Clear filters
           </button>
@@ -418,7 +418,7 @@ function Careers() {
               type="button"
               disabled={jobsLoading || page <= 1}
               onClick={() => loadJobs({ query: searchQuery, department: departmentFilter, location: locationFilter, employmentType: employmentTypeFilter, nextPage: page - 1 })}
-              className="px-3 py-2 rounded-lg border border-slate-200 bg-white disabled:opacity-50"
+              className="btn-ui btn-ui-sm btn-ui-neutral"
             >
               Previous
             </button>
@@ -426,7 +426,7 @@ function Careers() {
               type="button"
               disabled={jobsLoading || page >= totalPages}
               onClick={() => loadJobs({ query: searchQuery, department: departmentFilter, location: locationFilter, employmentType: employmentTypeFilter, nextPage: page + 1 })}
-              className="px-3 py-2 rounded-lg border border-slate-200 bg-white disabled:opacity-50"
+              className="btn-ui btn-ui-sm btn-ui-neutral"
             >
               Next
             </button>
@@ -499,7 +499,7 @@ function Careers() {
                       <div className="mt-3 flex gap-2">
                         <button
                           type="button"
-                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors"
+                          className="btn-ui btn-ui-primary"
                           onClick={() => onClickApplyForJob(job.id)}
                         >
                           <FileText className="w-3.5 h-3.5" />
@@ -645,7 +645,7 @@ function Careers() {
             <button
               type="submit"
               disabled={submitting || jobsLoading || jobs.length === 0}
-              className="w-full inline-flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold disabled:opacity-60"
+              className="w-full btn-ui btn-ui-primary"
             >
               {submitting ? "Submitting..." : "Submit Application"}
             </button>

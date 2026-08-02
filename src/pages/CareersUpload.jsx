@@ -140,11 +140,20 @@ function CareersUpload() {
     <div className="pt-12 sm:pt-16 min-h-screen bg-surface">
       <section className="py-10 sm:py-14 border-b border-slate-100">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-sm font-semibold uppercase tracking-wider text-secondary mb-2">Careers</p>
-          <h1 className="text-3xl sm:text-4xl font-bold text-primary">Upload Resume or Job Description</h1>
-          <p className="text-text mt-3 max-w-3xl">
-            Quickly upload a resume or a job description file. No sign-in, no forms — just pick a file and upload.
-          </p>
+          <div className="rounded-2xl border border-slate-200 bg-white/90 backdrop-blur-sm shadow-sm px-5 sm:px-7 py-5 sm:py-6 mb-8">
+            <div className="flex items-start gap-3">
+              <div className="w-11 h-11 rounded-xl bg-blue-50 text-secondary flex items-center justify-center shrink-0">
+                <UploadCloud className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-wider text-secondary mb-2">Careers</p>
+                <h1 className="text-3xl sm:text-4xl font-bold text-primary">Upload Resume or Job Description</h1>
+                <p className="text-text mt-3 max-w-3xl">
+                  Quickly upload a resume or a job description file. No sign-in, no forms — just pick a file and upload.
+                </p>
+              </div>
+            </div>
+          </div>
 
           <div className="mt-8 grid sm:grid-cols-2 gap-6">
             <UploadCard

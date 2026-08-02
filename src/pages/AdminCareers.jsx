@@ -21,6 +21,7 @@ import {
   onAuthStateChange,
   getAccessToken,
 } from "../services/supabase";
+import { BriefcaseBusiness, LogOut, UserRound } from "lucide-react";
 
 function computeSimpleDiff(originalText, enhancedText) {
   const before = String(originalText || "").split("\n");
@@ -723,49 +724,59 @@ function AdminCareers() {
 
   return (
     <div className="pt-12 sm:pt-16 min-h-screen bg-surface overflow-x-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-primary">Admin Careers Workspace</h1>
-            <p className="text-sm text-text mt-1">Three-step flow: create JD, receive applications, review with AI recommendation.</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <span className="text-xs text-muted">
-              {auth.user?.email} ({auth.role})
-            </span>
-            <a
-              href="/careers/jobs"
-              className="px-3 py-1.5 rounded-lg border border-secondary text-secondary text-xs bg-white hover:bg-blue-50 transition-colors"
-            >
-              View Public Jobs
-            </a>
-            <button
-              onClick={handleSignOut}
-              className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white hover:bg-slate-50 transition-colors"
-            >
-              Sign Out
-            </button>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-10 pb-6 sm:pb-8 space-y-4">
+        <div className="rounded-2xl border border-slate-200 bg-white/90 backdrop-blur-sm shadow-sm px-5 sm:px-6 py-4 sm:py-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="w-11 h-11 rounded-xl bg-blue-50 text-secondary flex items-center justify-center shrink-0">
+                <BriefcaseBusiness className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-secondary mb-1">Careers Admin</p>
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-primary">Admin Careers Workspace</h1>
+                <p className="text-sm text-text mt-1">Three-step flow: create JD, receive applications, review with AI recommendation.</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <span className="text-xs text-muted inline-flex items-center gap-1.5">
+                <UserRound className="w-3.5 h-3.5 text-secondary" />
+                {auth.user?.email} ({auth.role})
+              </span>
+              <a
+                href="/careers/jobs"
+                className="btn-ui btn-ui-sm btn-ui-info"
+              >
+                View Public Jobs
+              </a>
+              <button
+                onClick={handleSignOut}
+                className="btn-ui btn-ui-sm btn-ui-neutral"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                Sign Out
+              </button>
+            </div>
           </div>
         </div>
 
         <div className="sticky top-[68px] sm:top-[84px] z-20 rounded-xl border border-slate-200 bg-white/95 backdrop-blur p-2 flex flex-wrap items-center gap-2 shadow-sm">
           <button
             type="button"
-            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${workspaceView === "triage" ? "border-secondary bg-blue-50 text-secondary" : "border-slate-300 bg-white hover:bg-slate-50"}`}
+            className={`btn-ui btn-ui-sm min-w-[118px] h-9 ${workspaceView === "triage" ? "border-secondary bg-blue-50 text-secondary" : "btn-ui-neutral"}`}
             onClick={() => setWorkspaceView("triage")}
           >
             Resume Review
           </button>
           <button
             type="button"
-            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${workspaceView === "jobs" ? "border-secondary bg-blue-50 text-secondary" : "border-slate-300 bg-white hover:bg-slate-50"}`}
+            className={`btn-ui btn-ui-sm min-w-[118px] h-9 ${workspaceView === "jobs" ? "border-secondary bg-blue-50 text-secondary" : "btn-ui-neutral"}`}
             onClick={() => setWorkspaceView("jobs")}
           >
             JD Studio
           </button>
           <button
             type="button"
-            className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${workspaceView === "builder" ? "border-secondary bg-blue-50 text-secondary" : "border-slate-300 bg-white hover:bg-slate-50"}`}
+            className={`btn-ui btn-ui-sm min-w-[118px] h-9 ${workspaceView === "builder" ? "border-secondary bg-blue-50 text-secondary" : "btn-ui-neutral"}`}
             onClick={() => setWorkspaceView("builder")}
           >
             Resume Builder
@@ -817,7 +828,7 @@ function AdminCareers() {
                     ))}
                   </select>
                 </div>
-                <button className="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white hover:bg-slate-50 transition-colors" onClick={() => loadList(selectedJobId || undefined)}>
+                <button className="btn-ui btn-ui-neutral" onClick={() => loadList(selectedJobId || undefined)}>
                   Refresh Queue
                 </button>
               </div>
@@ -919,7 +930,7 @@ function AdminCareers() {
                                 <button
                                   onClick={onRunSuggestedAction}
                                   disabled={detailLoading || statusActionLoading}
-                                  className={`px-3 py-1.5 rounded-lg text-white text-xs transition-opacity disabled:opacity-50 ${btnStyles[v] || btnStyles.primary}`}
+                                  className={`btn-ui btn-ui-sm text-white transition-opacity disabled:opacity-50 ${btnStyles[v] || btnStyles.primary}`}
                                 >
                                   {sa.key === "run-analysis" && detailLoading ? "Analyzing..." : statusActionLoading ? "Updating..." : "Proceed"}
                                 </button>
@@ -1032,7 +1043,7 @@ function AdminCareers() {
                             Generate AI analysis based on JD fit, keyword overlap, semantic similarity, and structured reasoning.
                           </div>
                           <div className="mt-2 flex flex-wrap items-center gap-2">
-                            <button onClick={onRunAnalysis} className="px-3 py-2 rounded-lg bg-primary text-white text-sm hover:opacity-95 transition-opacity">
+                            <button onClick={onRunAnalysis} className="btn-ui btn-ui-primary">
                               {detailLoading ? "Analyzing..." : "Generate Recommendation"}
                             </button>
                           </div>
@@ -1043,13 +1054,13 @@ function AdminCareers() {
                         {detail.analysis_status === "completed" && (
                           <>
                             <div className="flex flex-wrap gap-2">
-                              <button onClick={() => onSetStatusWithOverride("under_review")} disabled={statusActionLoading} className="px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white hover:bg-slate-50 transition-colors disabled:opacity-50">Mark Under Review</button>
-                              <button onClick={() => onSetStatusWithOverride("shortlisted")} disabled={statusActionLoading} className="px-3 py-2 rounded-lg border border-emerald-400 text-emerald-700 text-sm bg-white hover:bg-emerald-50 transition-colors disabled:opacity-50">Shortlist</button>
-                              <button onClick={() => onSetStatusWithOverride("rejected")} disabled={statusActionLoading} className="px-3 py-2 rounded-lg border border-rose-400 text-rose-700 text-sm bg-white hover:bg-rose-50 transition-colors disabled:opacity-50">Reject</button>
+                              <button onClick={() => onSetStatusWithOverride("under_review")} disabled={statusActionLoading} className="btn-ui btn-ui-warning">Mark Under Review</button>
+                              <button onClick={() => onSetStatusWithOverride("shortlisted")} disabled={statusActionLoading} className="btn-ui btn-ui-success">Shortlist</button>
+                              <button onClick={() => onSetStatusWithOverride("rejected")} disabled={statusActionLoading} className="btn-ui btn-ui-danger">Reject</button>
                             </div>
                             <button
                               onClick={onSendFurtherDiscussionMail}
-                              className="px-3 py-2 rounded-lg border border-indigo-400 text-indigo-700 text-sm bg-white hover:bg-indigo-50 transition-colors"
+                              className="btn-ui btn-ui-info"
                             >
                               Send confirmation mail
                             </button>
@@ -1135,12 +1146,12 @@ function AdminCareers() {
             <section className="bg-white rounded-xl shadow-sm p-4 border border-slate-100">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-semibold text-primary">Job Description Studio</h2>
-                <button className="text-sm text-secondary" onClick={loadJobs}>Refresh</button>
+                <button className="btn-ui btn-ui-sm btn-ui-neutral" onClick={loadJobs}>Refresh</button>
               </div>
 
               <button
                 type="button"
-                className="w-full mb-3 text-xs text-secondary border border-slate-200 rounded-lg px-2 py-2 bg-white hover:bg-slate-50 transition-colors"
+                className="w-full mb-3 btn-ui btn-ui-sm btn-ui-primary"
                 onClick={() => {
                   setJobForm({ id: "", title: "", department: "", location: "", employment_type: "", status: "draft", jd_markdown: "" });
                   setShowJobEditor(true);

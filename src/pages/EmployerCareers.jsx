@@ -6,6 +6,7 @@ import {
   signOut,
   onAuthStateChange,
 } from "../services/supabase";
+import { BriefcaseBusiness, LogOut, ShieldCheck, UserRound } from "lucide-react";
 
 function EmployerCareers() {
   const [auth, setAuth] = useState({ user: null, session: null, role: null, loading: true });
@@ -58,6 +59,9 @@ function EmployerCareers() {
       <div className="pt-12 sm:pt-16 min-h-screen bg-surface">
         <section className="max-w-md mx-auto px-4 py-12">
           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 sm:p-8">
+            <div className="w-11 h-11 rounded-xl bg-blue-50 text-secondary flex items-center justify-center mb-4">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
             <p className="text-sm font-semibold uppercase tracking-wide text-secondary mb-2">Employer / Admin</p>
             <h1 className="text-2xl font-bold text-primary mb-2">Employer Sign In</h1>
             <p className="text-sm text-muted mb-6">
@@ -71,7 +75,7 @@ function EmployerCareers() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none"
                   required
                 />
               </div>
@@ -81,7 +85,7 @@ function EmployerCareers() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200"
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none"
                   required
                   minLength={6}
                 />
@@ -125,12 +129,14 @@ function EmployerCareers() {
             </div>
             <button
               onClick={handleSignOut}
-              className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white"
+              className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white inline-flex items-center gap-1.5"
             >
+              <LogOut className="w-3.5 h-3.5" />
               Sign Out
             </button>
           </div>
-          <p className="text-text mb-2">
+          <p className="text-text mb-2 inline-flex items-center gap-2">
+            <UserRound className="w-4 h-4 text-secondary" />
             Welcome, {auth.user?.email} ({auth.role})
           </p>
           <p className="text-text mb-6">
@@ -140,8 +146,9 @@ function EmployerCareers() {
           <div className="flex flex-wrap gap-3">
             <button
               onClick={() => navigate("/admin/careers")}
-              className="px-4 py-2 rounded-lg bg-primary text-white text-sm"
+              className="px-4 py-2 rounded-lg bg-primary text-white text-sm inline-flex items-center gap-2"
             >
+              <BriefcaseBusiness className="w-4 h-4" />
               Open Admin Dashboard
             </button>
             <button

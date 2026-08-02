@@ -135,6 +135,43 @@
     transform: scale(1.02);
   }
 
+  /* Unified semantic button system */
+  .btn-ui {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors duration-200;
+  }
+
+  .btn-ui:disabled {
+    @apply cursor-not-allowed opacity-60;
+  }
+
+  .btn-ui-sm {
+    @apply px-3 py-2 text-xs font-medium;
+  }
+
+  .btn-ui-primary {
+    @apply border border-primary bg-primary text-white hover:bg-[#0a1f6b] hover:border-[#0a1f6b];
+  }
+
+  .btn-ui-neutral {
+    @apply border border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
+  }
+
+  .btn-ui-info {
+    @apply border border-indigo-300 bg-indigo-50 text-indigo-700 hover:bg-indigo-100;
+  }
+
+  .btn-ui-success {
+    @apply border border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100;
+  }
+
+  .btn-ui-warning {
+    @apply border border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100;
+  }
+
+  .btn-ui-danger {
+    @apply border border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100;
+  }
+
   /* Link underline animation */
   .link-underline {
     position: relative;
