@@ -111,6 +111,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r __staged_careers/requirements.txt \
             --target "__staged_careers/.python_packages/lib/site-packages"
+          # Ensure critical runtime deps are physically present in the deploy package.
+          python -m pip install --upgrade --force-reinstall \
+            --target "__staged_careers/.python_packages/lib/site-packages" \
+            azure-storage-queue azure-storage-blob supabase
           echo "=== Packaged dependency count ==="
           python - <<'PY'
           from pathlib import Path
@@ -121,21 +125,20 @@ jobs:
         shell: bash
         run: |
           python - <<'PY'
-          import importlib.util
           import sys
           from pathlib import Path
 
           site = Path("__staged_careers/.python_packages/lib/site-packages").resolve()
           sys.path.insert(0, str(site))
 
-          required = [
-              "azure.storage.queue",
-              "azure.storage.blob",
-              "supabase",
-          ]
-          missing = [name for name in required if importlib.util.find_spec(name) is None]
+          missing = []
+          for mod in ("azure.storage.queue", "azure.storage.blob", "supabase"):
+            try:
+              __import__(mod)
+            except Exception:
+              missing.append(mod)
           if missing:
-              raise SystemExit(f"Missing packaged dependencies: {', '.join(missing)}")
+            raise SystemExit(f"Missing packaged dependencies: {', '.join(missing)}")
           print("Dependency verification passed")
           PY
       - name: Sync Optional LLM Settings (Same CI/CD Pipeline)
