@@ -22,7 +22,7 @@ export default function CashflowDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div style={{ padding: '1rem' }}>Loading Cash Flow Metrics...</div>;
+  if (loading) return <div style={{ padding: '1rem', color: '#475569', fontWeight: 500 }}>Loading Cash Flow Metrics...</div>;
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -34,21 +34,21 @@ export default function CashflowDashboard() {
         <>
           {/* Summary Cards Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
-            <div style={{ padding: '1.25rem', backgroundColor: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <div style={{ padding: '1.25rem', background: 'linear-gradient(145deg, #ffffff, #f5f9ff)', borderRadius: '14px', border: '1px solid #dbeafe', boxShadow: '0 10px 24px rgba(15,23,42,0.05)' }}>
               <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>30-Day Cash Inflow</span>
               <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#16a34a', margin: '0.5rem 0 0 0' }}>
                 ₹{data.summary?.cash_inflow_30d?.toLocaleString('en-IN')}
               </h3>
             </div>
 
-            <div style={{ padding: '1.25rem', backgroundColor: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <div style={{ padding: '1.25rem', background: 'linear-gradient(145deg, #ffffff, #fff7f7)', borderRadius: '14px', border: '1px solid #fee2e2', boxShadow: '0 10px 24px rgba(15,23,42,0.05)' }}>
               <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>30-Day Cash Outflow</span>
               <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#dc2626', margin: '0.5rem 0 0 0' }}>
                 ₹{data.summary?.cash_outflow_30d?.toLocaleString('en-IN')}
               </h3>
             </div>
 
-            <div style={{ padding: '1.25rem', backgroundColor: '#ffffff', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <div style={{ padding: '1.25rem', background: 'linear-gradient(145deg, #ffffff, #f0f9ff)', borderRadius: '14px', border: '1px solid #dbeafe', boxShadow: '0 10px 24px rgba(15,23,42,0.05)' }}>
               <span style={{ fontSize: '0.85rem', color: '#64748b', fontWeight: 500 }}>Projected Runway</span>
               <h3 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0284c7', margin: '0.5rem 0 0 0' }}>
                 {data.summary?.runway_months} Months
@@ -57,7 +57,7 @@ export default function CashflowDashboard() {
           </div>
 
           {/* Compliance Alerts Section */}
-          <div style={{ backgroundColor: '#ffffff', padding: '1.5rem', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+          <div style={{ backgroundColor: '#ffffff', padding: '1.5rem', borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: '0 12px 28px rgba(15,23,42,0.05)' }}>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#0f172a', marginTop: 0, marginBottom: '1rem' }}>
               MSME Compliance Alerts (Section 43B(h))
             </h3>

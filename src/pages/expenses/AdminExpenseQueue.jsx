@@ -37,8 +37,8 @@ function AdminExpenseQueue() {
   }, [statusFilter]);
 
   return (
-    <div className="pt-12 sm:pt-16 min-h-screen bg-surface">
-      <section className="py-10 sm:py-14 lg:py-16">
+    <div className="bg-surface">
+      <section className="py-2 sm:py-3 lg:py-4">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
             <div>

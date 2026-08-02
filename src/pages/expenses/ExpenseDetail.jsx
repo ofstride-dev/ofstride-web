@@ -112,7 +112,7 @@ function ExpenseDetail() {
 
   if (loading) {
     return (
-      <div className="pt-12 sm:pt-16 min-h-screen bg-surface flex items-center justify-center">
+      <div className="bg-surface flex items-center justify-center py-10">
         <p className="text-sm text-muted">Loading claim...</p>
       </div>
     );
@@ -120,8 +120,8 @@ function ExpenseDetail() {
 
   if (error || !expense) {
     return (
-      <div className="pt-12 sm:pt-16 min-h-screen bg-surface">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="bg-surface">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
             {error || "Expense claim not found."}
           </div>
@@ -136,8 +136,8 @@ function ExpenseDetail() {
   const availableTransitions = VALID_STATUS_TRANSITIONS[expense.status] || [];
 
   return (
-    <div className="pt-12 sm:pt-16 min-h-screen bg-surface">
-      <section className="py-10 sm:py-14 lg:py-16">
+    <div className="bg-surface">
+      <section className="py-2 sm:py-3 lg:py-4">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
           <Link to="/cashflow/expense" className="text-sm text-secondary font-medium">
             ← Back to my claims

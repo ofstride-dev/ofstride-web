@@ -14,6 +14,7 @@ import AdminCareers from './pages/AdminCareers.jsx'
 import CareersUpload from './pages/CareersUpload.jsx'
 import EmployerCareers from './pages/EmployerCareers.jsx'
 import CareerForm from './pages/vat-career-form.jsx'
+import PrivacyPolicy from './pages/PrivacyPolicy.jsx'
 function ExpenseIdRedirect() {
   const { id } = useParams()
   return <Navigate to={`/cashflow/expense/${id || ''}`} replace />
@@ -44,6 +45,7 @@ function App() {
       '/contact': 'Contact | Ofstride Services LLP',
       '/book-call': 'Book a Call | Ofstride Services LLP',
       '/contact-form': 'Contact Form | Ofstride Services LLP',
+      '/privacy-policy': 'Privacy Policy | Ofstride Services LLP',
       '/careers': 'Careers | Ofstride Services LLP',
       '/careers/jobs': 'Jobseeker Careers | Ofstride Services LLP',
       '/careers/upload': 'Upload Resume or JD | Ofstride Services LLP',
@@ -95,51 +97,52 @@ function App() {
         <Route path="book-call" element={<BookCall />} />
         <Route path="contact-form" element={<ContactForm />} />
         <Route path="career-connect" element={<CareerForm />} />
+        <Route path="privacy-policy" element={<PrivacyPolicy />} />
 
-      </Route>
+          {/* CASHFLOW SUITE ROUTES (NOW INSIDE PUBLIC LAYOUT) */}
+          <Route path="cashflow" element={<CashflowLayout />}>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<CashflowDashboard />} />
+            <Route path="ap" element={<AccountsPayable />} />
+            <Route path="ar" element={<AccountsReceivable />} />
+            <Route path="pettycash" element={<PettyCash />} />
+            <Route path="expense" element={<ExpensesAuthLayout />}>
+              <Route
+                index
+                element={
+                  <ExpenseProtectedRoute>
+                    <MyExpenses />
+                  </ExpenseProtectedRoute>
+                }
+              />
+              <Route path="login" element={<ExpensesLogin />} />
+              <Route
+                path="new"
+                element={
+                  <ExpenseProtectedRoute>
+                    <SubmitExpense />
+                  </ExpenseProtectedRoute>
+                }
+              />
+              <Route
+                path="admin"
+                element={
+                  <ExpenseProtectedRoute adminOnly>
+                    <AdminExpenseQueue />
+                  </ExpenseProtectedRoute>
+                }
+              />
+              <Route
+                path=":id"
+                element={
+                  <ExpenseProtectedRoute>
+                    <ExpenseDetail />
+                  </ExpenseProtectedRoute>
+                }
+              />
+            </Route>
+          </Route>
 
-      {/* STANDALONE CASHFLOW PORTAL ROUTE (OUTSIDE PUBLIC LAYOUT) */}
-      <Route path="/cashflow" element={<CashflowLayout />}>
-        <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<CashflowDashboard />} />
-        <Route path="ap" element={<AccountsPayable />} />
-        <Route path="ar" element={<AccountsReceivable />} />
-        <Route path="pettycash" element={<PettyCash />} />
-        <Route path="expense" element={<ExpensesAuthLayout />}>
-          <Route
-            index
-            element={
-              <ExpenseProtectedRoute>
-                <MyExpenses />
-              </ExpenseProtectedRoute>
-            }
-          />
-          <Route path="login" element={<ExpensesLogin />} />
-          <Route
-            path="new"
-            element={
-              <ExpenseProtectedRoute>
-                <SubmitExpense />
-              </ExpenseProtectedRoute>
-            }
-          />
-          <Route
-            path="admin"
-            element={
-              <ExpenseProtectedRoute adminOnly>
-                <AdminExpenseQueue />
-              </ExpenseProtectedRoute>
-            }
-          />
-          <Route
-            path=":id"
-            element={
-              <ExpenseProtectedRoute>
-                <ExpenseDetail />
-              </ExpenseProtectedRoute>
-            }
-          />
-        </Route>
       </Route>
 
       <Route path="/expenses" element={<Navigate to="/cashflow/expense" replace />} />

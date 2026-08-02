@@ -75,18 +75,21 @@ export default function AccountsPayable() {
   };
 
   return (
-    <div style={{maxWidth:1280,margin:'0 auto',padding:32}}>
-      <h2 style={{fontSize:32,fontWeight:700,marginBottom:28,color:'#0f172a'}}>Accounts Payable</h2>
+    <div style={{maxWidth:1280,margin:'0 auto',padding:'8px 8px 20px'}}>
+      <div style={{marginBottom:20,padding:'16px 18px',border:'1px solid #e2e8f0',borderRadius:16,background:'linear-gradient(165deg, #ffffff, #f8fbff)',boxShadow:'0 10px 24px rgba(15,23,42,0.04)'}}>
+        <h2 style={{fontSize:32,fontWeight:700,margin:'0 0 6px 0',color:'#0f172a'}}>Accounts Payable</h2>
+        <p style={{margin:0,color:'#64748b',fontSize:14}}>Capture vendor bills, apply tax rules, and maintain a clean payable register.</p>
+      </div>
 
       <div style={{display:'flex',gap:24,flexWrap:'wrap',marginBottom:30}}>
-        <div style={{flex:'1 1 320px',background:'#fff',border:'2px dashed #dbe4ee',borderRadius:18,padding:40,textAlign:'center',boxShadow:'0 8px 30px rgba(15,23,42,.05)'}}>
+        <div style={{flex:'1 1 320px',background:'#fff',border:'2px dashed #dbe4ee',borderRadius:18,padding:40,textAlign:'center',boxShadow:'0 12px 30px rgba(15,23,42,.06)'}}>
           <h3>Upload Vendor Invoice</h3>
           <p style={{color:'#64748b'}}>Upload PDF or image. AI extracts everything automatically.</p>
           <input type="file" accept=".pdf,image/*" onChange={handleFileUpload}/>
           {ocrLoading&&<div style={{marginTop:16,display:'inline-block',padding:'12px 18px',background:'#eff6ff',borderRadius:12,color:'#2563eb',fontWeight:600}}>Scanning document…</div>}
         </div>
 
-        <div style={{flex:'2 1 500px',background:'#fff',borderRadius:18,padding:32,boxShadow:'0 10px 35px rgba(15,23,42,.06)'}}>
+        <div style={{flex:'2 1 500px',background:'linear-gradient(165deg, #ffffff, #f8fbff)',borderRadius:18,padding:32,boxShadow:'0 14px 35px rgba(15,23,42,.07)',border:'1px solid #e2e8f0'}}>
           <h3 style={{marginTop:0}}>Verify & Apply Tax</h3>
           <form onSubmit={handleSaveInvoice} style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20}}>
             {[
@@ -117,7 +120,7 @@ export default function AccountsPayable() {
         </div>
       </div>
 
-      <div style={{background:'#fff',borderRadius:18,overflow:'hidden',boxShadow:'0 10px 35px rgba(15,23,42,.05)'}}>
+      <div style={{background:'#fff',borderRadius:18,overflow:'hidden',boxShadow:'0 12px 30px rgba(15,23,42,.05)',border:'1px solid #e2e8f0'}}>
         <table style={{width:'100%',borderCollapse:'collapse'}}>
           <thead style={{background:'#f8fafc'}}>
             <tr>

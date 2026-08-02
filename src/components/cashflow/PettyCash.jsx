@@ -75,7 +75,7 @@ export default function PettyCash() {
   };
 
   return (
-    <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '1rem' }}>
+    <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '0.25rem 0.5rem 1.25rem' }}>
       
       <div style={headerStyles.headerRow}>
         <h2 style={headerStyles.title}>Petty Cash</h2>
@@ -86,7 +86,7 @@ export default function PettyCash() {
       </div>
 
       {/* Entry Form Container */}
-      <div style={{ backgroundColor: '#fff', padding: '1.5rem', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '2rem' }}>
+      <div style={{ background: 'linear-gradient(165deg, #ffffff, #f8fbff)', padding: '1.5rem', borderRadius: '14px', border: '1px solid #e2e8f0', marginBottom: '2rem', boxShadow: '0 12px 26px rgba(15,23,42,0.05)' }}>
         <h3 style={{ marginTop: 0, fontSize: '1.1rem', marginBottom: '1rem', color: '#1e293b' }}>New Cash Entry</h3>
         <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem', alignItems: 'end' }}>
           
@@ -125,7 +125,7 @@ export default function PettyCash() {
       </div>
 
       {/* Ledger Table */}
-      <div style={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', overflowX: 'auto' }}>
+      <div style={{ backgroundColor: '#fff', borderRadius: '14px', border: '1px solid #e2e8f0', overflowX: 'auto', boxShadow: '0 12px 26px rgba(15,23,42,0.05)' }}>
         {loading ? (
           <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Loading ledger entries...</div>
         ) : (

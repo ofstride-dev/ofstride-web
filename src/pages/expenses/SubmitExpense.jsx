@@ -146,8 +146,8 @@ function SubmitExpense() {
   };
 
   return (
-    <div className="pt-12 sm:pt-16 min-h-screen bg-surface">
-      <section className="py-10 sm:py-14 lg:py-16">
+    <div className="bg-surface">
+      <section className="py-2 sm:py-3 lg:py-4">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-2xl font-semibold text-primary mb-6">Submit Expense Claim</h1>
 

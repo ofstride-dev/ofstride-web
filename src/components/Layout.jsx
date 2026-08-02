@@ -726,13 +726,6 @@ function Layout() {
                   Admin Careers
                 </Link>
                 <Link
-                  to="/cashflow"  /* Changed from /expenses/login */
-                  className="inline-flex items-center gap-2 border border-slate-500 text-slate-300 px-4 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-white/10 transition-colors"
-                >
-                  <Briefcase className="w-4 h-4" />
-                  Cashflow Manager
-                </Link>
-                <Link 
                   to="/contact-form"
                   className="inline-flex items-center gap-2 border border-slate-500 text-slate-300 px-4 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-white/10 transition-colors"
                 >
@@ -745,10 +738,12 @@ function Layout() {
 
           <div className="mt-6 sm:mt-7 pt-5 border-t border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-3">
             <p className="text-slate-400 text-xs sm:text-sm text-center sm:text-left">
-              © 2026 Ofstride Services LLP. All rights reserved.
+              © 2026 Ofstride Services LLP. All rights reserved.{' '}
+              <Link to="/privacy-policy" className="text-slate-300 hover:text-white underline underline-offset-2 transition-colors">
+                Privacy Policy
+              </Link>
             </p>
             <div className="flex gap-6">
-              <Link to="/" className="text-slate-400 hover:text-white text-xs sm:text-sm transition-colors">Privacy</Link>
               <Link to="/" className="text-slate-400 hover:text-white text-xs sm:text-sm transition-colors">Terms</Link>
             </div>
           </div>
