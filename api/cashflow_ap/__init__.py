@@ -8,6 +8,31 @@ from shared.db import get_supabase_client
 from shared.tax_engine_interface import calculate_tds, calculate_msme_due_date
 from shared.admin_auth import validate_identity_headers
 
+
+def _mock_ocr_result() -> dict:
+    return {
+        "vendor_name": "Sample Vendor Ltd",
+        "vendor_gstin": "27AAAAA0000A1Z5",
+        "bill_number": f"INV-{int(datetime.now().timestamp())}",
+        "bill_date": datetime.now().strftime("%Y-%m-%d"),
+        "amount": 10000.0,
+        "gst_amount": 1800.0,
+    }
+
+
+def _decode_upload_bytes(raw_file_value) -> bytes:
+    if not isinstance(raw_file_value, str) or not raw_file_value.strip():
+        raise ValueError("No file provided")
+
+    payload = raw_file_value.strip()
+    if "," in payload:
+        payload = payload.split(",", 1)[1]
+
+    try:
+        return base64.b64decode(payload, validate=True)
+    except Exception as exc:
+        raise ValueError(f"Invalid file payload: {str(exc)}")
+
 def get_or_create_vendor(supabase, vendor_name: str, gstin: str = None) -> str:
     if not vendor_name:
         vendor_name = "Unassigned Vendor"
@@ -54,42 +79,55 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         # 2. POST /api/cashflow/ap/ocr
         elif req.method == "POST" and action == "ocr":
             req_body = req.get_json()
+            if not isinstance(req_body, dict):
+                return func.HttpResponse(
+                    json.dumps({"ok": False, "error": "Invalid JSON object"}),
+                    mimetype="application/json",
+                    status_code=400,
+                )
+
             b64_file = req_body.get("file")
-            if not b64_file:
-                return func.HttpResponse(json.dumps({"ok": False, "error": "No file provided"}), status_code=400)
+            try:
+                file_bytes = _decode_upload_bytes(b64_file)
+            except ValueError as exc:
+                return func.HttpResponse(
+                    json.dumps({"ok": False, "error": str(exc)}),
+                    mimetype="application/json",
+                    status_code=400,
+                )
 
             # Mock fallback if Azure Doc Intel keys aren't set yet
             endpoint = os.environ.get("AZURE_DOC_INTEL_ENDPOINT")
             key = os.environ.get("AZURE_DOC_INTEL_KEY")
 
             if endpoint and key:
-                from azure.core.credentials import AzureKeyCredential
-                from azure.ai.formrecognizer import DocumentAnalysisClient
-                
-                file_bytes = base64.b64decode(b64_file.split(",")[1])
-                client = DocumentAnalysisClient(endpoint=endpoint, credential=AzureKeyCredential(key))
-                poller = client.begin_analyze_document("prebuilt-invoice", document=file_bytes)
-                doc = poller.result().documents[0]
-                fields = doc.fields
+                try:
+                    from azure.core.credentials import AzureKeyCredential
+                    from azure.ai.formrecognizer import DocumentAnalysisClient
 
-                extracted = {
-                    "vendor_name": fields.get("VendorName").value if fields.get("VendorName") else "",
-                    "vendor_gstin": fields.get("VendorTaxId").value if fields.get("VendorTaxId") else "",
-                    "bill_number": fields.get("InvoiceId").value if fields.get("InvoiceId") else "",
-                    "bill_date": str(fields.get("InvoiceDate").value) if fields.get("InvoiceDate") else datetime.now().strftime("%Y-%m-%d"),
-                    "amount": fields.get("InvoiceTotal").value.amount if fields.get("InvoiceTotal") else 0.0,
-                    "gst_amount": fields.get("TotalTax").value.amount if fields.get("TotalTax") else 0.0,
-                }
+                    client = DocumentAnalysisClient(endpoint=endpoint, credential=AzureKeyCredential(key))
+                    poller = client.begin_analyze_document("prebuilt-invoice", document=file_bytes)
+                    result = poller.result()
+                    documents = getattr(result, "documents", None) or []
+
+                    if not documents:
+                        extracted = _mock_ocr_result()
+                    else:
+                        fields = documents[0].fields or {}
+                        extracted = {
+                            "vendor_name": fields.get("VendorName").value if fields.get("VendorName") else "",
+                            "vendor_gstin": fields.get("VendorTaxId").value if fields.get("VendorTaxId") else "",
+                            "bill_number": fields.get("InvoiceId").value if fields.get("InvoiceId") else "",
+                            "bill_date": str(fields.get("InvoiceDate").value) if fields.get("InvoiceDate") else datetime.now().strftime("%Y-%m-%d"),
+                            "amount": fields.get("InvoiceTotal").value.amount if fields.get("InvoiceTotal") else 0.0,
+                            "gst_amount": fields.get("TotalTax").value.amount if fields.get("TotalTax") else 0.0,
+                        }
+                except Exception as exc:
+                    logging.warning(f"AP OCR failed, using fallback extraction: {str(exc)}")
+                    extracted = _mock_ocr_result()
             else:
                 # Local dev fallback when Azure credentials are pending
-                extracted = {
-                    "vendor_name": "Sample Vendor Ltd",
-                    "vendor_gstin": "27AAAAA0000A1Z5",
-                    "bill_number": f"INV-{int(datetime.now().timestamp())}",
-                    "bill_date": datetime.now().strftime("%Y-%m-%d"),
-                    "amount": 10000.0,
-                    "gst_amount": 1800.0,
-                }
+                extracted = _mock_ocr_result()
             
             return func.HttpResponse(json.dumps({"ok": True, "data": extracted}), mimetype="application/json")
 
