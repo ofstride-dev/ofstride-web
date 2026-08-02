@@ -1,8 +1,6 @@
 import azure.functions as func
 import json
 import os
-from azure.storage.queue import QueueClient
-from azure.core.exceptions import ResourceNotFoundError
 from business_growth.shared.db import get_supabase
 from business_growth.shared.http import error_response, json_response, options_response
 
@@ -36,6 +34,20 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         return error_response(req, f"Failed to create audit run: {str(exc)}", status_code=500)
 
     try:
+        try:
+            from azure.storage.queue import QueueClient
+            from azure.core.exceptions import ResourceNotFoundError
+        except ModuleNotFoundError as dep_exc:
+            try:
+                supa.table("audit_run").update({"status": "failed"}).eq("id", audit_run_id).execute()
+            except Exception:
+                pass
+            return error_response(
+                req,
+                f"Missing runtime dependency for queueing: {str(dep_exc)}. Redeploy Function App with azure-storage-queue installed.",
+                status_code=500,
+            )
+
         connection_string = os.environ.get("AzureWebJobsStorage", "").strip()
         if not connection_string:
             raise ValueError("AzureWebJobsStorage is missing")
