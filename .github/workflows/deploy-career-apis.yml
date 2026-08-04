@@ -4,6 +4,7 @@ on:
     branches:
       - main
     paths:
+      - 'api/business_growth/**'
       - 'api/careers_manage/**'
       - 'api/careers_complete/**'
       - 'api/careers_init_upload/**'
@@ -49,6 +50,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p __staged_careers
+          cp -r api/business_growth __staged_careers/
           cp -r api/careers_manage __staged_careers/
           cp -r api/careers_complete __staged_careers/
           cp -r api/careers_init_upload __staged_careers/
@@ -114,12 +116,54 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r __staged_careers/requirements.txt \
+            --platform manylinux2014_x86_64 \
+            --implementation cp \
+            --python-version 3.12 \
+            --only-binary=:all: \
             --target "__staged_careers/.python_packages/lib/site-packages"
+          # Ensure critical runtime deps are physically present in the deploy package.
+          python -m pip install --upgrade --force-reinstall \
+            --platform manylinux2014_x86_64 \
+            --implementation cp \
+            --python-version 3.12 \
+            --only-binary=:all: \
+            --target "__staged_careers/.python_packages/lib/site-packages" \
+            azure-storage-queue azure-storage-blob azure-identity supabase
+          # Prune non-runtime and host-specific files that inflate ZIP size and can
+          # break Kudu OneDeploy package extraction.
+          find __staged_careers/.python_packages/lib/site-packages -maxdepth 1 -type d \( -name "tests" -o -name "test" -o -name "__pycache__" \) -prune -exec rm -rf {} + || true
+          rm -rf __staged_careers/.python_packages/lib/site-packages/win32 \
+                 __staged_careers/.python_packages/lib/site-packages/win32com \
+                 __staged_careers/.python_packages/lib/site-packages/win32comext \
+                 __staged_careers/.python_packages/lib/site-packages/pythonwin \
+                 __staged_careers/.python_packages/lib/site-packages/PyWin32.chm || true
           echo "=== Packaged dependency count ==="
           python - <<'PY'
           from pathlib import Path
           site = Path("__staged_careers/.python_packages/lib/site-packages")
           print(len(list(site.glob("*"))))
+          PY
+          echo "=== Staged package size (MB) ==="
+          du -sm __staged_careers | cut -f1
+      - name: Verify Critical Python Dependencies
+        shell: bash
+        run: |
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+
+          site = Path("__staged_careers/.python_packages/lib/site-packages").resolve()
+          sys.path.insert(0, str(site))
+
+          missing = []
+          for mod in ("azure.storage.queue", "azure.storage.blob", "azure.identity", "supabase"):
+            try:
+              __import__(mod)
+            except Exception:
+              missing.append(mod)
+          if missing:
+            raise SystemExit(f"Missing packaged dependencies: {', '.join(missing)}")
+          print("Dependency verification passed")
           PY
       - name: Sync Optional LLM Settings (Same CI/CD Pipeline)
         shell: bash

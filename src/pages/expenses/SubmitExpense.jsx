@@ -354,7 +354,7 @@ function SubmitExpense() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full inline-flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold disabled:opacity-60"
+                className="w-full btn-ui btn-ui-primary"
               >
                 {submitting ? "Submitting..." : "Submit Claim"}
               </button>

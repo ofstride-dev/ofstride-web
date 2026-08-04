@@ -150,7 +150,7 @@ function ExpenseDetail() {
                 <button
                   type="button"
                   onClick={() => downloadExpenseAsXlsx(expense, history, attachments)}
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition-colors"
+                  className="btn-ui btn-ui-sm btn-ui-success"
                 >
                   <FileSpreadsheet className="w-4 h-4" />
                   Excel
@@ -158,7 +158,7 @@ function ExpenseDetail() {
                 <button
                   type="button"
                   onClick={() => downloadExpenseAsPdf(expense, history, attachments)}
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors"
+                  className="btn-ui btn-ui-sm btn-ui-danger"
                 >
                   <Download className="w-4 h-4" />
                   PDF
@@ -242,7 +242,13 @@ function ExpenseDetail() {
                     type="button"
                     disabled={actingStatus !== ""}
                     onClick={() => handleTransition(toStatus)}
-                    className="inline-flex items-center justify-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60"
+                    className={`btn-ui ${
+                      toStatus === "approved" || toStatus === "paid"
+                        ? "btn-ui-success"
+                        : toStatus === "rejected"
+                        ? "btn-ui-danger"
+                        : "btn-ui-warning"
+                    }`}
                   >
                     {actingStatus === toStatus ? "Saving..." : ACTION_LABELS[toStatus] || toStatus}
                   </button>

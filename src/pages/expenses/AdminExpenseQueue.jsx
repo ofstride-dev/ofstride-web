@@ -45,7 +45,7 @@ function AdminExpenseQueue() {
               <h1 className="text-2xl font-semibold text-primary">Admin Expense Queue</h1>
               <p className="text-sm text-muted mt-1">All submitted claims across the company</p>
             </div>
-            <Link to="/cashflow/expense" className="text-sm text-secondary font-medium">
+            <Link to="/cashflow/expense" className="btn-ui btn-ui-sm btn-ui-neutral">
               ← My Claims
             </Link>
           </div>

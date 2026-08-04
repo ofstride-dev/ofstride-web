@@ -75,6 +75,19 @@ def _extract_gst_from_content(content: str) -> float:
 
     return round(total, 2)
 
+def _decode_upload_bytes(raw_file_value) -> bytes:
+    if not isinstance(raw_file_value, str) or not raw_file_value.strip():
+        raise ValueError("No file provided")
+
+    payload = raw_file_value.strip()
+    if "," in payload:
+        payload = payload.split(",", 1)[1]
+
+    try:
+        return base64.b64decode(payload, validate=True)
+    except Exception as exc:
+        raise ValueError(f"Invalid file payload: {str(exc)}")
+
 def get_or_create_vendor(supabase, vendor_name: str, gstin: str = None) -> str:
     if not vendor_name:
         vendor_name = "Unassigned Vendor"
@@ -132,9 +145,22 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         # 2. POST /api/cashflow/ap/ocr
         elif req.method == "POST" and action == "ocr":
             req_body = req.get_json()
+            if not isinstance(req_body, dict):
+                return func.HttpResponse(
+                    json.dumps({"ok": False, "error": "Invalid JSON object"}),
+                    mimetype="application/json",
+                    status_code=400,
+                )
+
             b64_file = req_body.get("file")
-            if not b64_file:
-                return func.HttpResponse(json.dumps({"ok": False, "error": "No file provided"}), status_code=400)
+            try:
+                file_bytes = _decode_upload_bytes(b64_file)
+            except ValueError as exc:
+                return func.HttpResponse(
+                    json.dumps({"ok": False, "error": str(exc)}),
+                    mimetype="application/json",
+                    status_code=400,
+                )
 
             # Mock fallback if Azure Doc Intel keys aren't set yet
             endpoint = os.environ.get("AZURE_DOC_INTEL_ENDPOINT")
@@ -145,7 +171,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     from azure.core.credentials import AzureKeyCredential
                     from azure.ai.formrecognizer import DocumentAnalysisClient
 
-                    file_bytes = base64.b64decode(b64_file.split(",")[1])
                     client = DocumentAnalysisClient(endpoint=endpoint, credential=AzureKeyCredential(key))
                     poller = client.begin_analyze_document("prebuilt-invoice", document=file_bytes)
                     ocr_result = poller.result()

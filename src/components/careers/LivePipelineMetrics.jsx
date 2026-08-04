@@ -54,7 +54,7 @@ export default function LivePipelineMetrics({ metrics }) {
   };
 
   return (
-    <div className="relative my-8 w-full max-w-6xl mx-auto p-0">
+    <div className="relative mt-2 mb-5 sm:mb-6 w-full max-w-6xl mx-auto p-0">
 
       <div className="relative mb-4 flex items-center gap-3">
         <div className="relative flex items-center gap-2.5 rounded-full border border-sky-200 bg-white/90 px-3.5 py-1.5">
