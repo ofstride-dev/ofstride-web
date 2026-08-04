@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { cashflowFetch, parseCashflowResponse } from '../../services/cashflowApi';
+import { exportRowsAsCsv } from '../../services/csvExport';
 
 export default function AccountsReceivable() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [approvingId, setApprovingId] = useState('');
   
   const [formData, setFormData] = useState({
     customer_name: '', customer_gstin: '', invoice_number: '', 
@@ -90,6 +92,69 @@ export default function AccountsReceivable() {
     }
   };
 
+  const handleApproveInvoice = async (invoiceId) => {
+    if (!invoiceId) return;
+    setApprovingId(invoiceId);
+    try {
+      const res = await cashflowFetch('/cashflow/ar/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invoice_id: invoiceId }),
+      });
+      const parsed = await parseCashflowResponse(res);
+      if (parsed.ok && parsed.data) {
+        setInvoices((prev) => prev.map((inv) => (inv.id === invoiceId ? parsed.data : inv)));
+      } else {
+        throw new Error(parsed.error || `Server error ${parsed.status}`);
+      }
+    } catch (err) {
+      console.error("Approve Failed:", err);
+      alert("Failed to approve invoice.");
+    } finally {
+      setApprovingId('');
+    }
+  };
+
+  const handleDownloadReport = () => {
+    const now = new Date().toISOString().slice(0, 10);
+    const rows = (invoices || []).map((inv) => {
+      const amount = Number(inv.amount || 0);
+      const gst = Number(inv.gst_amount || 0);
+      const total = amount + gst;
+      return {
+        customer: inv.cashflow_entities?.name || 'N/A',
+        customer_gstin: inv.cashflow_entities?.gstin || '',
+        invoice_number: inv.invoice_number || '',
+        invoice_date: inv.invoice_date || '',
+        due_date: inv.due_date || '',
+        amount: amount.toFixed(2),
+        gst_amount: gst.toFixed(2),
+        total_invoice_value: total.toFixed(2),
+        status: inv.status || '',
+        is_proforma: inv.is_proforma ? 'Yes' : 'No',
+        irn_number: inv.irn_number || '',
+      };
+    });
+
+    exportRowsAsCsv(
+      `ar_report_${now}.csv`,
+      [
+        { header: 'Customer', key: 'customer' },
+        { header: 'Customer GSTIN', key: 'customer_gstin' },
+        { header: 'Invoice Number', key: 'invoice_number' },
+        { header: 'Invoice Date', key: 'invoice_date' },
+        { header: 'Due Date', key: 'due_date' },
+        { header: 'Amount', key: 'amount' },
+        { header: 'GST Amount', key: 'gst_amount' },
+        { header: 'Total Invoice Value', key: 'total_invoice_value' },
+        { header: 'Status', key: 'status' },
+        { header: 'Is Proforma', key: 'is_proforma' },
+        { header: 'IRN Number', key: 'irn_number' },
+      ],
+      rows
+    );
+  };
+
   const totalOutstanding = invoices
     .filter(inv => inv.status !== 'paid' && !inv.is_proforma)
     .reduce((acc, curr) => acc + (parseFloat(curr.amount || 0) + parseFloat(curr.gst_amount || 0)), 0);
@@ -124,9 +189,26 @@ export default function AccountsReceivable() {
       
       <div style={styles.headerRow}>
         <h2 style={styles.title}>Accounts Receivable</h2>
-        <div style={styles.metricCard}>
-          <p style={styles.metricText}>Total Outstanding</p>
-          <p style={styles.metricValue}>₹{totalOutstanding.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <button
+            type="button"
+            onClick={handleDownloadReport}
+            style={{
+              border: '1px solid #bfdbfe',
+              background: '#eff6ff',
+              color: '#1d4ed8',
+              fontWeight: 700,
+              borderRadius: 10,
+              padding: '9px 14px',
+              cursor: 'pointer',
+            }}
+          >
+            Download Report
+          </button>
+          <div style={styles.metricCard}>
+            <p style={styles.metricText}>Total Outstanding</p>
+            <p style={styles.metricValue}>₹{totalOutstanding.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+          </div>
         </div>
       </div>
 
@@ -205,6 +287,23 @@ export default function AccountsReceivable() {
                     </span>
                   </td>
                   <td style={styles.td}>
+                    {inv.status === 'pending' && !inv.is_proforma && (
+                      <button
+                        onClick={() => handleApproveInvoice(inv.id)}
+                        disabled={approvingId === inv.id}
+                        style={{
+                          ...styles.actionBtn,
+                          marginRight: '0.5rem',
+                          color: '#ffffff',
+                          border: '1px solid #2563eb',
+                          backgroundColor: approvingId === inv.id ? '#94a3b8' : '#2563eb',
+                          cursor: approvingId === inv.id ? 'not-allowed' : 'pointer',
+                        }}
+                      >
+                        {approvingId === inv.id ? 'Approving...' : 'Approve'}
+                      </button>
+                    )}
+
                     {inv.status !== 'paid' && !inv.is_proforma && (
                       <button onClick={() => handleRecordPayment(inv)} style={styles.actionBtn}>
                         Collect

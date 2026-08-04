@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { cashflowFetch, parseCashflowResponse } from '../../services/cashflowApi';
+import { exportRowsAsCsv } from '../../services/csvExport';
 
 export default function PettyCash() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [approvingId, setApprovingId] = useState('');
   
   // Form State
   const [formData, setFormData] = useState({
@@ -59,6 +61,62 @@ export default function PettyCash() {
     }
   };
 
+  const handleApproveEntry = async (entryId) => {
+    if (!entryId) return;
+    setApprovingId(entryId);
+    try {
+      const res = await cashflowFetch('/cashflow/pettycash/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entry_id: entryId }),
+      });
+      const parsed = await parseCashflowResponse(res);
+      if (parsed.ok && parsed.data) {
+        setEntries((prev) => prev.map((entry) => (entry.id === entryId ? parsed.data : entry)));
+      } else {
+        throw new Error(parsed.error || `Server returned ${parsed.status}`);
+      }
+    } catch (err) {
+      console.error("Failed to approve petty cash entry", err);
+      alert("Failed to approve entry.");
+    } finally {
+      setApprovingId('');
+    }
+  };
+
+  const handleDownloadReport = () => {
+    const now = new Date().toISOString().slice(0, 10);
+    const rows = (entries || []).map((entry) => {
+      const cashIn = Number(entry.cash_in || 0);
+      const cashOut = Number(entry.cash_out || 0);
+      return {
+        entry_date: entry.entry_date || '',
+        description: entry.description || '',
+        category: entry.category || '',
+        auto_categorized: entry.auto_categorized ? 'Yes' : 'No',
+        cash_in: cashIn.toFixed(2),
+        cash_out: cashOut.toFixed(2),
+        net_movement: (cashIn - cashOut).toFixed(2),
+        status: entry.status || 'pending',
+      };
+    });
+
+    exportRowsAsCsv(
+      `petty_cash_report_${now}.csv`,
+      [
+        { header: 'Entry Date', key: 'entry_date' },
+        { header: 'Description', key: 'description' },
+        { header: 'Category', key: 'category' },
+        { header: 'Auto Categorized', key: 'auto_categorized' },
+        { header: 'Cash In', key: 'cash_in' },
+        { header: 'Cash Out', key: 'cash_out' },
+        { header: 'Net Movement', key: 'net_movement' },
+        { header: 'Status', key: 'status' },
+      ],
+      rows
+    );
+  };
+
   // Calculate Balance safely using exact DB columns (cash_in - cash_out)
   const balance = entries.reduce((acc, curr) => {
     const cashIn = parseFloat(curr.cash_in || 0);
@@ -79,9 +137,26 @@ export default function PettyCash() {
       
       <div style={headerStyles.headerRow}>
         <h2 style={headerStyles.title}>Petty Cash</h2>
-        <div style={headerStyles.metricCard}>
-          <p style={headerStyles.metricText}>Available Balance</p>
-          <p style={headerStyles.metricValue}>₹{balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <button
+            type="button"
+            onClick={handleDownloadReport}
+            style={{
+              border: '1px solid #bfdbfe',
+              background: '#eff6ff',
+              color: '#1d4ed8',
+              fontWeight: 700,
+              borderRadius: 10,
+              padding: '9px 14px',
+              cursor: 'pointer',
+            }}
+          >
+            Download Report
+          </button>
+          <div style={headerStyles.metricCard}>
+            <p style={headerStyles.metricText}>Available Balance</p>
+            <p style={headerStyles.metricValue}>₹{balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+          </div>
         </div>
       </div>
 
@@ -137,6 +212,8 @@ export default function PettyCash() {
                 <th style={{ padding: '0.85rem 1rem', color: '#475569', fontWeight: 600 }}>Category</th>
                 <th style={{ padding: '0.85rem 1rem', color: '#475569', fontWeight: 600 }}>Cash In</th>
                 <th style={{ padding: '0.85rem 1rem', color: '#475569', fontWeight: 600 }}>Cash Out</th>
+                <th style={{ padding: '0.85rem 1rem', color: '#475569', fontWeight: 600 }}>Status</th>
+                <th style={{ padding: '0.85rem 1rem', color: '#475569', fontWeight: 600 }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -162,11 +239,48 @@ export default function PettyCash() {
                   <td style={{ padding: '0.85rem 1rem', color: '#dc2626', fontWeight: 600 }}>
                     {parseFloat(entry.cash_out) > 0 ? `₹${parseFloat(entry.cash_out).toLocaleString('en-IN')}` : '-'}
                   </td>
+                  <td style={{ padding: '0.85rem 1rem' }}>
+                    <span
+                      style={{
+                        backgroundColor: String(entry.status || 'pending') === 'approved' ? '#dcfce7' : '#fef3c7',
+                        color: String(entry.status || 'pending') === 'approved' ? '#166534' : '#92400e',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '4px',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                        textTransform: 'capitalize',
+                      }}
+                    >
+                      {String(entry.status || 'pending')}
+                    </span>
+                  </td>
+                  <td style={{ padding: '0.85rem 1rem' }}>
+                    {String(entry.status || 'pending') === 'pending' ? (
+                      <button
+                        type="button"
+                        onClick={() => handleApproveEntry(entry.id)}
+                        disabled={approvingId === entry.id}
+                        style={{
+                          border: 'none',
+                          borderRadius: 8,
+                          padding: '8px 12px',
+                          fontWeight: 700,
+                          cursor: approvingId === entry.id ? 'not-allowed' : 'pointer',
+                          background: approvingId === entry.id ? '#94a3b8' : '#2563eb',
+                          color: '#fff',
+                        }}
+                      >
+                        {approvingId === entry.id ? 'Approving...' : 'Approve'}
+                      </button>
+                    ) : (
+                      <span style={{ color: '#64748b', fontSize: 13 }}>-</span>
+                    )}
+                  </td>
                 </tr>
               ))}
               {entries.length === 0 && (
                 <tr>
-                  <td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
+                  <td colSpan="7" style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
                     No cash entries recorded yet.
                   </td>
                 </tr>

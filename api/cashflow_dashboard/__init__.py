@@ -1,23 +1,272 @@
+from datetime import date, datetime, timedelta
+
 import azure.functions as func
-from shared.api_contract import create_response
+
 from shared.admin_auth import validate_identity_headers
+from shared.api_contract import create_response
+from shared.db import get_supabase_client
+
+
+def _safe_float(value) -> float:
+    try:
+        return float(value or 0.0)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _to_date(raw_value):
+    if isinstance(raw_value, date):
+        return raw_value
+    if not raw_value:
+        return None
+
+    text = str(raw_value)
+    try:
+        return datetime.strptime(text[:10], "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
+def _resolve_range(period: str, start_date_raw: str, end_date_raw: str):
+    today = date.today()
+    period_key = (period or "").strip().lower() or "month"
+
+    if start_date_raw and end_date_raw:
+        start_date = _to_date(start_date_raw)
+        end_date = _to_date(end_date_raw)
+        if not start_date or not end_date:
+            raise ValueError("Invalid date format. Use YYYY-MM-DD")
+        if start_date > end_date:
+            raise ValueError("start_date must be <= end_date")
+        return start_date, end_date, "custom"
+
+    if period_key == "1d":
+        return today, today, "1d"
+    if period_key == "7d":
+        return today - timedelta(days=6), today, "7d"
+    if period_key == "30d":
+        return today - timedelta(days=29), today, "30d"
+
+    # default window: current month
+    month_start = today.replace(day=1)
+    return month_start, today, "month"
+
+
+def _sum_amount(rows, include_gst: bool = False) -> float:
+    total = 0.0
+    for row in rows or []:
+        amount = _safe_float(row.get("amount"))
+        if include_gst:
+            amount += _safe_float(row.get("gst_amount"))
+        total += amount
+    return round(total, 2)
+
+
+def _month_start(d: date) -> date:
+    return d.replace(day=1)
+
+
+def _next_month_start(d: date) -> date:
+    year = d.year + (1 if d.month == 12 else 0)
+    month = 1 if d.month == 12 else d.month + 1
+    return date(year, month, 1)
+
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     auth = validate_identity_headers(req)
     if not auth["ok"]:
         return create_response(auth["status_code"], False, error=auth["error"])
-    
-    # Calculation stub integrating AP, AR, Petty Cash and read-only expenses
-    dashboard_data = {
-        "summary": {
-            "cash_inflow_30d": 450000.00,
-            "cash_outflow_30d": 210000.00,
-            "net_cash_flow": 240000.00,
-            "runway_months": 8.5,
-            "petty_cash_balance": 15400.00
-        },
-        "msme_alerts": [
-            {"vendor": "TechCorp India", "amount": 50000, "days_remaining": 3, "deadline": "2026-08-01"}
-        ]
-    }
-    return create_response(200, True, data=dashboard_data)
+
+    try:
+        start_date, end_date, applied_period = _resolve_range(
+            req.params.get("period") or "",
+            req.params.get("start_date") or "",
+            req.params.get("end_date") or "",
+        )
+
+        start_key = start_date.isoformat()
+        end_key = end_date.isoformat()
+        days_in_window = max((end_date - start_date).days + 1, 1)
+
+        supabase = get_supabase_client()
+
+        tx_rows = (
+            supabase.table("cashflow_transactions")
+            .select("amount,invoice_id,bill_id")
+            .gte("transaction_date", start_key)
+            .lte("transaction_date", end_key)
+            .execute()
+        )
+
+        petty_rows = (
+            supabase.table("cashflow_petty_cash")
+            .select("cash_in,cash_out")
+            .gte("entry_date", start_key)
+            .lte("entry_date", end_key)
+            .execute()
+        )
+
+        pending_ar_rows = (
+            supabase.table("cashflow_invoices")
+            .select("amount,gst_amount")
+            .eq("status", "pending")
+            .eq("is_proforma", False)
+            .gte("invoice_date", start_key)
+            .lte("invoice_date", end_key)
+            .execute()
+        )
+
+        payable_rows = (
+            supabase.table("cashflow_bills")
+            .select("amount,gst_amount")
+            .in_("status", ["pending", "approved"])
+            .gte("bill_date", start_key)
+            .lte("bill_date", end_key)
+            .execute()
+        )
+
+        msme_candidates = (
+            supabase.table("cashflow_bills")
+            .select("due_date,amount,gst_amount,cashflow_entities!cashflow_bills_vendor_id_fkey(name,msme_category)")
+            .in_("status", ["pending", "approved"])
+            .gte("due_date", start_key)
+            .lte("due_date", end_key)
+            .order("due_date", desc=False)
+            .execute()
+        )
+
+        # Last 6 months trend for dashboard charts.
+        current_month = _month_start(date.today())
+        trend_start = _month_start(current_month - timedelta(days=150))
+        trend_start_key = trend_start.isoformat()
+        trend_end_key = end_key
+
+        trend_tx_rows = (
+            supabase.table("cashflow_transactions")
+            .select("transaction_date,amount,invoice_id,bill_id")
+            .gte("transaction_date", trend_start_key)
+            .lte("transaction_date", trend_end_key)
+            .execute()
+        )
+
+        trend_petty_rows = (
+            supabase.table("cashflow_petty_cash")
+            .select("entry_date,cash_in,cash_out")
+            .gte("entry_date", trend_start_key)
+            .lte("entry_date", trend_end_key)
+            .execute()
+        )
+
+        tx_data = tx_rows.data or []
+        cash_received = round(sum(_safe_float(r.get("amount")) for r in tx_data if r.get("invoice_id")), 2)
+        ap_paid = round(sum(_safe_float(r.get("amount")) for r in tx_data if r.get("bill_id")), 2)
+
+        petty_cash_in = round(sum(_safe_float(r.get("cash_in")) for r in (petty_rows.data or [])), 2)
+        petty_cash_out = round(sum(_safe_float(r.get("cash_out")) for r in (petty_rows.data or [])), 2)
+
+        cash_inflow = round(cash_received + petty_cash_in, 2)
+        cash_outflow = round(ap_paid + petty_cash_out, 2)
+        net_cash_position = round(cash_inflow - cash_outflow, 2)
+
+        cash_pending = _sum_amount(pending_ar_rows.data or [], include_gst=True)
+        cash_payable = _sum_amount(payable_rows.data or [], include_gst=True)
+        petty_cash_balance = round(petty_cash_in - petty_cash_out, 2)
+
+        avg_daily_outflow = (cash_outflow / days_in_window) if days_in_window else 0.0
+        runway_months = round((cash_pending / (avg_daily_outflow * 30.0)), 2) if avg_daily_outflow > 0 else None
+
+        alerts = []
+        for row in msme_candidates.data or []:
+            vendor = (row.get("cashflow_entities") or {})
+            category = str(vendor.get("msme_category") or "none")
+            if category == "none":
+                continue
+            due = _to_date(row.get("due_date"))
+            if not due:
+                continue
+            alerts.append(
+                {
+                    "vendor": vendor.get("name") or "Unknown Vendor",
+                    "amount": round(_safe_float(row.get("amount")) + _safe_float(row.get("gst_amount")), 2),
+                    "days_remaining": (due - date.today()).days,
+                    "deadline": due.isoformat(),
+                }
+            )
+
+        # Build last-6-month series: inflow, outflow, net
+        series_by_month = {}
+        cursor = trend_start
+        while cursor <= current_month:
+            key = cursor.strftime("%Y-%m")
+            series_by_month[key] = {
+                "month": key,
+                "label": cursor.strftime("%b %Y"),
+                "inflow": 0.0,
+                "outflow": 0.0,
+                "net": 0.0,
+            }
+            cursor = _next_month_start(cursor)
+
+        for row in (trend_tx_rows.data or []):
+            tx_date = _to_date(row.get("transaction_date"))
+            if not tx_date:
+                continue
+            key = tx_date.strftime("%Y-%m")
+            if key not in series_by_month:
+                continue
+            amt = _safe_float(row.get("amount"))
+            if row.get("invoice_id"):
+                series_by_month[key]["inflow"] += amt
+            if row.get("bill_id"):
+                series_by_month[key]["outflow"] += amt
+
+        for row in (trend_petty_rows.data or []):
+            tx_date = _to_date(row.get("entry_date"))
+            if not tx_date:
+                continue
+            key = tx_date.strftime("%Y-%m")
+            if key not in series_by_month:
+                continue
+            series_by_month[key]["inflow"] += _safe_float(row.get("cash_in"))
+            series_by_month[key]["outflow"] += _safe_float(row.get("cash_out"))
+
+        monthly_series = []
+        for key in sorted(series_by_month.keys()):
+            point = series_by_month[key]
+            point["inflow"] = round(point["inflow"], 2)
+            point["outflow"] = round(point["outflow"], 2)
+            point["net"] = round(point["inflow"] - point["outflow"], 2)
+            monthly_series.append(point)
+
+        dashboard_data = {
+            "period": {
+                "key": applied_period,
+                "start_date": start_key,
+                "end_date": end_key,
+                "days": days_in_window,
+            },
+            "summary": {
+                "cash_received": cash_received,
+                "cash_pending": cash_pending,
+                "cash_payable": cash_payable,
+                "cash_inflow": cash_inflow,
+                "cash_outflow": cash_outflow,
+                "net_cash_position": net_cash_position,
+                "petty_cash_balance": petty_cash_balance,
+                "runway_months": runway_months,
+                "inflow_from_customers": cash_received,
+                "inflow_from_petty_cash": petty_cash_in,
+                "outflow_to_vendors": ap_paid,
+                "outflow_from_petty_cash": petty_cash_out,
+            },
+            "msme_alerts": alerts[:5],
+            "trend": {
+                "monthly": monthly_series,
+            },
+        }
+
+        return create_response(200, True, data=dashboard_data)
+    except ValueError as err:
+        return create_response(400, False, error=str(err))
+    except Exception as err:
+        return create_response(500, False, error=f"Dashboard aggregation failed: {str(err)}")

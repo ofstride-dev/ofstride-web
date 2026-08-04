@@ -25,6 +25,7 @@ import CashflowDashboard from './components/cashflow/CashflowDashboard.jsx'
 import AccountsPayable from './components/cashflow/AccountsPayable.jsx'
 import AccountsReceivable from './components/cashflow/AccountsReceivable.jsx'
 import PettyCash from './components/cashflow/PettyCash.jsx'
+import TallyReconcile from './components/cashflow/TallyReconcile.jsx'
 import ExpensesAuthLayout from './components/ExpensesAuthLayout.jsx'
 import ExpenseProtectedRoute from './components/ExpenseProtectedRoute.jsx'
 import ExpensesLogin from './pages/expenses/ExpensesLogin.jsx'
@@ -62,6 +63,7 @@ function App() {
       '/cashflow/ap': 'Accounts Payable | Cash Flow Suite',
       '/cashflow/ar': 'Accounts Receivable | Cash Flow Suite',
       '/cashflow/pettycash': 'Petty Cash | Cash Flow Suite',
+      '/cashflow/reconcile': 'Tally Reconcile | Cash Flow Suite',
       '/cashflow/expense': 'Expense Portal | Cash Flow Suite',
     }
 
@@ -106,6 +108,7 @@ function App() {
             <Route path="ap" element={<AccountsPayable />} />
             <Route path="ar" element={<AccountsReceivable />} />
             <Route path="pettycash" element={<PettyCash />} />
+            <Route path="reconcile" element={<TallyReconcile />} />
             <Route path="expense" element={<ExpensesAuthLayout />}>
               <Route
                 index
