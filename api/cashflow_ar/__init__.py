@@ -98,9 +98,22 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         # 3. POST /api/cashflow/ar/collect -> Record a payment in cashflow_transactions
         elif req.method == "POST" and action == "collect":
             data = req.get_json()
+            invoice_id = data.get("invoice_id")
+            if not invoice_id:
+                return func.HttpResponse(json.dumps({"ok": False, "error": "invoice_id is required"}), mimetype="application/json", status_code=400)
+
+            invoice_res = supabase.table('cashflow_invoices').select('id, amount, gst_amount, status').eq('id', invoice_id).limit(1).execute()
+            invoice_rows = invoice_res.data or []
+            if not invoice_rows:
+                return func.HttpResponse(json.dumps({"ok": False, "error": "Invoice not found"}), mimetype="application/json", status_code=404)
+
+            invoice = invoice_rows[0]
+            current_status = str(invoice.get("status") or "")
+            if current_status == "paid":
+                return func.HttpResponse(json.dumps({"ok": False, "error": "Invoice is already paid"}), mimetype="application/json", status_code=400)
             
             new_transaction = {
-                "invoice_id": data.get("invoice_id"),
+                "invoice_id": invoice_id,
                 "transaction_date": data.get("transaction_date", datetime.now().strftime("%Y-%m-%d")),
                 "amount": _to_float(data.get("amount"), 0.0),
                 "payment_mode": data.get("payment_mode", "bank_transfer"),
@@ -108,11 +121,74 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             }
             
             response = supabase.table('cashflow_transactions').insert(new_transaction).execute()
-            
-            # Optional: Update invoice status to 'paid' if fully paid
-            # You would add logic here to compare transaction totals vs invoice total
-            
-            return func.HttpResponse(json.dumps({"ok": True, "data": response.data[0]}), mimetype="application/json")
+
+            tx_sum_res = supabase.table('cashflow_transactions').select('amount').eq('invoice_id', invoice_id).execute()
+            total_collected = round(sum(_to_float(t.get("amount"), 0.0) for t in (tx_sum_res.data or [])), 2)
+            invoice_total = round(_to_float(invoice.get("amount"), 0.0) + _to_float(invoice.get("gst_amount"), 0.0), 2)
+
+            updated_invoice = None
+            if total_collected >= invoice_total and invoice_total > 0:
+                paid_update = (
+                    supabase.table('cashflow_invoices')
+                    .update({"status": "paid"})
+                    .eq('id', invoice_id)
+                    .execute()
+                )
+                updated_rows = paid_update.data or []
+                updated_invoice = updated_rows[0] if updated_rows else None
+
+            return func.HttpResponse(
+                json.dumps(
+                    {
+                        "ok": True,
+                        "data": {
+                            "transaction": response.data[0],
+                            "invoice_status": updated_invoice.get("status") if updated_invoice else current_status,
+                            "total_collected": total_collected,
+                            "invoice_total": invoice_total,
+                        },
+                    }
+                ),
+                mimetype="application/json"
+            )
+
+        # 4. POST /api/cashflow/ar/approve -> Transition invoice from pending to approved
+        elif req.method == "POST" and action == "approve":
+            try:
+                data = req.get_json()
+            except ValueError:
+                return func.HttpResponse(json.dumps({"ok": False, "error": "Request body must be valid JSON"}), mimetype="application/json", status_code=400)
+
+            invoice_id = str(data.get("invoice_id") or "").strip()
+            if not invoice_id:
+                return func.HttpResponse(json.dumps({"ok": False, "error": "invoice_id is required"}), mimetype="application/json", status_code=400)
+
+            current = supabase.table('cashflow_invoices').select('id,status').eq('id', invoice_id).limit(1).execute()
+            current_rows = current.data or []
+            if not current_rows:
+                return func.HttpResponse(json.dumps({"ok": False, "error": "Invoice not found"}), mimetype="application/json", status_code=404)
+
+            current_status = str(current_rows[0].get("status") or "")
+            if current_status == "approved":
+                invoice_data = supabase.table('cashflow_invoices').select('*, cashflow_entities!cashflow_invoices_customer_id_fkey(id, name, gstin)').eq('id', invoice_id).single().execute()
+                return func.HttpResponse(json.dumps({"ok": True, "data": invoice_data.data}), mimetype="application/json")
+
+            if current_status != "pending":
+                return func.HttpResponse(json.dumps({"ok": False, "error": f"Only pending invoices can be approved. Current status: {current_status}"}), mimetype="application/json", status_code=400)
+
+            update_res = (
+                supabase.table('cashflow_invoices')
+                .update({"status": "approved"})
+                .eq('id', invoice_id)
+                .execute()
+            )
+
+            updated_rows = update_res.data or []
+            if not updated_rows:
+                return func.HttpResponse(json.dumps({"ok": False, "error": "Unable to approve invoice"}), mimetype="application/json", status_code=500)
+
+            invoice_data = supabase.table('cashflow_invoices').select('*, cashflow_entities!cashflow_invoices_customer_id_fkey(id, name, gstin)').eq('id', invoice_id).single().execute()
+            return func.HttpResponse(json.dumps({"ok": True, "data": invoice_data.data}), mimetype="application/json")
 
         return func.HttpResponse(
             json.dumps({"ok": False, "error": f"Unsupported AR route action '{action}' for method {req.method}"}),

@@ -5,11 +5,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { cashflowFetch, parseCashflowResponse } from '../../services/cashflowApi';
+import { exportRowsAsCsv } from '../../services/csvExport';
 
 export default function AccountsPayable() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [ocrLoading, setOcrLoading] = useState(false);
+  const [approvingId, setApprovingId] = useState('');
 
   const [formData, setFormData] = useState({
     vendor_name: '',
@@ -53,6 +55,26 @@ export default function AccountsPayable() {
 
   const handleInputChange=e=>setFormData({...formData,[e.target.name]:e.target.value});
 
+  const handleApproveBill = async (billId) => {
+    if (!billId) return;
+    setApprovingId(billId);
+    try {
+      const res = await cashflowFetch('/cashflow/ap/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bill_id: billId }),
+      });
+      const parsed = await parseCashflowResponse(res);
+      if (parsed.ok && parsed.data) {
+        setInvoices((prev) => prev.map((bill) => (bill.id === billId ? parsed.data : bill)));
+      } else {
+        console.error('AP approve failed:', parsed.error);
+      }
+    } finally {
+      setApprovingId('');
+    }
+  };
+
   const handleSaveInvoice=async(e)=>{
     e.preventDefault();
     const res=await cashflowFetch('/cashflow/ap/save',{
@@ -69,6 +91,45 @@ export default function AccountsPayable() {
     }
   };
 
+  const handleDownloadReport = () => {
+    const now = new Date().toISOString().slice(0, 10);
+    const rows = (invoices || []).map((inv) => {
+      const gross = Number(inv.amount || 0);
+      const gst = Number(inv.gst_amount || 0);
+      const tds = Number(inv.tds_amount || 0);
+      const net = gross - tds;
+      const vendor = inv.cashflow_entities?.name || 'N/A';
+
+      return {
+        vendor,
+        bill_number: inv.bill_number || '',
+        bill_date: inv.bill_date || '',
+        due_date: inv.due_date || '',
+        gross_amount: gross.toFixed(2),
+        gst_amount: gst.toFixed(2),
+        tds_amount: tds.toFixed(2),
+        net_payable: net.toFixed(2),
+        status: inv.status || '',
+      };
+    });
+
+    exportRowsAsCsv(
+      `ap_report_${now}.csv`,
+      [
+        { header: 'Vendor', key: 'vendor' },
+        { header: 'Bill Number', key: 'bill_number' },
+        { header: 'Bill Date', key: 'bill_date' },
+        { header: 'Due Date', key: 'due_date' },
+        { header: 'Gross Amount', key: 'gross_amount' },
+        { header: 'GST Amount', key: 'gst_amount' },
+        { header: 'TDS Amount', key: 'tds_amount' },
+        { header: 'Net Payable', key: 'net_payable' },
+        { header: 'Status', key: 'status' },
+      ],
+      rows
+    );
+  };
+
   const inputStyle={
     width:'100%',height:48,padding:'0 16px',border:'1px solid #dbe4ee',
     borderRadius:12,fontSize:15,outline:'none',boxSizing:'border-box'
@@ -77,8 +138,27 @@ export default function AccountsPayable() {
   return (
     <div style={{maxWidth:1280,margin:'0 auto',padding:'8px 8px 20px'}}>
       <div style={{marginBottom:20,padding:'16px 18px',border:'1px solid #e2e8f0',borderRadius:16,background:'linear-gradient(165deg, #ffffff, #f8fbff)',boxShadow:'0 10px 24px rgba(15,23,42,0.04)'}}>
-        <h2 style={{fontSize:32,fontWeight:700,margin:'0 0 6px 0',color:'#0f172a'}}>Accounts Payable</h2>
-        <p style={{margin:0,color:'#64748b',fontSize:14}}>Capture vendor bills, apply tax rules, and maintain a clean payable register.</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <div>
+            <h2 style={{fontSize:32,fontWeight:700,margin:'0 0 6px 0',color:'#0f172a'}}>Accounts Payable</h2>
+            <p style={{margin:0,color:'#64748b',fontSize:14}}>Capture vendor bills, apply tax rules, and maintain a clean payable register.</p>
+          </div>
+          <button
+            type="button"
+            onClick={handleDownloadReport}
+            style={{
+              border: '1px solid #bfdbfe',
+              background: '#eff6ff',
+              color: '#1d4ed8',
+              fontWeight: 700,
+              borderRadius: 10,
+              padding: '9px 14px',
+              cursor: 'pointer',
+            }}
+          >
+            Download Report
+          </button>
+        </div>
       </div>
 
       <div style={{display:'flex',gap:24,flexWrap:'wrap',marginBottom:30}}>
@@ -124,13 +204,15 @@ export default function AccountsPayable() {
         <table style={{width:'100%',borderCollapse:'collapse'}}>
           <thead style={{background:'#f8fafc'}}>
             <tr>
-              {['Vendor','Bill #','Due Date','Gross','TDS','Net','Status'].map(h=><th key={h} style={{padding:'18px 24px',textAlign:'left',fontSize:12,textTransform:'uppercase',color:'#64748b'}}>{h}</th>)}
+              {['Vendor','Bill #','Due Date','Gross','TDS','Net','Status','Actions'].map(h=><th key={h} style={{padding:'18px 24px',textAlign:'left',fontSize:12,textTransform:'uppercase',color:'#64748b'}}>{h}</th>)}
             </tr>
           </thead>
           <tbody>
             {invoices.map(inv=>{
               const vendor=inv.cashflow_entities?.name||'N/A';
               const net=(+inv.amount||0)-(+inv.tds_amount||0);
+              const pending = inv.status === 'pending';
+              const approving = approvingId === inv.id;
               return <tr key={inv.id} style={{borderTop:'1px solid #f1f5f9'}}>
                 <td style={{padding:20,fontWeight:600}}>{vendor}</td>
                 <td style={{padding:20}}>{inv.bill_number}</td>
@@ -139,9 +221,31 @@ export default function AccountsPayable() {
                 <td style={{padding:20,color:'#dc2626'}}>-₹{(+inv.tds_amount||0).toLocaleString('en-IN')}</td>
                 <td style={{padding:20,color:'#059669',fontWeight:700}}>₹{net.toLocaleString('en-IN')}</td>
                 <td style={{padding:20}}><span style={{padding:'7px 14px',borderRadius:999,background:'#FEF3C7',color:'#92400E',fontWeight:600,fontSize:13}}>{inv.status}</span></td>
+                <td style={{padding:20}}>
+                  {pending ? (
+                    <button
+                      type="button"
+                      onClick={() => handleApproveBill(inv.id)}
+                      disabled={approving}
+                      style={{
+                        border: 'none',
+                        borderRadius: 8,
+                        padding: '8px 12px',
+                        fontWeight: 700,
+                        cursor: approving ? 'not-allowed' : 'pointer',
+                        background: approving ? '#94a3b8' : '#2563eb',
+                        color: '#fff',
+                      }}
+                    >
+                      {approving ? 'Approving...' : 'Approve'}
+                    </button>
+                  ) : (
+                    <span style={{ color: '#64748b', fontSize: 13 }}>-</span>
+                  )}
+                </td>
               </tr>
             })}
-            {!loading&&invoices.length===0&&<tr><td colSpan="7" style={{padding:40,textAlign:'center',color:'#64748b'}}>No AP bills recorded yet.</td></tr>}
+            {!loading&&invoices.length===0&&<tr><td colSpan="8" style={{padding:40,textAlign:'center',color:'#64748b'}}>No AP bills recorded yet.</td></tr>}
           </tbody>
         </table>
       </div>

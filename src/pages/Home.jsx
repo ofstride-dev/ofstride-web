@@ -277,6 +277,33 @@ function Home() {
                 </div>
               </div>
 
+              <div className="mt-5 sm:mt-6 w-full max-w-2xl">
+                <div className="flex items-start gap-2.5 sm:gap-3 rounded-xl border border-emerald-200/80 bg-emerald-50/70 backdrop-blur-sm px-3 py-2.5 sm:px-4 sm:py-3 shadow-[0_4px_14px_rgba(16,185,129,0.08)] animate-pulse [animation-duration:2.2s]">
+                  <span className="relative mt-1 inline-flex h-2.5 w-2.5 shrink-0">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-70 animate-ping"></span>
+                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#10B981]"></span>
+                  </span>
+
+                  <p className="text-[11px] sm:text-xs md:text-sm leading-relaxed text-emerald-900">
+                    New Live Release: Explore our complete suite of {" "}
+                    <Link
+                      to="/careers/jobs"
+                      className="font-semibold text-emerald-800 underline underline-offset-2 hover:text-emerald-700"
+                    >
+                      Careers
+                    </Link>{" "}
+                    and {" "}
+                    <Link
+                      to="/cashflow"
+                      className="font-semibold text-emerald-800 underline underline-offset-2 hover:text-emerald-700"
+                    >
+                      Cashflow Management
+                    </Link>{" "}
+                    solutions tailored for MSMEs. <span aria-hidden="true">→</span>
+                  </p>
+                </div>
+              </div>
+
             </div>
 
             {/* Hero Visual — Ofstride Core Engine */}
