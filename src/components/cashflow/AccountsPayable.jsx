@@ -13,6 +13,7 @@ export default function AccountsPayable() {
   const [ocrLoading, setOcrLoading] = useState(false);
   const [approvingId, setApprovingId] = useState('');
   const [ocrStatus, setOcrStatus] = useState({ type: '', message: '' });
+  const [ocrDebugDetail, setOcrDebugDetail] = useState('');
 
   const [formData, setFormData] = useState({
     vendor_name: '',
@@ -37,8 +38,38 @@ export default function AccountsPayable() {
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    const allowedTypes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/tiff',
+      'image/bmp',
+    ];
+    const maxBytes = 15 * 1024 * 1024;
+
+    if (!allowedTypes.includes((file.type || '').toLowerCase())) {
+      setOcrStatus({
+        type: 'warning',
+        message: 'Unsupported file type. Please upload PDF, JPG, PNG, TIFF, or BMP.',
+      });
+      setOcrDebugDetail(`Detected type: ${file.type || 'unknown'}`);
+      return;
+    }
+
+    if (file.size > maxBytes) {
+      setOcrStatus({
+        type: 'warning',
+        message: 'File is too large for stable OCR processing. Please upload a file under 15 MB.',
+      });
+      setOcrDebugDetail(`Detected size: ${(file.size / (1024 * 1024)).toFixed(2)} MB`);
+      return;
+    }
+
     setOcrLoading(true);
     setOcrStatus({ type: '', message: '' });
+    setOcrDebugDetail('');
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = async () => {
@@ -53,6 +84,7 @@ export default function AccountsPayable() {
           const payload = parsed.data || {};
           const scanStatus = String(payload._scan_status || '').toLowerCase();
           const scanMessage = String(payload._scan_message || '').trim();
+          const scanDetail = String(payload._scan_error_detail || '').trim();
           const nextValues = {
             vendor_name: payload.vendor_name || '',
             bill_number: payload.bill_number || '',
@@ -67,16 +99,19 @@ export default function AccountsPayable() {
               type: 'warning',
               message: scanMessage || 'Invoice uploaded but scan could not extract fields.',
             });
+            setOcrDebugDetail(scanDetail);
           } else {
             setOcrStatus({
               type: 'success',
               message: scanMessage || 'Invoice scanned successfully.',
             });
+            setOcrDebugDetail(scanDetail);
           }
         }
         else {
           console.error('AP OCR failed:', parsed.error);
           setOcrStatus({ type: 'error', message: parsed.error || 'Scan failed. Please retry.' });
+          setOcrDebugDetail('');
         }
       } finally { setOcrLoading(false); }
     };
@@ -210,6 +245,11 @@ export default function AccountsPayable() {
               }}
             >
               {ocrStatus.message}
+              {ocrDebugDetail && (
+                <div style={{ marginTop: 6, fontSize: 12, fontWeight: 500, opacity: 0.9 }}>
+                  Detail: {ocrDebugDetail}
+                </div>
+              )}
             </div>
           )}
         </div>

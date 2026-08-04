@@ -88,6 +88,40 @@ def _decode_upload_bytes(raw_file_value) -> bytes:
     except Exception as exc:
         raise ValueError(f"Invalid file payload: {str(exc)}")
 
+
+def _classify_ocr_error(exc: Exception) -> tuple[str, str]:
+    msg = str(exc or "")
+    lower = msg.lower()
+
+    if "invalidcontent" in lower or "format is unsupported" in lower or "file is corrupted" in lower:
+        return (
+            "warning",
+            "Document Intelligence could not read this file content. Please upload a clearer PDF/image (not encrypted/password-protected).",
+        )
+
+    if "unauthorized" in lower or "forbidden" in lower or "401" in lower or "403" in lower:
+        return (
+            "error",
+            "OCR authentication failed. Verify AZURE_DOC_INTEL_ENDPOINT and AZURE_DOC_INTEL_KEY in Azure Function App settings.",
+        )
+
+    if "modulenotfounderror" in lower or "no module named" in lower:
+        return (
+            "error",
+            "OCR runtime dependency is missing on the Function host. Redeploy with azure-ai-formrecognizer in requirements.",
+        )
+
+    if "resourcenotfound" in lower or "404" in lower:
+        return (
+            "error",
+            "OCR endpoint/model was not found. Verify the endpoint region and service resource.",
+        )
+
+    return (
+        "warning",
+        "OCR service error. Please retry with a clearer file or verify OCR configuration.",
+    )
+
 def get_or_create_vendor(supabase, vendor_name: str, gstin: str = None) -> str:
     if not vendor_name:
         vendor_name = "Unassigned Vendor"
@@ -240,9 +274,11 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                         extracted = build_mock_extracted("Invoice scanned, but fields were not extracted. Please review file quality or format.")
                 except Exception as ocr_error:
                     logging.warning(f"AP OCR fallback triggered: {str(ocr_error)}")
-                    extracted = build_mock_extracted(
-                        "OCR service error. Please retry with a clearer file or verify OCR configuration."
-                    )
+                    error_status, error_message = _classify_ocr_error(ocr_error)
+                    extracted = build_mock_extracted(error_message)
+                    extracted["_scan_status"] = error_status
+                    if str(os.environ.get("ENV") or "").lower() == "dev":
+                        extracted["_scan_error_detail"] = str(ocr_error)[:280]
             else:
                 # Local dev fallback when Azure credentials are pending
                 extracted = build_mock_extracted(
