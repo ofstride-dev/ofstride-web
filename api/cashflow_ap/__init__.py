@@ -123,7 +123,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     try:
         supabase = get_supabase_client()
 
-        def build_mock_extracted() -> dict:
+        def build_mock_extracted(reason: str = "OCR could not extract fields") -> dict:
             # Keep endpoint contract stable when OCR can't infer fields.
             return {
                 "vendor_name": "",
@@ -132,7 +132,22 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 "bill_date": datetime.now().strftime("%Y-%m-%d"),
                 "amount": 0.0,
                 "gst_amount": 0.0,
+                "_scan_status": "warning",
+                "_scan_message": reason,
             }
+
+        def has_meaningful_scan(extracted: dict) -> bool:
+            if not isinstance(extracted, dict):
+                return False
+            return any(
+                [
+                    str(extracted.get("vendor_name") or "").strip(),
+                    str(extracted.get("vendor_gstin") or "").strip(),
+                    str(extracted.get("bill_number") or "").strip(),
+                    float(_safe_float(extracted.get("amount"), 0.0)) > 0,
+                    float(_safe_float(extracted.get("gst_amount"), 0.0)) > 0,
+                ]
+            )
 
         # 1. GET /api/cashflow/ap/list
         if req.method == "GET" and action == "list":
@@ -175,7 +190,13 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     poller = client.begin_analyze_document("prebuilt-invoice", document=file_bytes)
                     ocr_result = poller.result()
                     if not ocr_result.documents:
-                        return func.HttpResponse(json.dumps({"ok": True, "data": build_mock_extracted()}), mimetype="application/json")
+                        return func.HttpResponse(
+                            json.dumps({
+                                "ok": True,
+                                "data": build_mock_extracted("Invoice was readable but no extractable invoice fields were detected."),
+                            }),
+                            mimetype="application/json",
+                        )
 
                     doc = ocr_result.documents[0]
                     fields = doc.fields
@@ -212,13 +233,21 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                         "bill_date": str(fields.get("InvoiceDate").value) if fields.get("InvoiceDate") else datetime.now().strftime("%Y-%m-%d"),
                         "amount": round(_safe_float(invoice_total, 0.0), 2),
                         "gst_amount": round(_safe_float(total_tax, 0.0), 2),
+                        "_scan_status": "success",
+                        "_scan_message": "Invoice scanned successfully.",
                     }
+                    if not has_meaningful_scan(extracted):
+                        extracted = build_mock_extracted("Invoice scanned, but fields were not extracted. Please review file quality or format.")
                 except Exception as ocr_error:
                     logging.warning(f"AP OCR fallback triggered: {str(ocr_error)}")
-                    extracted = build_mock_extracted()
+                    extracted = build_mock_extracted(
+                        "OCR service error. Please retry with a clearer file or verify OCR configuration."
+                    )
             else:
                 # Local dev fallback when Azure credentials are pending
-                extracted = build_mock_extracted()
+                extracted = build_mock_extracted(
+                    "OCR is not configured. Set AZURE_DOC_INTEL_ENDPOINT and AZURE_DOC_INTEL_KEY in Function settings."
+                )
             
             return func.HttpResponse(json.dumps({"ok": True, "data": extracted}), mimetype="application/json")
 

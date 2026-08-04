@@ -12,6 +12,7 @@ export default function AccountsPayable() {
   const [loading, setLoading] = useState(true);
   const [ocrLoading, setOcrLoading] = useState(false);
   const [approvingId, setApprovingId] = useState('');
+  const [ocrStatus, setOcrStatus] = useState({ type: '', message: '' });
 
   const [formData, setFormData] = useState({
     vendor_name: '',
@@ -37,6 +38,7 @@ export default function AccountsPayable() {
     const file = e.target.files[0];
     if (!file) return;
     setOcrLoading(true);
+    setOcrStatus({ type: '', message: '' });
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = async () => {
@@ -47,8 +49,35 @@ export default function AccountsPayable() {
           body:JSON.stringify({file:reader.result})
         });
         const parsed = await parseCashflowResponse(res);
-        if(parsed.ok) setFormData(p=>({...p,...parsed.data}));
-        else console.error('AP OCR failed:', parsed.error);
+        if(parsed.ok) {
+          const payload = parsed.data || {};
+          const scanStatus = String(payload._scan_status || '').toLowerCase();
+          const scanMessage = String(payload._scan_message || '').trim();
+          const nextValues = {
+            vendor_name: payload.vendor_name || '',
+            bill_number: payload.bill_number || '',
+            bill_date: payload.bill_date || '',
+            amount: payload.amount || 0,
+            gst_amount: payload.gst_amount || 0,
+          };
+          setFormData(p=>({...p,...nextValues}));
+
+          if (scanStatus === 'warning') {
+            setOcrStatus({
+              type: 'warning',
+              message: scanMessage || 'Invoice uploaded but scan could not extract fields.',
+            });
+          } else {
+            setOcrStatus({
+              type: 'success',
+              message: scanMessage || 'Invoice scanned successfully.',
+            });
+          }
+        }
+        else {
+          console.error('AP OCR failed:', parsed.error);
+          setOcrStatus({ type: 'error', message: parsed.error || 'Scan failed. Please retry.' });
+        }
       } finally { setOcrLoading(false); }
     };
   };
@@ -167,6 +196,22 @@ export default function AccountsPayable() {
           <p style={{color:'#64748b'}}>Upload PDF or image. AI extracts everything automatically.</p>
           <input type="file" accept=".pdf,image/*" onChange={handleFileUpload}/>
           {ocrLoading&&<div style={{marginTop:16,display:'inline-block',padding:'12px 18px',background:'#eff6ff',borderRadius:12,color:'#2563eb',fontWeight:600}}>Scanning document…</div>}
+          {!ocrLoading && ocrStatus.message && (
+            <div
+              style={{
+                marginTop: 12,
+                padding: '10px 12px',
+                borderRadius: 10,
+                fontSize: 13,
+                fontWeight: 600,
+                border: ocrStatus.type === 'success' ? '1px solid #86efac' : ocrStatus.type === 'warning' ? '1px solid #fcd34d' : '1px solid #fecaca',
+                background: ocrStatus.type === 'success' ? '#f0fdf4' : ocrStatus.type === 'warning' ? '#fffbeb' : '#fef2f2',
+                color: ocrStatus.type === 'success' ? '#166534' : ocrStatus.type === 'warning' ? '#92400e' : '#991b1b',
+              }}
+            >
+              {ocrStatus.message}
+            </div>
+          )}
         </div>
 
         <div style={{flex:'2 1 500px',background:'linear-gradient(165deg, #ffffff, #f8fbff)',borderRadius:18,padding:32,boxShadow:'0 14px 35px rgba(15,23,42,.07)',border:'1px solid #e2e8f0'}}>
