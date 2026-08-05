@@ -277,7 +277,7 @@ function Careers() {
         }
       }
 
-      const completeResponse = await completeCareersUpload(initResponse.application_id, resumeContentBase64);
+      const completeResponse = await completeCareersUpload(initResponse.application_id);
       setReferenceId(completeResponse.reference_id || initResponse.reference_id);
       setSubmitted(true);
     } catch (error) {
