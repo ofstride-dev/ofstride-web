@@ -21,7 +21,7 @@ import {
   onAuthStateChange,
   getAccessToken,
 } from "../services/supabase";
-import { BriefcaseBusiness, LogOut, UserRound } from "lucide-react";
+import { BriefcaseBusiness, ClipboardCheck, FileSearch, LogOut, Sparkles, UserRound, UserSearch } from "lucide-react";
 
 function computeSimpleDiff(originalText, enhancedText) {
   const before = String(originalText || "").split("\n");
@@ -765,6 +765,7 @@ function AdminCareers() {
             className={`btn-ui btn-ui-sm min-w-[118px] h-9 ${workspaceView === "triage" ? "border-secondary bg-blue-50 text-secondary" : "btn-ui-neutral"}`}
             onClick={() => setWorkspaceView("triage")}
           >
+            <FileSearch className="w-3.5 h-3.5" />
             Resume Review
           </button>
           <button
@@ -772,6 +773,7 @@ function AdminCareers() {
             className={`btn-ui btn-ui-sm min-w-[118px] h-9 ${workspaceView === "jobs" ? "border-secondary bg-blue-50 text-secondary" : "btn-ui-neutral"}`}
             onClick={() => setWorkspaceView("jobs")}
           >
+            <ClipboardCheck className="w-3.5 h-3.5" />
             JD Studio
           </button>
           <button
@@ -779,6 +781,7 @@ function AdminCareers() {
             className={`btn-ui btn-ui-sm min-w-[118px] h-9 ${workspaceView === "builder" ? "border-secondary bg-blue-50 text-secondary" : "btn-ui-neutral"}`}
             onClick={() => setWorkspaceView("builder")}
           >
+            <Sparkles className="w-3.5 h-3.5" />
             Resume Builder
           </button>
         </div>
@@ -786,15 +789,30 @@ function AdminCareers() {
         <div className="rounded-xl border border-slate-200 bg-white p-3">
           <div className="grid md:grid-cols-3 gap-2 text-xs">
             <div className="rounded-lg border border-slate-200 px-3 py-2">
-              <div className="font-semibold text-primary">1) JD Creation</div>
+              <div className="font-semibold text-primary inline-flex items-center gap-2">
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-50 text-secondary">
+                  <ClipboardCheck className="w-3.5 h-3.5" />
+                </span>
+                JD Creation
+              </div>
               <div className="text-muted mt-1">Admin/Employer creates JD. AI can draft or enhance for acceptance/rejection.</div>
             </div>
             <div className="rounded-lg border border-slate-200 px-3 py-2">
-              <div className="font-semibold text-primary">2) Candidate Application</div>
+              <div className="font-semibold text-primary inline-flex items-center gap-2">
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
+                  <UserSearch className="w-3.5 h-3.5" />
+                </span>
+                Candidate Application
+              </div>
               <div className="text-muted mt-1">Jobseeker views published JD and applies with resume.</div>
             </div>
             <div className="rounded-lg border border-slate-200 px-3 py-2">
-              <div className="font-semibold text-primary">3) Resume Review</div>
+              <div className="font-semibold text-primary inline-flex items-center gap-2">
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-violet-50 text-violet-700">
+                  <FileSearch className="w-3.5 h-3.5" />
+                </span>
+                Resume Review
+              </div>
               <div className="text-muted mt-1">Reviewer agent generates recommendation, then employer takes final decision.</div>
             </div>
           </div>
