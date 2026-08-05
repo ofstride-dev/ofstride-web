@@ -1286,10 +1286,10 @@ function AdminCareers() {
                     type="button"
                     onClick={onEnhanceJd}
                     disabled={enhancingJd}
-                    className="px-2 py-1 rounded border border-indigo-300 text-indigo-700 text-xs bg-indigo-50"
+                    className="px-4 py-2 rounded-lg border border-indigo-300 text-indigo-700 text-sm font-semibold bg-indigo-50"
                     title="AI assist can draft or enhance JD"
                   >
-                    <span className="mr-1 inline-flex items-center rounded border border-indigo-300 px-1">AI</span>
+                    <span className="mr-2 inline-flex items-center rounded border border-indigo-300 px-1.5 py-0.5 text-xs">AI</span>
                     {enhancingJd ? "Drafting..." : "AI Draft Assist"}
                   </button>
                 </div>

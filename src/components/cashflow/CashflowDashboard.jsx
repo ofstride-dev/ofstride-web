@@ -23,9 +23,18 @@ function SafeBar({ label, value, max, color }) {
 }
 
 export default function CashflowDashboard() {
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const monthStartIso = (() => {
+    const now = new Date();
+    now.setDate(1);
+    return now.toISOString().slice(0, 10);
+  })();
+
   const [data, setData] = useState(null);
   const [reconcileRuns, setReconcileRuns] = useState([]);
   const [periodKey, setPeriodKey] = useState('month');
+  const [customStartDate, setCustomStartDate] = useState(monthStartIso);
+  const [customEndDate, setCustomEndDate] = useState(todayIso);
   const [loadError, setLoadError] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -33,6 +42,10 @@ export default function CashflowDashboard() {
     setLoading(true);
     setLoadError('');
     const params = new URLSearchParams({ period: periodKey });
+    if (periodKey === 'custom') {
+      params.set('start_date', customStartDate);
+      params.set('end_date', customEndDate);
+    }
 
     Promise.all([
       cashflowFetch(`/cashflow/dashboard?${params.toString()}`)
@@ -55,7 +68,7 @@ export default function CashflowDashboard() {
         setLoadError(error instanceof Error ? error.message : 'Failed to load dashboard metrics.');
       })
       .finally(() => setLoading(false));
-  }, [periodKey]);
+  }, [periodKey, customStartDate, customEndDate]);
 
   const latestRun = useMemo(() => (reconcileRuns.length ? reconcileRuns[0] : null), [reconcileRuns]);
   const monthlyTrend = useMemo(() => {
@@ -107,6 +120,7 @@ export default function CashflowDashboard() {
             { key: '7d', label: '7 Days' },
             { key: '30d', label: '30 Days' },
             { key: 'month', label: 'Current Month' },
+            { key: 'custom', label: 'Custom' },
           ].map((item) => {
             const active = periodKey === item.key;
             return (
@@ -116,7 +130,7 @@ export default function CashflowDashboard() {
                 onClick={() => setPeriodKey(item.key)}
                 style={{
                   border: 'none',
-                  borderRight: item.key === 'month' ? 'none' : '1px solid #e2e8f0',
+                  borderRight: item.key === 'custom' ? 'none' : '1px solid #e2e8f0',
                   padding: '0.55rem 0.9rem',
                   fontSize: '0.82rem',
                   fontWeight: 700,
@@ -130,6 +144,26 @@ export default function CashflowDashboard() {
             );
           })}
         </div>
+        {periodKey === 'custom' && (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', marginTop: '0.55rem' }}>
+            <input
+              type="date"
+              value={customStartDate}
+              max={customEndDate}
+              onChange={(e) => setCustomStartDate(e.target.value)}
+              style={{ border: '1px solid #dbe4ee', borderRadius: 8, padding: '0.4rem 0.55rem', fontSize: '0.8rem', color: '#334155' }}
+            />
+            <span style={{ fontSize: '0.78rem', color: '#64748b' }}>to</span>
+            <input
+              type="date"
+              value={customEndDate}
+              min={customStartDate}
+              max={todayIso}
+              onChange={(e) => setCustomEndDate(e.target.value)}
+              style={{ border: '1px solid #dbe4ee', borderRadius: 8, padding: '0.4rem 0.55rem', fontSize: '0.8rem', color: '#334155' }}
+            />
+          </div>
+        )}
       </div>
 
       {loadError && (
