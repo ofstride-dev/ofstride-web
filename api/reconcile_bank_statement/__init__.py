@@ -20,7 +20,7 @@ except Exception as exc:
     pd = None
     PANDAS_IMPORT_ERROR = exc
 
-from shared.admin_auth import validate_identity_headers
+from shared.admin_auth import resolve_identity_headers, validate_identity_headers
 from shared.db import get_supabase_client
 
 try:
@@ -781,13 +781,7 @@ def _risk_level(summary: dict) -> str:
 def main(req: func.HttpRequest) -> func.HttpResponse:
     trace_id = str(uuid.uuid4())
     action = (req.route_params.get("action") or "analyze").strip().lower()
-
-    auth = validate_identity_headers(req)
-    if not auth.get("ok"):
-        return _err(auth.get("status_code", 401), auth.get("error") or "Unauthorized", trace_id)
-
-    identity = auth.get("identity") or {}
-    user_id = identity.get("user_id")
+    user_id = None
 
     try:
         supabase = get_supabase_client()
@@ -818,6 +812,10 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 return _err(400, str(parse_error), trace_id)
 
             bank_rows, mapped_columns, column_warnings = _extract_bank_rows(report_df)
+
+            auth = resolve_identity_headers(req, allow_anonymous=True)
+            identity = auth.get("identity") or {}
+            user_id = identity.get("user_id")
 
             compare_with_platform = bool(body.get("compare_with_platform"))
             if compare_with_platform:
@@ -862,6 +860,13 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 },
                 trace_id,
             )
+
+        auth = validate_identity_headers(req)
+        if not auth.get("ok"):
+            return _err(auth.get("status_code", 401), auth.get("error") or "Unauthorized", trace_id)
+
+        identity = auth.get("identity") or {}
+        user_id = identity.get("user_id")
 
         if req.method == "GET" and action == "summary":
             run_id = str(req.params.get("run_id") or "").strip()

@@ -114,3 +114,20 @@ def validate_identity_headers(req: func.HttpRequest) -> dict[str, Any]:
 
 def validate_admin_or_finance(req: func.HttpRequest) -> bool:
     return bool(validate_identity_headers(req).get("ok"))
+
+
+def resolve_identity_headers(req: func.HttpRequest, allow_anonymous: bool = False) -> dict[str, Any]:
+    """Resolve cashflow identity, optionally allowing parse-only anonymous requests."""
+    auth = validate_identity_headers(req)
+    if auth.get("ok"):
+        return auth
+
+    if allow_anonymous:
+        return {
+            "ok": True,
+            "status_code": 200,
+            "error": None,
+            "identity": None,
+        }
+
+    return auth
