@@ -122,6 +122,135 @@ def _classify_ocr_error(exc: Exception) -> tuple[str, str]:
         "OCR service error. Please retry with a clearer file or verify OCR configuration.",
     )
 
+
+def _normalize_ap_extracted(extracted: dict) -> dict:
+    return {
+        "vendor_name": str(extracted.get("vendor_name") or "").strip(),
+        "vendor_gstin": str(extracted.get("vendor_gstin") or "").strip(),
+        "bill_number": str(extracted.get("bill_number") or "").strip(),
+        "bill_date": str(extracted.get("bill_date") or datetime.now().strftime("%Y-%m-%d")),
+        "amount": round(_safe_float(extracted.get("amount"), 0.0), 2),
+        "gst_amount": round(_safe_float(extracted.get("gst_amount"), 0.0), 2),
+    }
+
+
+def _validate_ap_extracted(extracted: dict) -> list[str]:
+    issues: list[str] = []
+    if extracted.get("amount", 0.0) <= 0:
+        issues.append("amount_missing_or_zero")
+    if not str(extracted.get("bill_number") or "").strip():
+        issues.append("bill_number_missing")
+    bill_date = str(extracted.get("bill_date") or "").strip()
+    try:
+        datetime.fromisoformat(bill_date)
+    except ValueError:
+        issues.append("bill_date_invalid")
+    return issues
+
+
+def _repair_ap_extracted(extracted: dict, ocr_content: str = "") -> dict:
+    repaired = dict(extracted)
+    if repaired.get("gst_amount", 0.0) <= 0:
+        repaired["gst_amount"] = round(_extract_gst_from_content(ocr_content or ""), 2)
+
+    if repaired.get("amount", 0.0) <= 0 and repaired.get("gst_amount", 0.0) > 0:
+        # Conservative fallback: keep total amount at least equal to tax until user review.
+        repaired["amount"] = repaired["gst_amount"]
+
+    if not str(repaired.get("bill_number") or "").strip():
+        repaired["bill_number"] = f"OCR-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+    return _normalize_ap_extracted(repaired)
+
+
+def _build_ap_extracted_from_doc(fields: dict, ocr_content: str) -> dict:
+    total_tax = _extract_first_amount(fields, ["TotalTax", "Tax", "TaxTotal"])
+    subtotal = _extract_first_amount(fields, ["SubTotal", "Subtotal"])
+    invoice_total = _extract_first_amount(fields, ["InvoiceTotal", "TotalAmount", "AmountDue"])
+    parsed_tax_from_content = _extract_gst_from_content(ocr_content or "")
+
+    if total_tax is None:
+        total_tax = parsed_tax_from_content
+    elif parsed_tax_from_content > 0 and total_tax > 0 and parsed_tax_from_content > (total_tax * 1.5):
+        total_tax = parsed_tax_from_content
+
+    if invoice_total is None:
+        if subtotal is not None and total_tax is not None:
+            invoice_total = round(subtotal + total_tax, 2)
+        elif subtotal is not None:
+            invoice_total = subtotal
+        else:
+            invoice_total = 0.0
+
+    if total_tax is None:
+        total_tax = 0.0
+
+    extracted = {
+        "vendor_name": (fields.get("VendorName").value if fields.get("VendorName") else "") or "",
+        "vendor_gstin": (fields.get("VendorTaxId").value if fields.get("VendorTaxId") else "") or "",
+        "bill_number": (fields.get("InvoiceId").value if fields.get("InvoiceId") else "") or "",
+        "bill_date": str(fields.get("InvoiceDate").value) if fields.get("InvoiceDate") else datetime.now().strftime("%Y-%m-%d"),
+        "amount": round(_safe_float(invoice_total, 0.0), 2),
+        "gst_amount": round(_safe_float(total_tax, 0.0), 2),
+    }
+    return _normalize_ap_extracted(extracted)
+
+
+def _run_ap_ocr_pipeline(file_bytes: bytes, endpoint: str, key: str) -> dict:
+    from azure.core.credentials import AzureKeyCredential
+    from azure.ai.formrecognizer import DocumentAnalysisClient
+
+    client = DocumentAnalysisClient(endpoint=endpoint, credential=AzureKeyCredential(key))
+    poller = client.begin_analyze_document("prebuilt-invoice", document=file_bytes)
+    ocr_result = poller.result()
+    if not ocr_result.documents:
+        return {
+            "extracted": _normalize_ap_extracted({
+                "vendor_name": "",
+                "vendor_gstin": "",
+                "bill_number": "",
+                "bill_date": datetime.now().strftime("%Y-%m-%d"),
+                "amount": 0.0,
+                "gst_amount": 0.0,
+            }),
+            "pipeline": {
+                "stage": "validate",
+                "passes": 1,
+                "issues": ["no_documents_detected"],
+            },
+        }
+
+    doc = ocr_result.documents[0]
+    fields = doc.fields or {}
+    ocr_content = getattr(ocr_result, "content", "") or ""
+
+    extracted = _build_ap_extracted_from_doc(fields, ocr_content)
+    pipeline_passes = []
+    max_passes = 2
+
+    for pass_index in range(max_passes):
+        issues = _validate_ap_extracted(extracted)
+        pipeline_passes.append({
+            "pass": pass_index + 1,
+            "issues": issues,
+            "amount": extracted.get("amount", 0.0),
+            "gst_amount": extracted.get("gst_amount", 0.0),
+        })
+        if not issues:
+            break
+        extracted = _repair_ap_extracted(extracted, ocr_content)
+
+    final_issues = pipeline_passes[-1]["issues"] if pipeline_passes else []
+    return {
+        "extracted": extracted,
+        "pipeline": {
+            "stage": "complete",
+            "passes": len(pipeline_passes),
+            "issues": final_issues,
+            "pass_details": pipeline_passes,
+        },
+    }
+
 def get_or_create_vendor(supabase, vendor_name: str, gstin: str = None) -> str:
     if not vendor_name:
         vendor_name = "Unassigned Vendor"
@@ -219,61 +348,20 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
             if endpoint and key:
                 try:
-                    from azure.core.credentials import AzureKeyCredential
-                    from azure.ai.formrecognizer import DocumentAnalysisClient
-
-                    client = DocumentAnalysisClient(endpoint=endpoint, credential=AzureKeyCredential(key))
-                    poller = client.begin_analyze_document("prebuilt-invoice", document=file_bytes)
-                    ocr_result = poller.result()
-                    if not ocr_result.documents:
-                        return func.HttpResponse(
-                            json.dumps({
-                                "ok": True,
-                                "data": build_mock_extracted("Invoice was readable but no extractable invoice fields were detected."),
-                            }),
-                            mimetype="application/json",
-                        )
-
-                    doc = ocr_result.documents[0]
-                    fields = doc.fields
-
-                    total_tax = _extract_first_amount(fields, ["TotalTax", "Tax", "TaxTotal"])
-                    subtotal = _extract_first_amount(fields, ["SubTotal", "Subtotal"])
-                    invoice_total = _extract_first_amount(fields, ["InvoiceTotal", "TotalAmount", "AmountDue"])
-
-                    parsed_tax_from_content = _extract_gst_from_content(getattr(ocr_result, "content", "") or "")
-
-                    if total_tax is None:
-                        total_tax = parsed_tax_from_content
+                    pipeline_result = _run_ap_ocr_pipeline(file_bytes, endpoint, key)
+                    extracted = _normalize_ap_extracted(pipeline_result.get("extracted") or {})
+                    final_issues = (pipeline_result.get("pipeline") or {}).get("issues") or []
+                    if final_issues:
+                        extracted["_scan_status"] = "warning"
+                        extracted["_scan_message"] = "Invoice parsed with validation warnings. Please review before save."
                     else:
-                        # OCR sometimes returns the tax rate (e.g., 5) instead of amount.
-                        # If parsed GST from textual content is clearly larger, trust parsed value.
-                        if parsed_tax_from_content > 0 and total_tax > 0 and parsed_tax_from_content > (total_tax * 1.5):
-                            total_tax = parsed_tax_from_content
-
-                    if invoice_total is None:
-                        if subtotal is not None and total_tax is not None:
-                            invoice_total = round(subtotal + total_tax, 2)
-                        elif subtotal is not None:
-                            invoice_total = subtotal
-                        else:
-                            invoice_total = 0.0
-
-                    if total_tax is None:
-                        total_tax = 0.0
-
-                    extracted = {
-                        "vendor_name": (fields.get("VendorName").value if fields.get("VendorName") else "") or "",
-                        "vendor_gstin": (fields.get("VendorTaxId").value if fields.get("VendorTaxId") else "") or "",
-                        "bill_number": (fields.get("InvoiceId").value if fields.get("InvoiceId") else "") or "",
-                        "bill_date": str(fields.get("InvoiceDate").value) if fields.get("InvoiceDate") else datetime.now().strftime("%Y-%m-%d"),
-                        "amount": round(_safe_float(invoice_total, 0.0), 2),
-                        "gst_amount": round(_safe_float(total_tax, 0.0), 2),
-                        "_scan_status": "success",
-                        "_scan_message": "Invoice scanned successfully.",
-                    }
+                        extracted["_scan_status"] = "success"
+                        extracted["_scan_message"] = "Invoice parsed and validated successfully."
+                    extracted["_pipeline"] = pipeline_result.get("pipeline") or {}
                     if not has_meaningful_scan(extracted):
-                        extracted = build_mock_extracted("Invoice scanned, but fields were not extracted. Please review file quality or format.")
+                        fallback = build_mock_extracted("Invoice scanned, but fields were not extracted. Please review file quality or format.")
+                        fallback["_pipeline"] = extracted.get("_pipeline")
+                        extracted = fallback
                 except Exception as ocr_error:
                     logging.warning(f"AP OCR fallback triggered: {str(ocr_error)}")
                     error_status, error_message = _classify_ocr_error(ocr_error)

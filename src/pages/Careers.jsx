@@ -287,7 +287,8 @@ function Careers() {
       } else if (error instanceof ApiClientError) {
         setSubmitError(error.message || "Submission failed. Please try again.");
       } else {
-        setSubmitError("Submission failed. Please try again.");
+        const fallbackMessage = error instanceof Error ? error.message : "Submission failed. Please try again.";
+        setSubmitError(fallbackMessage || "Submission failed. Please try again.");
       }
     } finally {
       setSubmitting(false);

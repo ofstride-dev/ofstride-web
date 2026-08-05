@@ -732,6 +732,90 @@ def _parse_uploaded_report(file_name: str, content_b64: str):
     raise ValueError("Only .csv, .xlsx, and .pdf reports are supported")
 
 
+def _normalize_report_df(df):
+    _require_pandas()
+    cleaned = df.copy()
+    cleaned.columns = [str(col).strip() for col in cleaned.columns]
+    cleaned = cleaned.loc[:, [str(col).strip() != "" for col in cleaned.columns]]
+
+    for col in cleaned.columns:
+        if str(cleaned[col].dtype).lower() == "object":
+            cleaned[col] = cleaned[col].map(lambda value: value.strip() if isinstance(value, str) else value)
+
+    return cleaned
+
+
+def _promote_first_row_as_header(df):
+    _require_pandas()
+    if df.empty:
+        return df
+
+    current_columns = [str(col) for col in df.columns]
+    unnamed_count = sum(1 for col in current_columns if col.lower().startswith("unnamed"))
+    if unnamed_count == 0:
+        return df
+
+    first_row = df.iloc[0].tolist()
+    if not any(str(value or "").strip() for value in first_row):
+        return df
+
+    promoted = df.iloc[1:].copy()
+    promoted.columns = [str(value).strip() or f"col_{idx + 1}" for idx, value in enumerate(first_row)]
+    return promoted
+
+
+def _run_bank_statement_pipeline(report_df, compare_with_platform: bool, supabase, start_date: str, end_date: str):
+    working_df = _normalize_report_df(report_df)
+    best_result = None
+    pass_details = []
+
+    for pass_index in range(2):
+        bank_rows, mapped_columns, column_warnings = _extract_bank_rows(working_df)
+        row_issues_count = sum(1 for row in bank_rows if row.get("validation_issues"))
+        if compare_with_platform:
+            platform_rows = _build_platform_rows(supabase, start_date, end_date)
+            summary, reconcile_rows = _run_reconcile(bank_rows, platform_rows)
+        else:
+            summary, reconcile_rows = _statement_only_summary(bank_rows)
+
+        candidate = {
+            "bank_rows": bank_rows,
+            "mapped_columns": mapped_columns,
+            "column_warnings": column_warnings,
+            "summary": summary,
+            "reconcile_rows": reconcile_rows,
+            "row_issues_count": row_issues_count,
+        }
+
+        pass_details.append(
+            {
+                "pass": pass_index + 1,
+                "row_issues_count": row_issues_count,
+                "total_rows": len(bank_rows),
+                "warnings": column_warnings,
+            }
+        )
+
+        if best_result is None or row_issues_count < best_result["row_issues_count"]:
+            best_result = candidate
+
+        if row_issues_count == 0:
+            break
+
+        if pass_index == 0:
+            working_df = _normalize_report_df(_promote_first_row_as_header(working_df))
+
+    return {
+        **(best_result or {}),
+        "pipeline": {
+            "stage": "complete",
+            "passes": len(pass_details),
+            "pass_details": pass_details,
+            "selected_pass": min(pass_details, key=lambda item: item.get("row_issues_count", 0))["pass"] if pass_details else 1,
+        },
+    }
+
+
 def _export_rows_csv(rows: list[dict]) -> bytes:
     fieldnames = [
         "source_side",
@@ -811,18 +895,25 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             except (ValueError, RuntimeError) as parse_error:
                 return _err(400, str(parse_error), trace_id)
 
-            bank_rows, mapped_columns, column_warnings = _extract_bank_rows(report_df)
-
             auth = resolve_identity_headers(req, allow_anonymous=True)
             identity = auth.get("identity") or {}
             user_id = identity.get("user_id")
 
             compare_with_platform = bool(body.get("compare_with_platform"))
-            if compare_with_platform:
-                platform_rows = _build_platform_rows(supabase, start_date, end_date)
-                summary, reconcile_rows = _run_reconcile(bank_rows, platform_rows)
-            else:
-                summary, reconcile_rows = _statement_only_summary(bank_rows)
+
+            pipeline_result = _run_bank_statement_pipeline(
+                report_df,
+                compare_with_platform,
+                supabase,
+                start_date,
+                end_date,
+            )
+            bank_rows = pipeline_result.get("bank_rows") or []
+            mapped_columns = pipeline_result.get("mapped_columns") or {}
+            column_warnings = pipeline_result.get("column_warnings") or []
+            summary = pipeline_result.get("summary") or {}
+            reconcile_rows = pipeline_result.get("reconcile_rows") or []
+            row_issues_count = int(pipeline_result.get("row_issues_count") or 0)
             run_id = None
             persistence_warning = None
             try:
@@ -853,10 +944,11 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     "uploaded_rows": bank_rows,
                     "column_mapping": mapped_columns,
                     "column_warnings": column_warnings,
-                    "row_issues_count": sum(1 for r in bank_rows if r.get("validation_issues")),
+                    "row_issues_count": row_issues_count,
                     "sample_mismatches": [r for r in reconcile_rows if r["status"] != "matched"][:10],
                     "comparison_mode": "platform" if compare_with_platform else "bank_statement_only",
                     "persistence_warning": persistence_warning,
+                    "pipeline": pipeline_result.get("pipeline") or {},
                 },
                 trace_id,
             )

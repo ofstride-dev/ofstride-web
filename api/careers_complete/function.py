@@ -107,7 +107,17 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
             status_code=503,
         )
 
-    app = store.get_application_by_id(application_id=application_id)
+    try:
+        app = store.get_application_by_id(application_id=application_id)
+    except Exception as exc:
+        return error_response(
+            error_type="infra",
+            message="Failed to load application details.",
+            trace_id=trace_id,
+            req=req,
+            status_code=500,
+            details={"reason": str(exc)},
+        )
     if not app:
         return error_response(
             error_type="validation",
@@ -220,7 +230,17 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
             details={"expected": expected_content_type, "actual": actual_content_type},
         )
 
-    finalized = store.finalize_submission(application_id=application_id)
+    try:
+        finalized = store.finalize_submission(application_id=application_id)
+    except Exception as exc:
+        return error_response(
+            error_type="infra",
+            message="Could not finalize application submission.",
+            trace_id=trace_id,
+            req=req,
+            status_code=500,
+            details={"reason": str(exc)},
+        )
     if not finalized:
         return error_response(
             error_type="infra",
@@ -230,8 +250,17 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
             status_code=500,
         )
 
-    app_after = store.get_application_by_id(application_id=application_id) or {}
-    job = store.get_job_by_id(job_id=str(app_after.get("job_id") or "")) or {}
+    try:
+        app_after = store.get_application_by_id(application_id=application_id) or {}
+    except Exception as exc:
+        _comp_logger.warning("Post-finalize application fetch failed for %s: %s", application_id, exc)
+        app_after = {}
+
+    try:
+        job = store.get_job_by_id(job_id=str(app_after.get("job_id") or "")) or {}
+    except Exception as exc:
+        _comp_logger.warning("Job fetch failed for %s: %s", application_id, exc)
+        job = {}
     hr_email = (os.getenv("CAREERS_HR_EMAIL") or "hr@ofstrideservices.com").strip()
     candidate_name = str(app_after.get("full_name") or "")
     applicant_email = str(app_after.get("email") or "").strip().lower()
@@ -249,7 +278,10 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
         submitted_at=submitted_at,
     )
     if hr_sent:
-        store.mark_hr_email_sent(application_id=application_id)
+        try:
+            store.mark_hr_email_sent(application_id=application_id)
+        except Exception as exc:
+            _comp_logger.warning("Failed to mark HR email sent for %s: %s", application_id, exc)
 
     applicant_sent, applicant_error = send_career_applicant_ack(
         to_address=applicant_email,
