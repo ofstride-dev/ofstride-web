@@ -128,7 +128,7 @@ jobs:
             --python-version 3.12 \
             --only-binary=:all: \
             --target "__staged_careers/.python_packages/lib/site-packages" \
-            azure-storage-queue azure-storage-blob azure-identity azure-core supabase
+            azure-storage-queue azure-storage-blob azure-identity azure-core azure-ai-formrecognizer supabase
           # Prune non-runtime and host-specific files that inflate ZIP size and can
           # break Kudu OneDeploy package extraction.
           find __staged_careers/.python_packages/lib/site-packages -maxdepth 1 -type d \( -name "tests" -o -name "test" -o -name "__pycache__" \) -prune -exec rm -rf {} + || true
@@ -156,7 +156,7 @@ jobs:
           sys.path.insert(0, str(site))
 
           missing = []
-          for mod in ("azure.storage.queue", "azure.storage.blob", "azure.identity", "azure.core", "supabase"):
+          for mod in ("azure.storage.queue", "azure.storage.blob", "azure.identity", "azure.core", "azure.ai.formrecognizer", "supabase", "pandas", "openpyxl"):
             try:
               __import__(mod)
             except Exception:
