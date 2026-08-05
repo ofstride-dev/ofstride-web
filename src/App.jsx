@@ -25,7 +25,7 @@ import CashflowDashboard from './components/cashflow/CashflowDashboard.jsx'
 import AccountsPayable from './components/cashflow/AccountsPayable.jsx'
 import AccountsReceivable from './components/cashflow/AccountsReceivable.jsx'
 import PettyCash from './components/cashflow/PettyCash.jsx'
-import TallyReconcile from './components/cashflow/TallyReconcile.jsx'
+import BankStatementReconcile from './components/cashflow/BankStatementReconcile.jsx'
 import ExpensesAuthLayout from './components/ExpensesAuthLayout.jsx'
 import ExpenseProtectedRoute from './components/ExpenseProtectedRoute.jsx'
 import ExpensesLogin from './pages/expenses/ExpensesLogin.jsx'
@@ -51,7 +51,7 @@ function App() {
       '/about': 'About | Ofstride Services LLP',
       '/industries': 'Industries | Ofstride Services LLP',
       '/contact': 'Contact | Ofstride Services LLP',
-      '/book-call': 'Book a Call | Ofstride Services LLP',
+      '/book-call': 'Book a Free Call | Ofstride Services LLP',
       '/contact-form': 'Contact Form | Ofstride Services LLP',
       '/privacy-policy': 'Privacy Policy | Ofstride Services LLP',
       '/careers': 'Careers | Ofstride Services LLP',
@@ -70,7 +70,7 @@ function App() {
       '/cashflow/ap': 'Accounts Payable | Cash Flow Suite',
       '/cashflow/ar': 'Accounts Receivable | Cash Flow Suite',
       '/cashflow/pettycash': 'Petty Cash | Cash Flow Suite',
-      '/cashflow/reconcile': 'Tally Reconcile | Cash Flow Suite',
+      '/cashflow/reconcile': 'Bank Statement Reconcile | Cash Flow Suite',
       '/cashflow/expense': 'Expense Portal | Cash Flow Suite',
       '/business-growth': 'Growth Execution Planner | Ofstride Services LLP',
       '/business-growth/intake': 'Growth Execution Planner Intake | Ofstride Services LLP',
@@ -121,7 +121,7 @@ function App() {
             <Route path="ap" element={<AccountsPayable />} />
             <Route path="ar" element={<AccountsReceivable />} />
             <Route path="pettycash" element={<PettyCash />} />
-            <Route path="reconcile" element={<TallyReconcile />} />
+            <Route path="reconcile" element={<BankStatementReconcile />} />
             <Route path="expense" element={<ExpensesAuthLayout />}>
               <Route
                 index

@@ -83,7 +83,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
 
   const handleActionSelect = async (value: string) => {
     const normalized = value.trim().toLowerCase();
-    if (normalized.includes("schedule a call") || normalized.includes("book a call") || normalized === "call") {
+    if (normalized.includes("schedule a call") || normalized.includes("book a free call") || normalized.includes("book a call") || normalized === "call") {
       await handleBookCallRedirect(value);
       return;
     }

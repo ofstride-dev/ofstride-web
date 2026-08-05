@@ -7,10 +7,9 @@
       "direction": "in",
       "name": "req",
       "methods": [
-        "get",
-        "post"
+        "get"
       ],
-      "route": "reconcile/tally/{action?}"
+      "route": "export/legacy-ledger"
     },
     {
       "type": "http",

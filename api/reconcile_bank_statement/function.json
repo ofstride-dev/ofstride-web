@@ -7,9 +7,10 @@
       "direction": "in",
       "name": "req",
       "methods": [
-        "get"
+        "get",
+        "post"
       ],
-      "route": "export/tally"
+      "route": "reconcile/bank/{action?}"
     },
     {
       "type": "http",

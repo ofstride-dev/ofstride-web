@@ -42,7 +42,7 @@ function Contact() {
               </p>
 
               <div className="space-y-6">
-                {/* Book a Call */}
+                {/* Book a Free Call */}
                 <Link to="/book-call"
                   className="flex items-start gap-4 bg-surface rounded-2xl p-5 sm:p-6 card-hover group"
                 >

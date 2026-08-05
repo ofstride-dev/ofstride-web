@@ -106,8 +106,8 @@ UPDATE public.cashflow_petty_cash
 SET status = 'pending'
 WHERE status IS NULL;
 
--- 6B. TALLY IMPORT / RECONCILIATION RUNS
-CREATE TABLE IF NOT EXISTS public.cashflow_tally_reconcile_runs (
+-- 6B. BANK STATEMENT IMPORT / RECONCILIATION RUNS
+CREATE TABLE IF NOT EXISTS public.cashflow_bank_reconcile_runs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
@@ -118,23 +118,23 @@ CREATE TABLE IF NOT EXISTS public.cashflow_tally_reconcile_runs (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TABLE IF NOT EXISTS public.cashflow_tally_reconcile_rows (
+CREATE TABLE IF NOT EXISTS public.cashflow_bank_reconcile_rows (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    run_id UUID NOT NULL REFERENCES public.cashflow_tally_reconcile_runs(id) ON DELETE CASCADE,
-    source_side TEXT NOT NULL CHECK (source_side IN ('tally', 'platform')),
+    run_id UUID NOT NULL REFERENCES public.cashflow_bank_reconcile_runs(id) ON DELETE CASCADE,
+    source_side TEXT NOT NULL CHECK (source_side IN ('bank', 'platform')),
     voucher_type TEXT,
     voucher_number TEXT,
     voucher_date DATE,
     party_name TEXT,
     amount NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
-    status TEXT NOT NULL CHECK (status IN ('matched', 'amount_mismatch', 'missing_in_tally', 'unexpected_in_tally')),
+    status TEXT NOT NULL CHECK (status IN ('matched', 'amount_mismatch', 'missing_in_bank_statement', 'unexpected_in_bank_statement')),
     notes TEXT,
     raw_data JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_cashflow_tally_rows_run_id ON public.cashflow_tally_reconcile_rows(run_id);
-CREATE INDEX IF NOT EXISTS idx_cashflow_tally_rows_status ON public.cashflow_tally_reconcile_rows(status);
+CREATE INDEX IF NOT EXISTS idx_cashflow_bank_rows_run_id ON public.cashflow_bank_reconcile_rows(run_id);
+CREATE INDEX IF NOT EXISTS idx_cashflow_bank_rows_status ON public.cashflow_bank_reconcile_rows(status);
 
 -- 6C. SOFT PERIOD CLOSE TRACKING (NO HARD LOCK YET)
 CREATE TABLE IF NOT EXISTS public.cashflow_period_close (
@@ -170,8 +170,8 @@ ALTER TABLE public.cashflow_bills ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.cashflow_invoices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.cashflow_transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.cashflow_petty_cash ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.cashflow_tally_reconcile_runs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.cashflow_tally_reconcile_rows ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.cashflow_bank_reconcile_runs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.cashflow_bank_reconcile_rows ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.cashflow_period_close ENABLE ROW LEVEL SECURITY;
 
 -- Security Policies (Admin / Finance Access)
@@ -190,11 +190,11 @@ CREATE POLICY cashflow_transactions_all ON public.cashflow_transactions FOR ALL 
 DROP POLICY IF EXISTS cashflow_petty_cash_all ON public.cashflow_petty_cash;
 CREATE POLICY cashflow_petty_cash_all ON public.cashflow_petty_cash FOR ALL TO authenticated USING (auth.jwt() ->> 'role' IN ('admin', 'finance'));
 
-DROP POLICY IF EXISTS cashflow_tally_runs_all ON public.cashflow_tally_reconcile_runs;
-CREATE POLICY cashflow_tally_runs_all ON public.cashflow_tally_reconcile_runs FOR ALL TO authenticated USING (auth.jwt() ->> 'role' IN ('admin', 'finance'));
+DROP POLICY IF EXISTS cashflow_bank_runs_all ON public.cashflow_bank_reconcile_runs;
+CREATE POLICY cashflow_bank_runs_all ON public.cashflow_bank_reconcile_runs FOR ALL TO authenticated USING (auth.jwt() ->> 'role' IN ('admin', 'finance'));
 
-DROP POLICY IF EXISTS cashflow_tally_rows_all ON public.cashflow_tally_reconcile_rows;
-CREATE POLICY cashflow_tally_rows_all ON public.cashflow_tally_reconcile_rows FOR ALL TO authenticated USING (auth.jwt() ->> 'role' IN ('admin', 'finance'));
+DROP POLICY IF EXISTS cashflow_bank_rows_all ON public.cashflow_bank_reconcile_rows;
+CREATE POLICY cashflow_bank_rows_all ON public.cashflow_bank_reconcile_rows FOR ALL TO authenticated USING (auth.jwt() ->> 'role' IN ('admin', 'finance'));
 
 DROP POLICY IF EXISTS cashflow_period_close_all ON public.cashflow_period_close;
 CREATE POLICY cashflow_period_close_all ON public.cashflow_period_close FOR ALL TO authenticated USING (auth.jwt() ->> 'role' IN ('admin', 'finance'));

@@ -47,11 +47,11 @@ function readFileAsBase64(file) {
 function statusTone(status) {
   if (status === 'matched') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
   if (status === 'amount_mismatch') return 'bg-amber-50 text-amber-700 border-amber-200';
-  if (status === 'missing_in_tally') return 'bg-rose-50 text-rose-700 border-rose-200';
+  if (status === 'missing_in_bank_statement') return 'bg-rose-50 text-rose-700 border-rose-200';
   return 'bg-slate-100 text-slate-700 border-slate-200';
 }
 
-export default function TallyReconcile() {
+export default function BankStatementReconcile() {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const monthStart = useMemo(() => {
     const dt = new Date();
@@ -70,6 +70,7 @@ export default function TallyReconcile() {
   const [uploadedRows, setUploadedRows] = useState([]);
   const [columnWarnings, setColumnWarnings] = useState([]);
   const [rowIssuesCount, setRowIssuesCount] = useState(0);
+  const [comparisonMode, setComparisonMode] = useState('');
 
   const onFileChange = (e) => {
     const next = e.target.files?.[0] || null;
@@ -77,7 +78,7 @@ export default function TallyReconcile() {
     setError('');
   };
 
-  const runReconcile = async () => {
+  const runReconcile = async (compareWithPlatform = false) => {
     if (!startDate || !endDate) {
       setError('Please select start and end dates.');
       return;
@@ -87,7 +88,7 @@ export default function TallyReconcile() {
       return;
     }
     if (!file) {
-      setError('Please upload a Tally CSV or Excel file first.');
+      setError('Please upload a bank statement CSV, Excel, or PDF file first.');
       return;
     }
 
@@ -96,13 +97,14 @@ export default function TallyReconcile() {
 
     try {
       const fileBase64 = await readFileAsBase64(file);
-      const res = await cashflowFetch('/reconcile/tally/analyze', {
+      const res = await cashflowFetch('/reconcile/bank/analyze', {
         method: 'POST',
         body: JSON.stringify({
           start_date: startDate,
           end_date: endDate,
           file_name: file.name,
           file_content_base64: fileBase64,
+          compare_with_platform: compareWithPlatform,
         }),
       });
 
@@ -121,6 +123,7 @@ export default function TallyReconcile() {
       setUploadedRows(payload.data?.uploaded_rows || []);
       setColumnWarnings(payload.data?.column_warnings || []);
       setRowIssuesCount(Number(payload.data?.row_issues_count || 0));
+      setComparisonMode(payload.data?.comparison_mode || '');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Reconcile failed.');
     } finally {
@@ -133,7 +136,7 @@ export default function TallyReconcile() {
     setLoading(true);
     setError('');
     try {
-      const res = await cashflowFetch(`/reconcile/tally/export?run_id=${encodeURIComponent(runId)}&kind=${encodeURIComponent(kind)}`, {
+      const res = await cashflowFetch(`/reconcile/bank/export?run_id=${encodeURIComponent(runId)}&kind=${encodeURIComponent(kind)}`, {
         method: 'GET',
       });
 
@@ -145,7 +148,7 @@ export default function TallyReconcile() {
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement('a');
       anchor.href = url;
-      anchor.download = `reconcile_${kind}_${runId}.csv`;
+      anchor.download = `bank_reconcile_${kind}_${runId}.csv`;
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
@@ -160,9 +163,9 @@ export default function TallyReconcile() {
   return (
     <div className="space-y-5">
       <section className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-        <h2 className="text-2xl font-bold text-primary">Tally Reconcile</h2>
+        <h2 className="text-2xl font-bold text-primary">Bank Statement Reconcile</h2>
         <p className="text-sm text-slate-600 mt-1">
-          Compare your uploaded Tally report with AP, AR, and Petty Cash records to identify mismatches before final posting.
+          Compare uploaded bank receipts, transactions, and statements with AP, AR, and Petty Cash records to identify mismatches before final posting.
         </p>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
@@ -185,10 +188,10 @@ export default function TallyReconcile() {
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-primary mb-1">Tally File (.csv, .xlsx)</label>
+            <label className="block text-sm font-medium text-primary mb-1">Bank Statement File (.csv, .xlsx, .pdf)</label>
             <input
               type="file"
-              accept=".csv,.xlsx,.xls"
+              accept=".csv,.xlsx,.xls,.pdf"
               onChange={onFileChange}
               className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm bg-white"
             />
@@ -198,12 +201,22 @@ export default function TallyReconcile() {
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={runReconcile}
+            onClick={() => runReconcile(false)}
             disabled={loading}
             className="px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold disabled:opacity-60"
           >
-            {loading ? 'Processing...' : 'Run Reconcile'}
+            {loading ? 'Processing...' : 'Run Statement Parse'}
           </button>
+          {file && (
+            <button
+              type="button"
+              onClick={() => runReconcile(true)}
+              disabled={loading}
+              className="px-4 py-2 rounded-xl border border-blue-200 bg-blue-50 text-secondary text-sm font-semibold hover:bg-blue-100 disabled:opacity-60"
+            >
+              {loading ? 'Processing...' : 'Run + Compare with AP/AR'}
+            </button>
+          )}
           {runId && (
             <>
               <button
@@ -242,6 +255,13 @@ export default function TallyReconcile() {
           </div>
         )}
 
+        {comparisonMode && (
+          <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+            <span className="font-semibold">Mode:</span>{' '}
+            {comparisonMode === 'platform' ? 'Platform comparison enabled (AP/AR/Petty Cash).' : 'Bank statement only.'}
+          </div>
+        )}
+
         {error && (
           <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {error}
@@ -254,8 +274,8 @@ export default function TallyReconcile() {
           <h3 className="text-lg font-semibold text-primary">Reconcile Summary</h3>
           <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-sm">
             <div className="rounded-xl border border-slate-200 px-3 py-2 bg-slate-50">
-              <p className="text-slate-500">Tally Rows</p>
-              <p className="text-lg font-semibold text-primary">{summary.total_tally_rows || 0}</p>
+              <p className="text-slate-500">Bank Statement Rows</p>
+              <p className="text-lg font-semibold text-primary">{summary.total_bank_rows || 0}</p>
             </div>
             <div className="rounded-xl border border-slate-200 px-3 py-2 bg-slate-50">
               <p className="text-slate-500">Platform Rows</p>
@@ -270,12 +290,12 @@ export default function TallyReconcile() {
               <p className="text-lg font-semibold text-amber-700">{summary.amount_mismatch || 0}</p>
             </div>
             <div className="rounded-xl border border-rose-200 px-3 py-2 bg-rose-50">
-              <p className="text-rose-700">Missing In Tally</p>
-              <p className="text-lg font-semibold text-rose-700">{summary.missing_in_tally || 0}</p>
+              <p className="text-rose-700">Missing In Bank Statement</p>
+              <p className="text-lg font-semibold text-rose-700">{summary.missing_in_bank_statement || 0}</p>
             </div>
             <div className="rounded-xl border border-slate-200 px-3 py-2 bg-slate-100">
-              <p className="text-slate-700">Unexpected In Tally</p>
-              <p className="text-lg font-semibold text-slate-700">{summary.unexpected_in_tally || 0}</p>
+              <p className="text-slate-700">Unexpected In Bank Statement</p>
+              <p className="text-lg font-semibold text-slate-700">{summary.unexpected_in_bank_statement || 0}</p>
             </div>
           </div>
         </section>
@@ -288,7 +308,7 @@ export default function TallyReconcile() {
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="text-left text-slate-500 border-b border-slate-100">
-                  <th className="px-2 py-2">Voucher</th>
+                  <th className="px-2 py-2">Reference</th>
                   <th className="px-2 py-2">Date</th>
                   <th className="px-2 py-2">Party</th>
                   <th className="px-2 py-2 text-right">Amount</th>
@@ -334,7 +354,7 @@ export default function TallyReconcile() {
               <thead>
                 <tr className="text-left text-slate-500 border-b border-slate-100">
                   <th className="px-2 py-2">Row</th>
-                  <th className="px-2 py-2">Voucher</th>
+                  <th className="px-2 py-2">Reference</th>
                   <th className="px-2 py-2">Date</th>
                   <th className="px-2 py-2">Party</th>
                   <th className="px-2 py-2 text-right">Amount</th>

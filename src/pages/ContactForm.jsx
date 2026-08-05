@@ -230,7 +230,7 @@ function ContactForm() {
             </div>
 
             <div className="bg-primary text-white rounded-2xl p-6">
-              <h4 className="font-bold mb-2">Prefer to book a call?</h4>
+              <h4 className="font-bold mb-2">Prefer to book a free call?</h4>
               <p className="text-slate-300 text-sm mb-4">
                 Schedule a free 30-minute consultation at your convenience.
               </p>

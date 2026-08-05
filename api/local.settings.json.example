@@ -68,6 +68,8 @@
     "CAREERS_TAILORED_RESUME_BLOB_CONTAINER": "careers-tailored-resumes",
     "VETERAN_RESUME_BLOB_CONTAINER": "veteran-resume",
     "CAREERS_HR_EMAIL": "hr@ofstrideservices.com",
-    "CAREERS_HR_WEBHOOK_URL": ""
+    "CAREERS_HR_WEBHOOK_URL": "",
+    "CASHFLOW_DOC_INTEL_ENDPOINT": "",
+    "CASHFLOW_DOC_INTEL_KEY": ""
   }
 }

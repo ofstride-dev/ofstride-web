@@ -41,7 +41,7 @@ export default function CashflowDashboard() {
           if (parsed.ok) setData(parsed.data);
           else throw new Error(parsed.error || `Server returned ${parsed.status}`);
         }),
-      cashflowFetch('/reconcile/tally/recent?limit=5')
+      cashflowFetch('/reconcile/bank/recent?limit=5')
         .then(async (res) => {
           if (!res.ok) return null;
           const payload = await res.json();
@@ -241,13 +241,13 @@ export default function CashflowDashboard() {
                   to="/cashflow/reconcile"
                   style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1d4ed8', textDecoration: 'none' }}
                 >
-                  Open Reconcile
+                  Open Bank Reconcile
                 </Link>
               </div>
 
               {!latestRun && (
                 <div style={{ padding: '0.95rem 1rem', borderRadius: '10px', background: '#f8fafc', border: '1px dashed #cbd5e1', color: '#334155' }}>
-                  No reconciliation runs yet. Upload a Tally report to generate mismatch intelligence.
+                  No reconciliation runs yet. Upload a bank statement to generate mismatch intelligence.
                 </div>
               )}
 
@@ -295,12 +295,12 @@ export default function CashflowDashboard() {
                       <p style={{ margin: '0.25rem 0 0', fontSize: '1.1rem', fontWeight: 700, color: '#a16207' }}>{latestRun.summary?.amount_mismatch || 0}</p>
                     </div>
                     <div style={{ border: '1px solid #fecdd3', borderRadius: '10px', padding: '0.65rem', background: '#fff1f2' }}>
-                      <p style={{ margin: 0, fontSize: '0.74rem', color: '#be123c', textTransform: 'uppercase', fontWeight: 700 }}>Missing In Tally</p>
-                      <p style={{ margin: '0.25rem 0 0', fontSize: '1.1rem', fontWeight: 700, color: '#be123c' }}>{latestRun.summary?.missing_in_tally || 0}</p>
+                      <p style={{ margin: 0, fontSize: '0.74rem', color: '#be123c', textTransform: 'uppercase', fontWeight: 700 }}>Missing In Bank Statement</p>
+                      <p style={{ margin: '0.25rem 0 0', fontSize: '1.1rem', fontWeight: 700, color: '#be123c' }}>{latestRun.summary?.missing_in_bank_statement || 0}</p>
                     </div>
                     <div style={{ border: '1px solid #e2e8f0', borderRadius: '10px', padding: '0.65rem', background: '#f8fafc' }}>
-                      <p style={{ margin: 0, fontSize: '0.74rem', color: '#475569', textTransform: 'uppercase', fontWeight: 700 }}>Unexpected</p>
-                      <p style={{ margin: '0.25rem 0 0', fontSize: '1.1rem', fontWeight: 700, color: '#334155' }}>{latestRun.summary?.unexpected_in_tally || 0}</p>
+                      <p style={{ margin: 0, fontSize: '0.74rem', color: '#475569', textTransform: 'uppercase', fontWeight: 700 }}>Unexpected In Bank Statement</p>
+                      <p style={{ margin: '0.25rem 0 0', fontSize: '1.1rem', fontWeight: 700, color: '#334155' }}>{latestRun.summary?.unexpected_in_bank_statement || 0}</p>
                     </div>
                   </div>
                 </>
