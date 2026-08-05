@@ -34,7 +34,7 @@ def _is_valid_uuid(value: str) -> bool:
 
 
 def validate_identity_headers(req: func.HttpRequest) -> dict[str, Any]:
-    user_id = _get_header(req, "x-user-id")
+    user_id = _get_header(req, "x-user-id") or _get_header(req, "x-cashflow-user-id")
     role_raw = _get_header(req, "x-app-role")
     role = (role_raw or "").strip().lower()
 

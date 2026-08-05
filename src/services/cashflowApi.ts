@@ -22,9 +22,17 @@ export const CASHFLOW_API_BASE =
   || DEFAULT_FUNC_API_BASE;
 
 async function cashflowIdentityHeaders(): Promise<HeadersInit> {
-  const { data } = await supabase.auth.getSession();
-  const session = data.session || null;
-  const user = session?.user || null;
+  let session = null;
+  let user = null;
+
+  try {
+    const { data } = await supabase.auth.getSession();
+    session = data.session || null;
+    user = session?.user || null;
+  } catch {
+    session = null;
+    user = null;
+  }
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -36,6 +44,7 @@ async function cashflowIdentityHeaders(): Promise<HeadersInit> {
 
   const resolvedUserId = user?.id || getOrCreateCashflowLocalId();
   headers["x-user-id"] = resolvedUserId;
+  headers["x-cashflow-user-id"] = resolvedUserId;
 
   const rawRole = String(
     user?.user_metadata?.role || user?.app_metadata?.role || ""
