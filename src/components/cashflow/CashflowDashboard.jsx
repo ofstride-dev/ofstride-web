@@ -226,8 +226,8 @@ export default function CashflowDashboard() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.25rem', marginBottom: '2rem' }}>
-            <div style={{ backgroundColor: '#ffffff', padding: '1.5rem', borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: '0 12px 28px rgba(15,23,42,0.05)' }}>
+          <div className="cashflow-trend-breakdown-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.25rem', marginBottom: '2rem' }}>
+            <div className="cashflow-trend-breakdown-card" style={{ backgroundColor: '#ffffff', padding: '1.5rem', borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: '0 12px 28px rgba(15,23,42,0.05)' }}>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0f172a', marginTop: 0, marginBottom: '1rem' }}>Last 3 Months: Inflow vs Outflow</h3>
               {monthlyTrend.length === 0 ? (
                 <div style={{ color: '#64748b', fontSize: '0.9rem' }}>No monthly trend data yet.</div>
@@ -256,7 +256,7 @@ export default function CashflowDashboard() {
               )}
             </div>
 
-            <div style={{ backgroundColor: '#ffffff', padding: '1.5rem', borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: '0 12px 28px rgba(15,23,42,0.05)' }}>
+            <div className="cashflow-trend-breakdown-card" style={{ backgroundColor: '#ffffff', padding: '1.5rem', borderRadius: '14px', border: '1px solid #e2e8f0', boxShadow: '0 12px 28px rgba(15,23,42,0.05)' }}>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0f172a', marginTop: 0, marginBottom: '1rem' }}>This Period Breakdown</h3>
               <SafeBar label="Money Received from Customers" value={periodBreakdown.inflowCustomers} max={periodBreakdown.max} color="#16a34a" />
               <SafeBar label="Cash Added to Petty Cash" value={periodBreakdown.inflowPetty} max={periodBreakdown.max} color="#0ea5e9" />
@@ -319,22 +319,22 @@ export default function CashflowDashboard() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '0.65rem' }}>
-                    <div style={{ border: '1px solid #dcfce7', borderRadius: '10px', padding: '0.65rem', background: '#f0fdf4' }}>
-                      <p style={{ margin: 0, fontSize: '0.74rem', color: '#166534', textTransform: 'uppercase', fontWeight: 700 }}>Matched</p>
-                      <p style={{ margin: '0.25rem 0 0', fontSize: '1.1rem', fontWeight: 700, color: '#166534' }}>{latestRun.summary?.matched || 0}</p>
+                  <div className="reconcile-status-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '0.65rem' }}>
+                    <div className="reconcile-status-card" style={{ border: '1px solid #dcfce7', borderRadius: '10px', padding: '0.65rem', background: '#f0fdf4' }}>
+                      <p className="reconcile-status-label" style={{ margin: 0, fontSize: '0.74rem', color: '#166534', textTransform: 'uppercase', fontWeight: 700 }}>Matched</p>
+                      <p className="reconcile-status-value" style={{ margin: '0.25rem 0 0', fontSize: '1.1rem', fontWeight: 700, color: '#166534' }}>{latestRun.summary?.matched || 0}</p>
                     </div>
-                    <div style={{ border: '1px solid #fde68a', borderRadius: '10px', padding: '0.65rem', background: '#fffbeb' }}>
-                      <p style={{ margin: 0, fontSize: '0.74rem', color: '#a16207', textTransform: 'uppercase', fontWeight: 700 }}>Amount Mismatch</p>
-                      <p style={{ margin: '0.25rem 0 0', fontSize: '1.1rem', fontWeight: 700, color: '#a16207' }}>{latestRun.summary?.amount_mismatch || 0}</p>
+                    <div className="reconcile-status-card" style={{ border: '1px solid #fde68a', borderRadius: '10px', padding: '0.65rem', background: '#fffbeb' }}>
+                      <p className="reconcile-status-label" style={{ margin: 0, fontSize: '0.74rem', color: '#a16207', textTransform: 'uppercase', fontWeight: 700 }}>Amount Mismatch</p>
+                      <p className="reconcile-status-value" style={{ margin: '0.25rem 0 0', fontSize: '1.1rem', fontWeight: 700, color: '#a16207' }}>{latestRun.summary?.amount_mismatch || 0}</p>
                     </div>
-                    <div style={{ border: '1px solid #fecdd3', borderRadius: '10px', padding: '0.65rem', background: '#fff1f2' }}>
-                      <p style={{ margin: 0, fontSize: '0.74rem', color: '#be123c', textTransform: 'uppercase', fontWeight: 700 }}>Missing In Bank Statement</p>
-                      <p style={{ margin: '0.25rem 0 0', fontSize: '1.1rem', fontWeight: 700, color: '#be123c' }}>{latestRun.summary?.missing_in_bank_statement || 0}</p>
+                    <div className="reconcile-status-card" style={{ border: '1px solid #fecdd3', borderRadius: '10px', padding: '0.65rem', background: '#fff1f2' }}>
+                      <p className="reconcile-status-label" style={{ margin: 0, fontSize: '0.74rem', color: '#be123c', textTransform: 'uppercase', fontWeight: 700 }}>Missing In Bank Statement</p>
+                      <p className="reconcile-status-value" style={{ margin: '0.25rem 0 0', fontSize: '1.1rem', fontWeight: 700, color: '#be123c' }}>{latestRun.summary?.missing_in_bank_statement || 0}</p>
                     </div>
-                    <div style={{ border: '1px solid #e2e8f0', borderRadius: '10px', padding: '0.65rem', background: '#f8fafc' }}>
-                      <p style={{ margin: 0, fontSize: '0.74rem', color: '#475569', textTransform: 'uppercase', fontWeight: 700 }}>Unexpected In Bank Statement</p>
-                      <p style={{ margin: '0.25rem 0 0', fontSize: '1.1rem', fontWeight: 700, color: '#334155' }}>{latestRun.summary?.unexpected_in_bank_statement || 0}</p>
+                    <div className="reconcile-status-card" style={{ border: '1px solid #e2e8f0', borderRadius: '10px', padding: '0.65rem', background: '#f8fafc' }}>
+                      <p className="reconcile-status-label" style={{ margin: 0, fontSize: '0.74rem', color: '#475569', textTransform: 'uppercase', fontWeight: 700 }}>Unexpected In Bank Statement</p>
+                      <p className="reconcile-status-value" style={{ margin: '0.25rem 0 0', fontSize: '1.1rem', fontWeight: 700, color: '#334155' }}>{latestRun.summary?.unexpected_in_bank_statement || 0}</p>
                     </div>
                   </div>
                 </>

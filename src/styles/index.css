@@ -438,6 +438,46 @@
     }
   }
 
+  @media (max-width: 768px) {
+    .cashflow-trend-breakdown-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .cashflow-trend-breakdown-card {
+      width: 100% !important;
+      min-width: 0;
+    }
+
+    .reconcile-status-grid {
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)) !important;
+      gap: 0.5rem !important;
+    }
+
+    .reconcile-status-card {
+      min-width: 100px;
+      width: 100%;
+      padding: 0.5rem !important;
+      text-align: center;
+    }
+
+    .reconcile-status-label {
+      text-align: center;
+      font-size: clamp(0.62rem, 2.2vw, 0.72rem) !important;
+      line-height: 1.15;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      hyphens: auto;
+      text-wrap: balance;
+    }
+
+    .reconcile-status-value {
+      text-align: center;
+      font-size: clamp(0.95rem, 3.8vw, 1.05rem) !important;
+      line-height: 1.15;
+      margin-top: 0.2rem !important;
+    }
+  }
+
   .chat-shell {
     border-radius: 1.2rem;
     background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
