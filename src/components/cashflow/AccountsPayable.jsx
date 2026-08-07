@@ -19,8 +19,9 @@ export default function AccountsPayable() {
     vendor_name: '',
     bill_number: '',
     bill_date: '',
-    amount: '',
+    amount_before_gst: '',
     gst_amount: '',
+    total_amount: '',
     tds_section: 'NONE'
   });
 
@@ -89,8 +90,9 @@ export default function AccountsPayable() {
             vendor_name: payload.vendor_name || '',
             bill_number: payload.bill_number || '',
             bill_date: payload.bill_date || '',
-            amount: payload.amount || 0,
+            amount_before_gst: payload.amount_before_gst ?? Math.max((Number(payload.amount || 0) - Number(payload.gst_amount || 0)), 0),
             gst_amount: payload.gst_amount || 0,
+            total_amount: payload.total_amount ?? (payload.amount || 0),
           };
           setFormData(p=>({...p,...nextValues}));
 
@@ -117,7 +119,23 @@ export default function AccountsPayable() {
     };
   };
 
-  const handleInputChange=e=>setFormData({...formData,[e.target.name]:e.target.value});
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => {
+      const next = { ...prev, [name]: value };
+      const base = Number(next.amount_before_gst || 0);
+      const gst = Number(next.gst_amount || 0);
+      const total = Number(next.total_amount || 0);
+
+      if (name === 'amount_before_gst' || name === 'gst_amount') {
+        next.total_amount = String(Math.max(base + gst, 0));
+      } else if (name === 'total_amount' && next.gst_amount !== '') {
+        next.amount_before_gst = String(Math.max(total - gst, 0));
+      }
+
+      return next;
+    });
+  };
 
   const handleApproveBill = async (billId) => {
     if (!billId) return;
@@ -144,12 +162,15 @@ export default function AccountsPayable() {
     const res=await cashflowFetch('/cashflow/ap/save',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(formData)
+      body:JSON.stringify({
+        ...formData,
+        amount: formData.total_amount,
+      })
     });
     const parsed = await parseCashflowResponse(res);
     if(parsed.ok){
       setInvoices([parsed.data,...invoices]);
-      setFormData({vendor_name:'',bill_number:'',bill_date:'',amount:'',gst_amount:'',tds_section:'NONE'});
+      setFormData({vendor_name:'',bill_number:'',bill_date:'',amount_before_gst:'',gst_amount:'',total_amount:'',tds_section:'NONE'});
     } else {
       console.error('AP save failed:', parsed.error);
     }
@@ -261,8 +282,9 @@ export default function AccountsPayable() {
               ['Vendor Name','vendor_name','text'],
               ['Invoice #','bill_number','text'],
               ['Invoice Date','bill_date','date'],
-              ['Total Amount','amount','number'],
-              ['GST Total','gst_amount','number']
+              ['Total Amount Before GST','amount_before_gst','number'],
+              ['GST Total','gst_amount','number'],
+              ['Total Amount','total_amount','number']
             ].map(([label,name,type])=>(
               <div key={name}>
                 <label style={{display:'block',fontSize:12,fontWeight:700,textTransform:'uppercase',color:'#64748b',marginBottom:8}}>{label}</label>
@@ -289,7 +311,7 @@ export default function AccountsPayable() {
         <table style={{width:'100%',borderCollapse:'collapse'}}>
           <thead style={{background:'#f8fafc'}}>
             <tr>
-              {['Vendor','Bill #','Due Date','Gross','TDS','Net','Status','Actions'].map(h=><th key={h} style={{padding:'18px 24px',textAlign:'left',fontSize:12,textTransform:'uppercase',color:'#64748b'}}>{h}</th>)}
+              {['Vendor','Bill #','Due Date','Gross','GST','TDS','Net','Status','Actions'].map(h=><th key={h} style={{padding:'18px 24px',textAlign:'left',fontSize:12,textTransform:'uppercase',color:'#64748b'}}>{h}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -303,6 +325,7 @@ export default function AccountsPayable() {
                 <td style={{padding:20}}>{inv.bill_number}</td>
                 <td style={{padding:20}}>{inv.due_date}</td>
                 <td style={{padding:20,fontWeight:600}}>₹{(+inv.amount||0).toLocaleString('en-IN')}</td>
+                <td style={{padding:20,fontWeight:600,color:'#0369a1'}}>₹{(+inv.gst_amount||0).toLocaleString('en-IN')}</td>
                 <td style={{padding:20,color:'#dc2626'}}>-₹{(+inv.tds_amount||0).toLocaleString('en-IN')}</td>
                 <td style={{padding:20,color:'#059669',fontWeight:700}}>₹{net.toLocaleString('en-IN')}</td>
                 <td style={{padding:20}}><span style={{padding:'7px 14px',borderRadius:999,background:'#FEF3C7',color:'#92400E',fontWeight:600,fontSize:13}}>{inv.status}</span></td>
@@ -330,7 +353,7 @@ export default function AccountsPayable() {
                 </td>
               </tr>
             })}
-            {!loading&&invoices.length===0&&<tr><td colSpan="8" style={{padding:40,textAlign:'center',color:'#64748b'}}>No AP bills recorded yet.</td></tr>}
+            {!loading&&invoices.length===0&&<tr><td colSpan="9" style={{padding:40,textAlign:'center',color:'#64748b'}}>No AP bills recorded yet.</td></tr>}
           </tbody>
         </table>
       </div>

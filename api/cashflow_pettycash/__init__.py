@@ -6,13 +6,35 @@ from shared.db import get_supabase_client
 from shared.admin_auth import validate_identity_headers
 
 def ai_categorize_expense(description: str) -> tuple[str, bool]:
-    desc_lower = description.lower()
-    if any(word in desc_lower for word in ['uber', 'ola', 'taxi', 'train']):
+    desc_lower = description.lower().strip()
+    if any(word in desc_lower for word in ['uber', 'ola', 'taxi', 'train', 'metro', 'flight', 'bus', 'cab', 'fuel', 'petrol', 'diesel', 'parking', 'toll']):
         return "Travel & Transport", True
-    elif any(word in desc_lower for word in ['swiggy', 'zomato', 'lunch', 'tea']):
+    elif any(word in desc_lower for word in ['swiggy', 'zomato', 'lunch', 'dinner', 'breakfast', 'tea', 'coffee', 'snacks', 'restaurant', 'food']):
         return "Meals & Entertainment", True
-    elif any(word in desc_lower for word in ['paper', 'pen', 'print']):
+    elif any(word in desc_lower for word in ['paper', 'pen', 'print', 'ink', 'stapler', 'notebook', 'stationery', 'marker']):
         return "Office Supplies", True
+    elif any(word in desc_lower for word in ['internet', 'wifi', 'broadband', 'phone', 'mobile', 'recharge', 'sim', 'postpaid']):
+        return "Utilities & Telecom", True
+    elif any(word in desc_lower for word in ['rent', 'lease', 'coworking', 'office rent', 'workspace']):
+        return "Rent & Facilities", True
+    elif any(word in desc_lower for word in ['repair', 'maintenance', 'service', 'electrician', 'plumber', 'cleaning']):
+        return "Repairs & Maintenance", True
+    elif any(word in desc_lower for word in ['software', 'saas', 'subscription', 'license', 'zoom', 'google workspace', 'microsoft 365']):
+        return "Software & Subscriptions", True
+    elif any(word in desc_lower for word in ['courier', 'shipping', 'delivery', 'post', 'bluedart', 'dtdc']):
+        return "Logistics & Courier", True
+    elif any(word in desc_lower for word in ['salary', 'wage', 'staff advance', 'employee advance', 'reimbursement']):
+        return "Payroll & Staff", True
+    elif any(word in desc_lower for word in ['gst', 'tds', 'tax', 'challan', 'government fee', 'compliance fee']):
+        return "Taxes & Compliance", True
+    elif any(word in desc_lower for word in ['advert', 'marketing', 'facebook ads', 'google ads', 'promotion', 'campaign']):
+        return "Marketing & Promotion", True
+    elif any(word in desc_lower for word in ['hotel', 'stay', 'accommodation']):
+        return "Travel Stay", True
+    elif any(word in desc_lower for word in ['medical', 'pharmacy', 'medicine', 'clinic']):
+        return "Health & Safety", True
+    elif any(word in desc_lower for word in ['bank charge', 'processing fee', 'transaction fee', 'interest', 'emi']):
+        return "Banking & Finance Charges", True
     return "Uncategorized", False
 
 

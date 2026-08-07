@@ -68,6 +68,14 @@ CREATE TABLE IF NOT EXISTS public.cashflow_invoices (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 4B. AR ENHANCEMENTS (idempotent)
+-- Supports multi-item invoice input from frontend and optional freeform notes.
+ALTER TABLE public.cashflow_invoices
+    ADD COLUMN IF NOT EXISTS item_services JSONB DEFAULT '[]'::jsonb;
+
+ALTER TABLE public.cashflow_invoices
+    ADD COLUMN IF NOT EXISTS notes TEXT;
+
 -- 5. PAYMENTS & COLLECTIONS
 CREATE TABLE IF NOT EXISTS public.cashflow_transactions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

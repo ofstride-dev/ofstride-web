@@ -124,13 +124,24 @@ def _classify_ocr_error(exc: Exception) -> tuple[str, str]:
 
 
 def _normalize_ap_extracted(extracted: dict) -> dict:
+    amount_before_gst = round(_safe_float(extracted.get("amount_before_gst"), 0.0), 2)
+    gst_amount = round(_safe_float(extracted.get("gst_amount"), 0.0), 2)
+    total_amount = round(_safe_float(extracted.get("total_amount"), _safe_float(extracted.get("amount"), 0.0)), 2)
+    if total_amount <= 0 and (amount_before_gst > 0 or gst_amount > 0):
+        total_amount = round(amount_before_gst + gst_amount, 2)
+    if amount_before_gst <= 0 and total_amount > 0:
+        amount_before_gst = round(max(total_amount - gst_amount, 0.0), 2)
+
     return {
         "vendor_name": str(extracted.get("vendor_name") or "").strip(),
         "vendor_gstin": str(extracted.get("vendor_gstin") or "").strip(),
         "bill_number": str(extracted.get("bill_number") or "").strip(),
         "bill_date": str(extracted.get("bill_date") or datetime.now().strftime("%Y-%m-%d")),
-        "amount": round(_safe_float(extracted.get("amount"), 0.0), 2),
-        "gst_amount": round(_safe_float(extracted.get("gst_amount"), 0.0), 2),
+        "amount_before_gst": amount_before_gst,
+        "gst_amount": gst_amount,
+        "total_amount": total_amount,
+        # Keep backward-compatible key used by save flow.
+        "amount": total_amount,
     }
 
 
@@ -190,6 +201,8 @@ def _build_ap_extracted_from_doc(fields: dict, ocr_content: str) -> dict:
         "vendor_gstin": (fields.get("VendorTaxId").value if fields.get("VendorTaxId") else "") or "",
         "bill_number": (fields.get("InvoiceId").value if fields.get("InvoiceId") else "") or "",
         "bill_date": str(fields.get("InvoiceDate").value) if fields.get("InvoiceDate") else datetime.now().strftime("%Y-%m-%d"),
+        "amount_before_gst": round(_safe_float(subtotal, 0.0), 2),
+        "total_amount": round(_safe_float(invoice_total, 0.0), 2),
         "amount": round(_safe_float(invoice_total, 0.0), 2),
         "gst_amount": round(_safe_float(total_tax, 0.0), 2),
     }
@@ -389,9 +402,11 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             data = req.get_json()
             vendor_id = get_or_create_vendor(supabase, data.get("vendor_name"), data.get("vendor_gstin"))
 
-            amount = float(data.get("amount", 0))
+            amount = float(data.get("total_amount", data.get("amount", 0)))
+            amount_before_gst = float(data.get("amount_before_gst", max(amount - float(data.get("gst_amount", 0)), 0)))
             tds_section = data.get("tds_section", "NONE")
-            tds_amount = calculate_tds(amount, tds_section)
+            # TDS should apply on taxable value (before GST) where possible.
+            tds_amount = calculate_tds(amount_before_gst if amount_before_gst > 0 else amount, tds_section)
 
             bill_date = data.get("bill_date") or datetime.now().strftime("%Y-%m-%d")
             due_date = calculate_msme_due_date(bill_date, False) or (datetime.strptime(bill_date, "%Y-%m-%d") + timedelta(days=30)).strftime("%Y-%m-%d")

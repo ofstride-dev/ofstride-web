@@ -16,6 +16,61 @@ def _to_float(value, default: float = 0.0) -> float:
     except (TypeError, ValueError):
         return default
 
+
+def _normalize_item_services(raw_value) -> list[str]:
+    if raw_value is None:
+        return []
+
+    if isinstance(raw_value, list):
+        values = raw_value
+    elif isinstance(raw_value, str):
+        values = raw_value.split("\n")
+    else:
+        values = [str(raw_value)]
+
+    normalized: list[str] = []
+    for value in values:
+        text = str(value or "").strip()
+        if text:
+            normalized.append(text)
+    return normalized
+
+
+def _compose_notes(notes: str, item_services: list[str]) -> str:
+    base = str(notes or "").strip()
+    if not item_services:
+        return base
+
+    items_block = "\n".join([f"- {item}" for item in item_services])
+    if base:
+        return f"{base}\n\nItems/Services:\n{items_block}"
+    return f"Items/Services:\n{items_block}"
+
+
+def _insert_invoice_with_fallback(supabase, invoice_payload: dict):
+    try:
+        return supabase.table('cashflow_invoices').insert(invoice_payload).execute()
+    except Exception as exc:
+        message = str(exc).lower()
+        # Backward-compatible fallback for deployments where optional columns are missing.
+        if "column" in message and ("does not exist" in message or "not found" in message):
+            fallback_payload = dict(invoice_payload)
+            if "item_services" in message:
+                fallback_payload.pop("item_services", None)
+                return supabase.table('cashflow_invoices').insert(fallback_payload).execute()
+
+            if "notes" in message:
+                fallback_payload.pop("notes", None)
+                return supabase.table('cashflow_invoices').insert(fallback_payload).execute()
+
+            fallback_payload.pop("item_services", None)
+            try:
+                return supabase.table('cashflow_invoices').insert(fallback_payload).execute()
+            except Exception:
+                fallback_payload.pop("notes", None)
+                return supabase.table('cashflow_invoices').insert(fallback_payload).execute()
+        raise
+
 def get_or_create_customer(supabase, customer_name: str, gstin: str = None) -> str:
     """Finds existing customer by name or creates a new one in cashflow_entities."""
     if not customer_name:
@@ -66,6 +121,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             data = req.get_json()
             
             customer_id = get_or_create_customer(supabase, data.get("customer_name"), data.get("customer_gstin"))
+            item_services = _normalize_item_services(data.get("item_services"))
 
             amount = _to_float(data.get("amount"), 0.0)
             gst_amount = _to_float(data.get("gst_amount"), 0.0)
@@ -83,10 +139,12 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 "gst_amount": gst_amount,
                 "status": data.get("status", "pending"),
                 "irn_number": data.get("irn_number", None),
-                "is_proforma": data.get("is_proforma", False)
+                "is_proforma": data.get("is_proforma", False),
+                "notes": _compose_notes(data.get("notes", ""), item_services),
+                "item_services": item_services,
             }
             
-            response = supabase.table('cashflow_invoices').insert(new_invoice).execute()
+            response = _insert_invoice_with_fallback(supabase, new_invoice)
             
             # Re-fetch with customer details to return to frontend
             inv_with_customer = supabase.table('cashflow_invoices').select(

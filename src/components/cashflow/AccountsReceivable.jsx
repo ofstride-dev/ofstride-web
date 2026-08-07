@@ -11,8 +11,89 @@ export default function AccountsReceivable() {
   const [formData, setFormData] = useState({
     customer_name: '', customer_gstin: '', invoice_number: '', 
     invoice_date: new Date().toISOString().split('T')[0], 
-    amount: '', gst_amount: '', irn_number: '', is_proforma: false, notes: ''
+    amount: '', gst_amount: '', irn_number: '', is_proforma: false, notes: '', item_services: ['']
   });
+
+  const normalizeItemServices = (value) => {
+    if (Array.isArray(value)) return value.map((v) => String(v || '').trim()).filter(Boolean);
+    if (typeof value === 'string') return value.split('\n').map((v) => v.trim()).filter(Boolean);
+    return [];
+  };
+
+  const parseItemsFromNotes = (notes) => {
+    const text = String(notes || '');
+    const marker = 'Items/Services:';
+    const markerIndex = text.indexOf(marker);
+    if (markerIndex === -1) return [];
+    const block = text.slice(markerIndex + marker.length);
+    return block
+      .split('\n')
+      .map((line) => line.replace(/^[-•]\s*/, '').trim())
+      .filter(Boolean);
+  };
+
+  const getInvoiceItems = (invoice) => {
+    const direct = normalizeItemServices(invoice?.item_services);
+    if (direct.length) return direct;
+    return parseItemsFromNotes(invoice?.notes);
+  };
+
+  const downloadInvoice = (invoice) => {
+    const subtotal = Number(invoice?.amount || 0);
+    const gst = Number(invoice?.gst_amount || 0);
+    const total = subtotal + gst;
+    const items = getInvoiceItems(invoice);
+    const customer = invoice?.cashflow_entities?.name || 'N/A';
+
+    const html = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Invoice ${invoice?.invoice_number || ''}</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 24px; color: #0f172a; }
+      h1 { margin: 0 0 8px 0; }
+      .muted { color: #64748b; font-size: 12px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+      th, td { border: 1px solid #e2e8f0; padding: 8px; text-align: left; }
+      th { background: #f8fafc; }
+    </style>
+  </head>
+  <body>
+    <h1>Invoice ${invoice?.invoice_number || ''}</h1>
+    <div class="muted">Date: ${invoice?.invoice_date || ''}</div>
+    <div class="muted">Customer: ${customer}</div>
+    <div class="muted">Customer GSTIN: ${invoice?.cashflow_entities?.gstin || ''}</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Item / Service</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${(items.length ? items : ['General Service']).map((item) => `<tr><td>${item}</td></tr>`).join('')}
+      </tbody>
+    </table>
+
+    <table>
+      <tbody>
+        <tr><th>Subtotal (Before GST)</th><td>₹${subtotal.toFixed(2)}</td></tr>
+        <tr><th>GST</th><td>₹${gst.toFixed(2)}</td></tr>
+        <tr><th>Total</th><td><strong>₹${total.toFixed(2)}</strong></td></tr>
+      </tbody>
+    </table>
+  </body>
+</html>`;
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${invoice?.invoice_number || 'invoice'}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   useEffect(() => { fetchInvoices(); }, []);
 
@@ -49,7 +130,7 @@ export default function AccountsReceivable() {
         setFormData({ 
           customer_name: '', customer_gstin: '', invoice_number: '', 
           invoice_date: new Date().toISOString().split('T')[0], 
-          amount: '', gst_amount: '', irn_number: '', is_proforma: false, notes: '' 
+          amount: '', gst_amount: '', irn_number: '', is_proforma: false, notes: '', item_services: ['']
         });
       } else {
         throw new Error(parsed.error || `Server error ${parsed.status}`);
@@ -239,6 +320,45 @@ export default function AccountsReceivable() {
             <label style={styles.label}>IRN Number</label>
             <input type="text" name="irn_number" value={formData.irn_number} onChange={handleInputChange} placeholder="Optional" style={styles.input} />
           </div>
+          <div style={{ gridColumn: '1 / -1' }}>
+            <label style={styles.label}>Item / Service</label>
+            <div style={{ display: 'grid', gap: '0.5rem' }}>
+              {formData.item_services.map((item, index) => (
+                <div key={`item-${index}`} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    value={item}
+                    onChange={(e) => {
+                      const nextItems = [...formData.item_services];
+                      nextItems[index] = e.target.value;
+                      setFormData({ ...formData, item_services: nextItems });
+                    }}
+                    placeholder={`Item/Service ${index + 1}`}
+                    style={styles.input}
+                  />
+                  {formData.item_services.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const nextItems = formData.item_services.filter((_, idx) => idx !== index);
+                        setFormData({ ...formData, item_services: nextItems.length ? nextItems : [''] });
+                      }}
+                      style={{ ...styles.actionBtn, border: '1px solid #fecaca', color: '#b91c1c' }}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, item_services: [...formData.item_services, ''] })}
+              style={{ ...styles.actionBtn, marginTop: '0.6rem' }}
+            >
+              Add Another Item
+            </button>
+          </div>
           <div style={styles.checkboxLabel}>
             <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
               <input type="checkbox" name="is_proforma" checked={formData.is_proforma} onChange={handleInputChange} style={{ marginRight: '0.75rem', width: '18px', height: '18px' }} />
@@ -309,6 +429,9 @@ export default function AccountsReceivable() {
                         Collect
                       </button>
                     )}
+                    <button onClick={() => downloadInvoice(inv)} style={{ ...styles.actionBtn, marginLeft: '0.5rem' }}>
+                      Download
+                    </button>
                   </td>
                 </tr>
               );
