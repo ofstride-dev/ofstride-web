@@ -1,5 +1,6 @@
 param(
-    [switch]$UsePython312
+    [switch]$UsePython312,
+    [int]$Port = 7071
 )
 
 $ErrorActionPreference = "Stop"
@@ -7,17 +8,33 @@ $ErrorActionPreference = "Stop"
 $scriptRoot = $PSScriptRoot
 $repoRoot = Resolve-Path (Join-Path $scriptRoot "..")
 $runtimeFile = Join-Path $scriptRoot ".python_runtime"
-$venvPython = Join-Path $repoRoot ".venv\Scripts\python.exe"
+$apiVenvPython = Join-Path $scriptRoot ".venv\Scripts\python.exe"
+$repoVenvPython = Join-Path $repoRoot ".venv\Scripts\python.exe"
 $python312 = "C:/Users/Think/AppData/Local/Programs/Python/Python312/python.exe"
 
-$pythonPath = if (Test-Path $runtimeFile) {
-    (Get-Content $runtimeFile -Raw).Trim()
-} elseif (Test-Path $venvPython) {
-    $venvPython
-} elseif ($UsePython312) {
-    $python312
-} else {
-    $python312
+$pythonCandidates = @()
+if (Test-Path $apiVenvPython) {
+    $pythonCandidates += $apiVenvPython
+}
+if (Test-Path $runtimeFile) {
+    $pythonCandidates += (Get-Content $runtimeFile -Raw).Trim()
+}
+if (Test-Path $repoVenvPython) {
+    $pythonCandidates += $repoVenvPython
+}
+if ($UsePython312) {
+    $pythonCandidates += $python312
+}
+if (-not $pythonCandidates) {
+    $pythonCandidates += $python312
+}
+
+$pythonPath = $null
+foreach ($candidate in $pythonCandidates) {
+    if (Test-Path $candidate) {
+        $pythonPath = $candidate
+        break
+    }
 }
 
 if (-not (Test-Path $pythonPath)) {
@@ -30,7 +47,12 @@ if (-not $pythonVersion.StartsWith("3.12.")) {
 }
 
 $env:AzureWebJobsScriptRoot = $scriptRoot
-$venvSitePackages = Join-Path $repoRoot ".venv\Lib\site-packages"
+$venvRoot = Split-Path -Parent $pythonPath
+$venvRoot = Split-Path -Parent $venvRoot
+$venvScripts = Join-Path $venvRoot "Scripts"
+$venvSitePackages = Join-Path $venvRoot "Lib\site-packages"
+$env:VIRTUAL_ENV = $venvRoot
+$env:PATH = "$venvScripts;$env:PATH"
 $env:PYTHONPATH = @(
     $scriptRoot
     $venvSitePackages
@@ -40,4 +62,4 @@ $env:FUNCTIONS_WORKER_RUNTIME = "python"
 $env:languageWorkers__python__defaultExecutablePath = $pythonPath
 
 Write-Host "Starting Azure Functions with Python at: $pythonPath"
-func start --verbose
+func start --verbose --port $Port

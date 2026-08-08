@@ -4,7 +4,6 @@ import {
 	approveBusinessGrowthReview,
 	getBusinessGrowthReportPreview,
 	getBusinessGrowthReviewHistory,
-	startBusinessGrowthReview,
 } from "../../services/businessGrowthApi";
 import { mergeGrowthJourneyState, readGrowthJourneyState } from "../../components/business_growth/shared/businessGrowthTypes";
 import type { ConsultantReviewRecord } from "../../types/businessGrowth";
@@ -26,7 +25,6 @@ export default function BusinessGrowthReviewPage() {
 		setError("");
 		setSuccessReviewId("");
 		try {
-			await startBusinessGrowthReview();
 			const response = await approveBusinessGrowthReview({
 				growth_diagnosis_id: diagnosisId,
 				approved,

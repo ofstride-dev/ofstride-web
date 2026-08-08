@@ -18,6 +18,7 @@ from business_growth.shared.http import error_response
 
 ROUTE_MODULE_MAP = {
     "intake": "intake_submit",
+    "health/worker": "health_worker",
     "audit/start": "audit_start",
     "audit/summary": "audit_summary",
     "audit/pages": "audit_pages",
@@ -31,6 +32,7 @@ ROUTE_MODULE_MAP = {
     "review/start": "review_start",
     "review/approve": "review_approve",
     "review/history": "review_history",
+    "journey": "journey_get",
     "report/preview": "report_preview",
     "kpi": "kpi_get",
     "kpi/record": "kpi_record",

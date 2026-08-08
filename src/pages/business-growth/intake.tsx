@@ -10,6 +10,9 @@ export default function BusinessGrowthIntakePage() {
 		industry: "",
 		target_geo: "India",
 		growth_goal: "",
+		budget_band: "",
+		urgency_band: "",
+		current_channels: "",
 		contact_name: "",
 		contact_email: "",
 		contact_phone: "",
@@ -28,9 +31,13 @@ export default function BusinessGrowthIntakePage() {
 		setError("");
 		setLoading(true);
 		try {
+			const channels = form.current_channels
+				.split(",")
+				.map((entry) => entry.trim())
+				.filter(Boolean);
 			const response = await submitBusinessGrowthIntake({
 				...form,
-				current_channels: [],
+				current_channels: channels,
 			});
 			setResult(response);
 			mergeGrowthJourneyState({
@@ -84,6 +91,34 @@ export default function BusinessGrowthIntakePage() {
 						Growth Goal
 						<textarea name="growth_goal" value={form.growth_goal} onChange={handleChange} rows={3} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" placeholder="Example: increase inbound leads by 40% in 90 days" />
 					</label>
+
+				<div className="grid sm:grid-cols-3 gap-4">
+					<label className="text-sm font-medium text-primary">
+						Budget Band
+						<select name="budget_band" value={form.budget_band} onChange={handleChange} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">
+							<option value="">Select…</option>
+							<option value="bootstrap">Bootstrap</option>
+							<option value="low">Low</option>
+							<option value="medium">Medium</option>
+							<option value="high">High</option>
+						</select>
+					</label>
+					<label className="text-sm font-medium text-primary">
+						Urgency Band
+						<select name="urgency_band" value={form.urgency_band} onChange={handleChange} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2">
+							<option value="">Select…</option>
+							<option value="low">Low</option>
+							<option value="medium">Medium</option>
+							<option value="high">High</option>
+							<option value="immediate">Immediate</option>
+						</select>
+					</label>
+					<label className="text-sm font-medium text-primary">
+						Current Channels
+						<input name="current_channels" value={form.current_channels} onChange={handleChange} className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2" placeholder="SEO, Ads, Email" />
+					</label>
+				</div>
+
 
 					<div className="grid sm:grid-cols-3 gap-4">
 						<label className="text-sm font-medium text-primary sm:col-span-1">

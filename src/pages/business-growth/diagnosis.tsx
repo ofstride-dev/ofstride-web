@@ -18,7 +18,8 @@ const categoryLabels: Record<string, string> = {
 };
 
 
-function scoreClass(score: number): string {
+function scoreClass(score: number | null | undefined): string {
+	if (score == null) return "text-slate-600 bg-slate-50 border-slate-200";
 	if (score >= 80) return "text-emerald-700 bg-emerald-50 border-emerald-200";
 	if (score >= 60) return "text-amber-700 bg-amber-50 border-amber-200";
 	return "text-rose-700 bg-rose-50 border-rose-200";
@@ -102,6 +103,11 @@ export default function BusinessGrowthDiagnosisPage() {
 
 			{diagnosis && (
 				<section className="space-y-4">
+					{(diagnosis.total_issues ?? 0) === 0 && (
+						<p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+							No deterministic issues were detected yet. Scores are low-confidence until more evidence is captured from audit signals.
+						</p>
+					)}
 					<div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
 						<div className="flex flex-wrap items-center justify-between gap-3">
 							<h3 className="text-lg font-semibold text-primary">Maturity Summary</h3>
@@ -149,8 +155,12 @@ export default function BusinessGrowthDiagnosisPage() {
 						{Object.entries(diagnosis.category_scores || {}).map(([key, value]) => (
 							<div key={key} className={`rounded-xl border p-4 ${scoreClass(value)}`}>
 								<p className="text-xs uppercase tracking-wide">{categoryLabels[key] || key}</p>
-								<p className="text-2xl font-bold mt-1">{value}</p>
-								<p className="text-xs mt-1">Category score</p>
+								<p className="text-2xl font-bold mt-1">{value == null ? "N/A" : value}</p>
+								<p className="text-xs mt-1">
+									{value == null
+										? "Insufficient domain evidence"
+										: "Category score"}
+								</p>
 							</div>
 						))}
 					</div>
@@ -167,7 +177,7 @@ export default function BusinessGrowthDiagnosisPage() {
 										<span className="w-1.5 h-1.5 bg-rose-500 rounded-full mt-2" />
 										{item}
 									</li>
-								)) : <li>No blockers identified.</li>}
+								)) : <li>No evidence-backed blockers identified in current data.</li>}
 							</ul>
 						</div>
 						<div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
@@ -178,7 +188,7 @@ export default function BusinessGrowthDiagnosisPage() {
 										<span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mt-2" />
 										{item}
 									</li>
-								)) : <li>No opportunities identified yet.</li>}
+								)) : <li>No evidence-backed opportunities identified in current data.</li>}
 							</ul>
 						</div>
 					</div>

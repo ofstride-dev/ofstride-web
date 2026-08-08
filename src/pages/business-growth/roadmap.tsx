@@ -23,6 +23,7 @@ export default function BusinessGrowthRoadmapPage() {
 	const [cms, setCms] = useState("generic");
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
+	const [infoMessage, setInfoMessage] = useState("");
 
 	const refreshItems = async (targetDiagnosisId: string) => {
 		const rows = await getBusinessGrowthRoadmap(targetDiagnosisId);
@@ -36,12 +37,16 @@ export default function BusinessGrowthRoadmapPage() {
 
 	const onGenerate = async () => {
 		setError("");
+		setInfoMessage("");
 		setLoading(true);
 		try {
 			const generated = await generateBusinessGrowthRoadmap(auditRunId);
 			setDiagnosisId(generated.growth_diagnosis_id);
 			mergeGrowthJourneyState({ diagnosisId: generated.growth_diagnosis_id, roadmapCompleted: false });
 			await refreshItems(generated.growth_diagnosis_id);
+			if (generated.message) {
+				setInfoMessage(generated.message);
+			}
 		} catch (generateError) {
 			setError(generateError instanceof Error ? generateError.message : "Could not generate roadmap.");
 		} finally {
@@ -52,6 +57,7 @@ export default function BusinessGrowthRoadmapPage() {
 	const onRefresh = async () => {
 		if (!diagnosisId) return;
 		setError("");
+		setInfoMessage("");
 		setLoading(true);
 		try {
 			await refreshItems(diagnosisId);
@@ -170,6 +176,7 @@ export default function BusinessGrowthRoadmapPage() {
 
 				{diagnosisId && <p className="text-xs text-slate-500 mt-3">Diagnosis ID: {diagnosisId}</p>}
 				{error && <p className="mt-4 text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">{error}</p>}
+				{infoMessage && <p className="mt-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">{infoMessage}</p>}
 			</section>
 
 			<section className="space-y-4">
@@ -311,7 +318,7 @@ export default function BusinessGrowthRoadmapPage() {
 
 				{!items.length && (
 					<div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-500">
-						No roadmap items yet. Generate roadmap using an existing Audit Run ID.
+						No evidence-backed roadmap actions are available yet. Complete Audit and Diagnosis, then generate roadmap for this run.
 					</div>
 				)}
 			</section>

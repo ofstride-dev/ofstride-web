@@ -1,0 +1,12 @@
+{
+  "scriptFile": "function.py",
+  "bindings": [
+    {
+      "type": "queueTrigger",
+      "direction": "in",
+      "name": "msg",
+      "queueName": "audit-queue",
+      "connection": "AzureWebJobsStorage"
+    }
+  ]
+}

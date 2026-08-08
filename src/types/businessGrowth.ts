@@ -47,6 +47,8 @@ export interface AuditSummary {
 	root_url: string;
 	page_count?: number;
 	technical_score?: number;
+	error_message?: string | null;
+	completed_at?: string | null;
 	created_at?: string;
 	updated_at?: string;
 }
@@ -84,8 +86,10 @@ export interface GrowthDiagnosis {
 	blockers: string[];
 	opportunities: string[];
 	overall_score: number;
-	category_scores?: Record<string, number>;
+	category_scores?: Record<string, number | null>;
 	issue_counts?: Record<string, number>;
+	evidence_counts?: Record<string, number>;
+	measured_domains?: number;
 	total_issues?: number;
 	created_at?: string;
 }
@@ -112,6 +116,7 @@ export interface RoadmapItem {
 export interface RoadmapGenerateResponse {
 	growth_diagnosis_id: string;
 	roadmap_items_created: number;
+	message?: string;
 }
 
 export interface RoadmapUpdateRequest {
@@ -199,4 +204,36 @@ export interface KpiRecordResponse {
 
 export interface GrowthKpiRecord {
 	[key: string]: unknown;
+}
+
+export interface ProfileOnlyGuidance {
+	mode: "profile_only";
+	findings: string[];
+	solutions: string[];
+	uses_chat_signals: boolean;
+}
+
+export interface GrowthJourneyResumeResponse {
+	assessment_session: Record<string, unknown>;
+	business_profile: Record<string, unknown>;
+	audit_run: Record<string, unknown> | null;
+	growth_diagnosis: Record<string, unknown> | null;
+	roadmap: {
+		items_total: number;
+		items_done: number;
+		items: Array<Record<string, unknown>>;
+	};
+	review: {
+		latest: Record<string, unknown> | null;
+		total_reviews: number;
+	};
+	resume_state: {
+		businessProfileId?: string;
+		assessmentSessionId?: string;
+		auditRunId?: string;
+		diagnosisId?: string;
+		roadmapCompleted?: boolean;
+		reviewApproved?: boolean;
+	};
+	profile_only_guidance: ProfileOnlyGuidance | null;
 }

@@ -4,30 +4,9 @@ import json
 import azure.functions as func
 
 from business_growth.shared.db import get_supabase
+from business_growth.shared.diagnosis import domain_for_issue as _domain_for_issue
 from business_growth.shared.http import error_response, json_response, options_response
 from core.llm_factory import get_llm_factory
-
-
-DOMAIN_RULE_HINTS = {
-    "technical": {"missing_h1", "missing_viewport_meta", "canonical_missing"},
-    "content": {"title_too_short", "meta_description_weak", "thin_content"},
-    "local": {"missing_local_schema", "missing_nap", "no_service_area_pages"},
-    "conversion": {"weak_cta", "form_too_long", "no_primary_cta"},
-}
-
-
-def _domain_for_issue(issue: dict) -> str:
-    rule_id = str(issue.get("rule_id") or "").strip()
-    for domain, rules in DOMAIN_RULE_HINTS.items():
-        if rule_id in rules:
-            return domain
-
-    category = str(issue.get("category") or "").strip().lower()
-    if category in DOMAIN_RULE_HINTS:
-        return category
-    if category == "onpage":
-        return "content"
-    return "technical"
 
 
 def _safe_json(req: func.HttpRequest) -> dict:

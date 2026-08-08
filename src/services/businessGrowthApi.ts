@@ -10,6 +10,7 @@ import type {
 	GrowthDiagnosisGenerateResponse,
 	GrowthIntakeRequest,
 	GrowthIntakeResponse,
+	GrowthJourneyResumeResponse,
 	GrowthKpiRecord,
 	KpiRecordResponse,
 	ReportPreviewResponse,
@@ -41,7 +42,9 @@ async function parseJsonResponse<T>(response: Response): Promise<T> {
 		const message =
 			typeof body === "string"
 				? body
-				: (body as { message?: string } | null)?.message || `Request failed (HTTP ${response.status})`;
+				: (body as { message?: string; error?: string } | null)?.message ||
+				  (body as { message?: string; error?: string } | null)?.error ||
+				  `Request failed (HTTP ${response.status})`;
 		throw new Error(message || `Request failed (HTTP ${response.status})`);
 	}
 
@@ -77,6 +80,14 @@ export async function startBusinessGrowthAudit(payload: AuditStartRequest): Prom
 		body: JSON.stringify(payload),
 	});
 	return parseJsonResponse<AuditStartResponse>(response);
+}
+
+export async function getBusinessGrowthAuditWorkerHealth(): Promise<{
+	ok: boolean;
+	checks: Record<string, { ok: boolean; message: string | null }>;
+}> {
+	const response = await fetch(`${BG_BASE}/health/worker`);
+	return parseJsonResponse(response);
 }
 
 export async function getBusinessGrowthAuditSummary(auditRunId: string): Promise<AuditSummary> {
@@ -196,6 +207,15 @@ export async function getBusinessGrowthReportPreview(
 export async function getBusinessGrowthKpis(): Promise<GrowthKpiRecord[]> {
 	const response = await fetch(`${BG_BASE}/kpi`);
 	return parseJsonResponse<GrowthKpiRecord[]>(response);
+}
+
+export async function getBusinessGrowthJourney(
+	assessmentSessionId: string
+): Promise<GrowthJourneyResumeResponse> {
+	const response = await fetch(
+		withQuery(`${BG_BASE}/journey`, { assessment_session_id: assessmentSessionId })
+	);
+	return parseJsonResponse<GrowthJourneyResumeResponse>(response);
 }
 
 export async function recordBusinessGrowthKpi(payload: Record<string, unknown>): Promise<KpiRecordResponse> {

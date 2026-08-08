@@ -1,103 +1,108 @@
 import azure.functions as func
 import json
-import requests
-from bs4 import BeautifulSoup
+import logging
+
+from business_growth.shared.crawler import crawl_and_score
 from business_growth.shared.db import get_supabase
+from business_growth.shared.run_status import mark_complete, mark_crawling, mark_failed
+
+
+logger = logging.getLogger("business_growth.audit_worker")
+
+
+def _persist(supa, audit_run_id: str, result: dict) -> tuple[int, int]:
+    """Persist crawled pages + issues with real ids. Returns (page_count, score)."""
+    issues_rows = []
+    for page_data in result["pages"]:
+        page = supa.table("audit_page").insert({
+            "audit_run_id": audit_run_id,
+            "url": page_data["url"],
+            "status_code": page_data["status_code"],
+            "title": page_data["title"],
+            "meta_description": page_data["meta_description"],
+            "h1": page_data["h1"],
+            "canonical": page_data["canonical"],
+            "has_viewport_meta": page_data["has_viewport_meta"],
+            "link_count": page_data["link_count"],
+            "image_count": page_data["image_count"],
+            "is_indexable": True,
+        }).execute()
+        page_id = page.data[0]["id"]
+
+        for issue in result["issues"]:
+            if issue.get("_page_url") != page_data["url"]:
+                continue
+            issue["audit_run_id"] = audit_run_id
+            issue["audit_page_id"] = page_id
+            issues_rows.append(issue)
+
+    if issues_rows:
+        supa.table("issue_finding").insert(issues_rows).execute()
+
+    return result["page_count"], result["technical_score"]
+
+
+def _decode_message(msg: func.QueueMessage) -> dict:
+    """Decode queue payload into a dict.
+
+    Handles both standard JSON objects and double-encoded JSON strings.
+    """
+    raw = msg.get_body().decode("utf-8")
+    data = json.loads(raw)
+    if isinstance(data, str):
+        data = json.loads(data)
+    if not isinstance(data, dict):
+        raise ValueError("Queue payload must be a JSON object")
+    return data
+
 
 def main(msg: func.QueueMessage) -> None:
-    data = json.loads(msg.get_body().decode("utf-8"))
-    audit_run_id = data["audit_run_id"]
-    root_url = data["root_url"]
-
-    supa = get_supabase()
-    supa.table("audit_run").update({"status": "crawling"}).eq("id", audit_run_id).execute()
-
+    audit_run_id = None
+    supa = None
     try:
-        resp = requests.get(root_url, timeout=15)
-        status_code = resp.status_code
-        html = resp.text
-    except Exception:
-        supa.table("audit_run").update({"status": "failed"}).eq("id", audit_run_id).execute()
-        return
+        data = _decode_message(msg)
+        audit_run_id = data.get("audit_run_id")
+        root_url = data.get("root_url")
+        max_pages = int(data.get("max_pages") or 50)
+        max_depth = int(data.get("max_depth") or 3)
+        if not audit_run_id or not root_url:
+            raise ValueError("Missing audit_run_id or root_url in queue message")
 
-    soup = BeautifulSoup(html, "html.parser")
-    title = soup.title.string.strip() if soup.title and soup.title.string else ""
-    meta_desc = ""
-    h1 = ""
-    canonical = ""
-    has_viewport = False
+        supa = get_supabase()
+        mark_crawling(supa, audit_run_id)
+        logger.info("audit_worker started audit_run_id=%s root_url=%s", audit_run_id, root_url)
+        result = crawl_and_score(root_url, max_pages, max_depth)
 
-    for meta in soup.find_all("meta"):
-        name = (meta.get("name") or "").lower()
-        if name == "description":
-            meta_desc = meta.get("content", "") or ""
-        if name == "viewport":
-            has_viewport = True
+        if int(result.get("page_count") or 0) == 0:
+            mark_failed(
+                supa,
+                audit_run_id,
+                "Audit could not crawl any pages. The site may block bots, be unreachable, or require JavaScript rendering.",
+            )
+            logger.warning("audit_worker zero-page crawl audit_run_id=%s root_url=%s", audit_run_id, root_url)
+            return
 
-    canon = soup.find("link", rel=lambda v: v and "canonical" in v)
-    if canon and canon.get("href"):
-        canonical = canon.get("href")
-
-    h1_tag = soup.find("h1")
-    if h1_tag:
-        h1 = h1_tag.get_text(strip=True)
-
-    links = soup.find_all("a", href=True)
-    images = soup.find_all("img")
-
-    page = supa.table("audit_page").insert({
-        "audit_run_id": audit_run_id,
-        "url": root_url,
-        "status_code": status_code,
-        "title": title,
-        "meta_description": meta_desc,
-        "h1": h1,
-        "canonical": canonical,
-        "has_viewport_meta": has_viewport,
-        "link_count": len(links),
-        "image_count": len(images),
-        "is_indexable": True,
-    }).execute()
-
-    page_id = page.data[0]["id"]
-    issues = []
-
-    if not title or len(title) < 10:
-        issues.append({
-            "audit_run_id": audit_run_id,
-            "audit_page_id": page_id,
-            "category": "onpage",
-            "rule_id": "title_too_short",
-            "severity": "high",
-            "description": "Page title is missing or too short.",
-            "evidence": {"title": title},
-        })
-    if not meta_desc or len(meta_desc) < 50:
-        issues.append({
-            "audit_run_id": audit_run_id,
-            "audit_page_id": page_id,
-            "category": "onpage",
-            "rule_id": "meta_description_weak",
-            "severity": "medium",
-            "description": "Meta description is missing or too short.",
-            "evidence": {"meta_description": meta_desc},
-        })
-    if not h1:
-        issues.append({
-            "audit_run_id": audit_run_id,
-            "audit_page_id": page_id,
-            "category": "onpage",
-            "rule_id": "missing_h1",
-            "severity": "medium",
-            "description": "Page has no H1 heading.",
-            "evidence": {},
-        })
-
-    if issues:
-        supa.table("issue_finding").insert(issues).execute()
-
-    supa.table("audit_run").update({
-        "status": "complete",
-        "page_count": 1,
-        "technical_score": 70,
-    }).eq("id", audit_run_id).execute()
+        page_count, score = _persist(supa, audit_run_id, result)
+        try:
+            mark_complete(supa, audit_run_id, page_count, score)
+            logger.info(
+                "audit_worker completed audit_run_id=%s pages=%s score=%s",
+                audit_run_id,
+                page_count,
+                score,
+            )
+        except Exception as terminal_exc:
+            mark_failed(supa, audit_run_id, f"Failed to finalize audit run: {terminal_exc}")
+            logger.exception("audit_worker failed to mark complete audit_run_id=%s", audit_run_id)
+    except Exception as exc:
+        if not audit_run_id:
+            # Force retry/poison handling when message format is bad instead of
+            # silently consuming and stranding the run at queued.
+            raise
+        if supa is None:
+            try:
+                supa = get_supabase()
+            except Exception:
+                return
+        mark_failed(supa, audit_run_id, f"audit_worker error: {exc}")
+        logger.exception("audit_worker crashed audit_run_id=%s", audit_run_id)

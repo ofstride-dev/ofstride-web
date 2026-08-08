@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { BarChart3, CheckCircle2, CircleDot, Compass, Flag, Rocket } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { getBusinessGrowthKpis } from "../../services/businessGrowthApi";
-import { BUSINESS_GROWTH_STEPS, readGrowthJourneyState } from "../../components/business_growth/shared/businessGrowthTypes";
+import { useEffect, useState } from "react";
+import { getBusinessGrowthJourney, getBusinessGrowthKpis } from "../../services/businessGrowthApi";
+import { BUSINESS_GROWTH_STEPS, mergeGrowthJourneyState, readGrowthJourneyState } from "../../components/business_growth/shared/businessGrowthTypes";
+import type { ProfileOnlyGuidance } from "../../types/businessGrowth";
 
 function formatStepStatus(stepPath: string, state: ReturnType<typeof readGrowthJourneyState>) {
 	if (stepPath.includes("intake")) return state.assessmentSessionId ? "done" : "pending";
@@ -17,6 +18,11 @@ export default function BusinessGrowthOverviewPage() {
 	const [kpis, setKpis] = useState<Record<string, unknown>[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
+	const [state, setState] = useState(() => readGrowthJourneyState());
+	const [resumeSessionId, setResumeSessionId] = useState("");
+	const [resumeLoading, setResumeLoading] = useState(false);
+	const [resumeMessage, setResumeMessage] = useState("");
+	const [profileOnlyGuidance, setProfileOnlyGuidance] = useState<ProfileOnlyGuidance | null>(null);
 
 	useEffect(() => {
 		let mounted = true;
@@ -43,7 +49,30 @@ export default function BusinessGrowthOverviewPage() {
 		};
 	}, []);
 
-	const state = useMemo(() => readGrowthJourneyState(), []);
+	const onResumeJourney = async (event: React.FormEvent) => {
+		event.preventDefault();
+		if (!resumeSessionId.trim()) {
+			setResumeMessage("Enter an assessment session ID to resume.");
+			return;
+		}
+
+		setResumeLoading(true);
+		setResumeMessage("");
+		try {
+			const response = await getBusinessGrowthJourney(resumeSessionId.trim());
+			const next = mergeGrowthJourneyState(response.resume_state || {});
+			setState(next);
+			setProfileOnlyGuidance(response.profile_only_guidance || null);
+			setResumeMessage("Journey restored from server.");
+		} catch (resumeError) {
+			setResumeMessage(
+				resumeError instanceof Error ? resumeError.message : "Could not restore journey."
+			);
+		}
+		finally {
+			setResumeLoading(false);
+		}
+	};
 
 	const flowCards = [
 		{
@@ -110,6 +139,48 @@ export default function BusinessGrowthOverviewPage() {
 					</p>
 				)}
 			</section>
+
+			<section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+				<h3 className="font-semibold text-primary">Resume Across Devices</h3>
+				<p className="text-sm text-slate-500 mt-1">Restore journey state using assessment session ID.</p>
+				<form className="mt-3 flex flex-col sm:flex-row gap-3" onSubmit={onResumeJourney}>
+					<input
+						value={resumeSessionId}
+						onChange={(event) => setResumeSessionId(event.target.value)}
+						placeholder="assessment_session_id"
+						className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+					/>
+					<button
+						type="submit"
+						disabled={resumeLoading}
+						className="inline-flex items-center justify-center gap-2 bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-light disabled:opacity-70"
+					>
+						{resumeLoading ? "Restoring..." : "Resume Journey"}
+					</button>
+				</form>
+				{resumeMessage && (
+					<p className="mt-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+						{resumeMessage}
+					</p>
+				)}
+			</section>
+
+			{profileOnlyGuidance && (
+				<section className="rounded-2xl border border-blue-200 bg-blue-50/50 p-5 shadow-sm">
+					<h3 className="font-semibold text-primary">Profile-Only Findings (No Website Yet)</h3>
+					<ul className="mt-3 space-y-2 text-sm text-slate-700 list-disc pl-5">
+						{profileOnlyGuidance.findings.map((item) => (
+							<li key={item}>{item}</li>
+						))}
+					</ul>
+					<h4 className="font-semibold text-primary mt-4">Suggested Actions</h4>
+					<ul className="mt-2 space-y-2 text-sm text-slate-700 list-disc pl-5">
+						{profileOnlyGuidance.solutions.map((item) => (
+							<li key={item}>{item}</li>
+						))}
+					</ul>
+				</section>
+			)}
 
 			<section className="grid lg:grid-cols-3 gap-4">
 				{flowCards.map((item) => (

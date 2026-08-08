@@ -182,19 +182,19 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 examples.append({
                     "type": "Title",
                     "before": evidence.get("title") or "(missing title)",
-                    "after": "Growth Execution Plan | Ofstride",
+                    "after": "Suggested action: add a descriptive, intent-aligned title within ~50-60 characters.",
                 })
             if rule_id == "meta_description_weak":
                 examples.append({
                     "type": "Meta Description",
                     "before": evidence.get("meta_description") or "(missing meta description)",
-                    "after": "Drive measurable growth with consultant-led implementation and clear roadmap milestones.",
+                    "after": "Suggested action: write a clear summary (~140-160 chars) aligned to user intent.",
                 })
             if rule_id == "missing_h1":
                 examples.append({
                     "type": "H1",
                     "before": "No H1",
-                    "after": "Execute Your Growth Plan With a 90-Day Roadmap",
+                    "after": "Suggested action: add one clear H1 that states the page's primary purpose.",
                 })
             if len(examples) >= 4:
                 break
