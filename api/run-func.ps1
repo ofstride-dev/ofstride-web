@@ -7,6 +7,9 @@ $ErrorActionPreference = "Stop"
 
 $scriptRoot = $PSScriptRoot
 $repoRoot = Resolve-Path (Join-Path $scriptRoot "..")
+# func start resolves the function app root from the current directory,
+# so always run from the api folder regardless of where the script is invoked.
+Set-Location $scriptRoot
 $runtimeFile = Join-Path $scriptRoot ".python_runtime"
 $apiVenvPython = Join-Path $scriptRoot ".venv\Scripts\python.exe"
 $repoVenvPython = Join-Path $repoRoot ".venv\Scripts\python.exe"
@@ -60,6 +63,11 @@ $env:PYTHONPATH = @(
 ) -join [System.IO.Path]::PathSeparator
 $env:FUNCTIONS_WORKER_RUNTIME = "python"
 $env:languageWorkers__python__defaultExecutablePath = $pythonPath
+
+# Pin everything to Python 3.12 and use the repo venv's worker/site-packages,
+# avoiding Core Tools' bundled (potentially broken/incompatible) worker for 3.14.
+$env:PY_PYTHON = "3.12"
+$env:PYTHON_ISOLATE_WORKER_DEPENDENCIES = "0"
 
 Write-Host "Starting Azure Functions with Python at: $pythonPath"
 func start --verbose --port $Port
