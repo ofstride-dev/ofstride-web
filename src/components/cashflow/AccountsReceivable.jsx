@@ -1,16 +1,99 @@
 import React, { useState, useEffect } from 'react';
 import { cashflowFetch, parseCashflowResponse } from '../../services/cashflowApi';
+import { exportRowsAsCsv } from '../../services/csvExport';
 
 export default function AccountsReceivable() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [approvingId, setApprovingId] = useState('');
   
   const [formData, setFormData] = useState({
     customer_name: '', customer_gstin: '', invoice_number: '', 
     invoice_date: new Date().toISOString().split('T')[0], 
-    amount: '', gst_amount: '', irn_number: '', is_proforma: false, notes: ''
+    amount: '', gst_amount: '', irn_number: '', is_proforma: false, notes: '', item_services: ['']
   });
+
+  const normalizeItemServices = (value) => {
+    if (Array.isArray(value)) return value.map((v) => String(v || '').trim()).filter(Boolean);
+    if (typeof value === 'string') return value.split('\n').map((v) => v.trim()).filter(Boolean);
+    return [];
+  };
+
+  const parseItemsFromNotes = (notes) => {
+    const text = String(notes || '');
+    const marker = 'Items/Services:';
+    const markerIndex = text.indexOf(marker);
+    if (markerIndex === -1) return [];
+    const block = text.slice(markerIndex + marker.length);
+    return block
+      .split('\n')
+      .map((line) => line.replace(/^[-•]\s*/, '').trim())
+      .filter(Boolean);
+  };
+
+  const getInvoiceItems = (invoice) => {
+    const direct = normalizeItemServices(invoice?.item_services);
+    if (direct.length) return direct;
+    return parseItemsFromNotes(invoice?.notes);
+  };
+
+  const downloadInvoice = (invoice) => {
+    const subtotal = Number(invoice?.amount || 0);
+    const gst = Number(invoice?.gst_amount || 0);
+    const total = subtotal + gst;
+    const items = getInvoiceItems(invoice);
+    const customer = invoice?.cashflow_entities?.name || 'N/A';
+
+    const html = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Invoice ${invoice?.invoice_number || ''}</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 24px; color: #0f172a; }
+      h1 { margin: 0 0 8px 0; }
+      .muted { color: #64748b; font-size: 12px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+      th, td { border: 1px solid #e2e8f0; padding: 8px; text-align: left; }
+      th { background: #f8fafc; }
+    </style>
+  </head>
+  <body>
+    <h1>Invoice ${invoice?.invoice_number || ''}</h1>
+    <div class="muted">Date: ${invoice?.invoice_date || ''}</div>
+    <div class="muted">Customer: ${customer}</div>
+    <div class="muted">Customer GSTIN: ${invoice?.cashflow_entities?.gstin || ''}</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Item / Service</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${(items.length ? items : ['General Service']).map((item) => `<tr><td>${item}</td></tr>`).join('')}
+      </tbody>
+    </table>
+
+    <table>
+      <tbody>
+        <tr><th>Subtotal (Before GST)</th><td>₹${subtotal.toFixed(2)}</td></tr>
+        <tr><th>GST</th><td>₹${gst.toFixed(2)}</td></tr>
+        <tr><th>Total</th><td><strong>₹${total.toFixed(2)}</strong></td></tr>
+      </tbody>
+    </table>
+  </body>
+</html>`;
+
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${invoice?.invoice_number || 'invoice'}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   useEffect(() => { fetchInvoices(); }, []);
 
@@ -47,7 +130,7 @@ export default function AccountsReceivable() {
         setFormData({ 
           customer_name: '', customer_gstin: '', invoice_number: '', 
           invoice_date: new Date().toISOString().split('T')[0], 
-          amount: '', gst_amount: '', irn_number: '', is_proforma: false, notes: '' 
+          amount: '', gst_amount: '', irn_number: '', is_proforma: false, notes: '', item_services: ['']
         });
       } else {
         throw new Error(parsed.error || `Server error ${parsed.status}`);
@@ -90,6 +173,69 @@ export default function AccountsReceivable() {
     }
   };
 
+  const handleApproveInvoice = async (invoiceId) => {
+    if (!invoiceId) return;
+    setApprovingId(invoiceId);
+    try {
+      const res = await cashflowFetch('/cashflow/ar/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invoice_id: invoiceId }),
+      });
+      const parsed = await parseCashflowResponse(res);
+      if (parsed.ok && parsed.data) {
+        setInvoices((prev) => prev.map((inv) => (inv.id === invoiceId ? parsed.data : inv)));
+      } else {
+        throw new Error(parsed.error || `Server error ${parsed.status}`);
+      }
+    } catch (err) {
+      console.error("Approve Failed:", err);
+      alert("Failed to approve invoice.");
+    } finally {
+      setApprovingId('');
+    }
+  };
+
+  const handleDownloadReport = () => {
+    const now = new Date().toISOString().slice(0, 10);
+    const rows = (invoices || []).map((inv) => {
+      const amount = Number(inv.amount || 0);
+      const gst = Number(inv.gst_amount || 0);
+      const total = amount + gst;
+      return {
+        customer: inv.cashflow_entities?.name || 'N/A',
+        customer_gstin: inv.cashflow_entities?.gstin || '',
+        invoice_number: inv.invoice_number || '',
+        invoice_date: inv.invoice_date || '',
+        due_date: inv.due_date || '',
+        amount: amount.toFixed(2),
+        gst_amount: gst.toFixed(2),
+        total_invoice_value: total.toFixed(2),
+        status: inv.status || '',
+        is_proforma: inv.is_proforma ? 'Yes' : 'No',
+        irn_number: inv.irn_number || '',
+      };
+    });
+
+    exportRowsAsCsv(
+      `ar_report_${now}.csv`,
+      [
+        { header: 'Customer', key: 'customer' },
+        { header: 'Customer GSTIN', key: 'customer_gstin' },
+        { header: 'Invoice Number', key: 'invoice_number' },
+        { header: 'Invoice Date', key: 'invoice_date' },
+        { header: 'Due Date', key: 'due_date' },
+        { header: 'Amount', key: 'amount' },
+        { header: 'GST Amount', key: 'gst_amount' },
+        { header: 'Total Invoice Value', key: 'total_invoice_value' },
+        { header: 'Status', key: 'status' },
+        { header: 'Is Proforma', key: 'is_proforma' },
+        { header: 'IRN Number', key: 'irn_number' },
+      ],
+      rows
+    );
+  };
+
   const totalOutstanding = invoices
     .filter(inv => inv.status !== 'paid' && !inv.is_proforma)
     .reduce((acc, curr) => acc + (parseFloat(curr.amount || 0) + parseFloat(curr.gst_amount || 0)), 0);
@@ -124,9 +270,26 @@ export default function AccountsReceivable() {
       
       <div style={styles.headerRow}>
         <h2 style={styles.title}>Accounts Receivable</h2>
-        <div style={styles.metricCard}>
-          <p style={styles.metricText}>Total Outstanding</p>
-          <p style={styles.metricValue}>₹{totalOutstanding.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <button
+            type="button"
+            onClick={handleDownloadReport}
+            style={{
+              border: '1px solid #bfdbfe',
+              background: '#eff6ff',
+              color: '#1d4ed8',
+              fontWeight: 700,
+              borderRadius: 10,
+              padding: '9px 14px',
+              cursor: 'pointer',
+            }}
+          >
+            Download Report
+          </button>
+          <div style={styles.metricCard}>
+            <p style={styles.metricText}>Total Outstanding</p>
+            <p style={styles.metricValue}>₹{totalOutstanding.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+          </div>
         </div>
       </div>
 
@@ -156,6 +319,45 @@ export default function AccountsReceivable() {
           <div>
             <label style={styles.label}>IRN Number</label>
             <input type="text" name="irn_number" value={formData.irn_number} onChange={handleInputChange} placeholder="Optional" style={styles.input} />
+          </div>
+          <div style={{ gridColumn: '1 / -1' }}>
+            <label style={styles.label}>Item / Service</label>
+            <div style={{ display: 'grid', gap: '0.5rem' }}>
+              {formData.item_services.map((item, index) => (
+                <div key={`item-${index}`} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <input
+                    type="text"
+                    value={item}
+                    onChange={(e) => {
+                      const nextItems = [...formData.item_services];
+                      nextItems[index] = e.target.value;
+                      setFormData({ ...formData, item_services: nextItems });
+                    }}
+                    placeholder={`Item/Service ${index + 1}`}
+                    style={styles.input}
+                  />
+                  {formData.item_services.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const nextItems = formData.item_services.filter((_, idx) => idx !== index);
+                        setFormData({ ...formData, item_services: nextItems.length ? nextItems : [''] });
+                      }}
+                      style={{ ...styles.actionBtn, border: '1px solid #fecaca', color: '#b91c1c' }}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, item_services: [...formData.item_services, ''] })}
+              style={{ ...styles.actionBtn, marginTop: '0.6rem' }}
+            >
+              Add Another Item
+            </button>
           </div>
           <div style={styles.checkboxLabel}>
             <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
@@ -205,11 +407,31 @@ export default function AccountsReceivable() {
                     </span>
                   </td>
                   <td style={styles.td}>
+                    {inv.status === 'pending' && !inv.is_proforma && (
+                      <button
+                        onClick={() => handleApproveInvoice(inv.id)}
+                        disabled={approvingId === inv.id}
+                        style={{
+                          ...styles.actionBtn,
+                          marginRight: '0.5rem',
+                          color: '#ffffff',
+                          border: '1px solid #2563eb',
+                          backgroundColor: approvingId === inv.id ? '#94a3b8' : '#2563eb',
+                          cursor: approvingId === inv.id ? 'not-allowed' : 'pointer',
+                        }}
+                      >
+                        {approvingId === inv.id ? 'Approving...' : 'Approve'}
+                      </button>
+                    )}
+
                     {inv.status !== 'paid' && !inv.is_proforma && (
                       <button onClick={() => handleRecordPayment(inv)} style={styles.actionBtn}>
                         Collect
                       </button>
                     )}
+                    <button onClick={() => downloadInvoice(inv)} style={{ ...styles.actionBtn, marginLeft: '0.5rem' }}>
+                      Download
+                    </button>
                   </td>
                 </tr>
               );

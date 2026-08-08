@@ -28,6 +28,9 @@ on:
       - 'api/cashflow_dashboard/**'
       - 'api/cashflow_payments/**'
       - 'api/cashflow_pettycash/**'
+      - 'api/export_legacy_ledger/**'
+      - 'api/export_gstr/**'
+      - 'api/reconcile_bank_statement/**'
       - 'api/shared/**'
       - 'api/requirements.txt'
       - 'api/host.json'
@@ -73,6 +76,9 @@ jobs:
           cp -r api/cashflow_dashboard __staged_careers/
           cp -r api/cashflow_payments __staged_careers/
           cp -r api/cashflow_pettycash __staged_careers/
+          cp -r api/export_legacy_ledger __staged_careers/
+          cp -r api/export_gstr __staged_careers/
+          cp -r api/reconcile_bank_statement __staged_careers/
 
           cp -r api/shared __staged_careers/
           cp -r api/data __staged_careers/
@@ -122,7 +128,7 @@ jobs:
             --python-version 3.12 \
             --only-binary=:all: \
             --target "__staged_careers/.python_packages/lib/site-packages" \
-            azure-storage-queue azure-storage-blob azure-identity supabase
+            azure-storage-queue azure-storage-blob azure-identity azure-core azure-ai-formrecognizer supabase
           # Prune non-runtime and host-specific files that inflate ZIP size and can
           # break Kudu OneDeploy package extraction.
           find __staged_careers/.python_packages/lib/site-packages -maxdepth 1 -type d \( -name "tests" -o -name "test" -o -name "__pycache__" \) -prune -exec rm -rf {} + || true
@@ -150,7 +156,7 @@ jobs:
           sys.path.insert(0, str(site))
 
           missing = []
-          for mod in ("azure.storage.queue", "azure.storage.blob", "azure.identity", "supabase"):
+          for mod in ("azure.storage.queue", "azure.storage.blob", "azure.identity", "azure.core", "azure.ai.formrecognizer", "supabase", "pandas", "openpyxl"):
             try:
               __import__(mod)
             except Exception:

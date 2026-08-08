@@ -1,7 +1,12 @@
 import logging
 import os
 
-from azure.communication.email import EmailClient
+try:
+    from azure.communication.email import EmailClient
+    _EMAIL_IMPORT_ERROR = None
+except Exception as exc:
+    EmailClient = None
+    _EMAIL_IMPORT_ERROR = exc
 
 
 _logger = logging.getLogger("ofstride.communications")
@@ -23,6 +28,10 @@ def _normalize_recipient(address: str | None) -> str | None:
     return value or None
 
 def get_email_client():
+    if EmailClient is None:
+        _logger.warning("Azure Communication Email SDK unavailable: %s", _EMAIL_IMPORT_ERROR)
+        return None
+
     connection_string = os.environ.get("COM_SERVICE_CON_STRING")
     if not connection_string:
         return None

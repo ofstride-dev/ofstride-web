@@ -383,7 +383,7 @@ function Layout() {
                   className={`flex items-center gap-1 text-text hover:text-secondary transition-colors font-medium ${desktopNavPad} py-1 rounded-lg hover:bg-surface`}
                 >
                   <FileText className="w-4 h-4" />
-                  Solutions
+                  Business Solutions
                   <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isCareersOpen ? 'rotate-180' : ''}`} />
                 </button>
 
@@ -408,7 +408,7 @@ function Layout() {
                         >
                           <span className="flex items-center gap-2">
                             <Users className="w-4 h-4" />
-                            Careers
+                            Hiring Services
                           </span>
                           <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isSolutionCareersOpen ? '-rotate-90' : ''}`} />
                         </button>
@@ -446,7 +446,7 @@ function Layout() {
                         }}
                       >
                         <Receipt className="w-4 h-4" />
-                        Cashflow Management
+                        Managing Cashflow
                       </Link>
                       <Link
                         to="/business-growth"
@@ -466,7 +466,7 @@ function Layout() {
               </div>
               <NavLink to="/about" className={navLinkClass}>
                 <Info className="w-4 h-4" />
-                About
+                Why Ofstride
               </NavLink>
               <NavLink to="/contact" className={navLinkClass}>
                 <Mail className="w-4 h-4" />
@@ -481,7 +481,7 @@ function Layout() {
                 className="hidden sm:inline-flex btn-primary bg-primary text-white px-5 py-2.5 rounded-lg font-medium text-sm"
               >
                 <Calendar className="w-4 h-4 mr-1.5" />
-                Book a Call
+                Book a Free Call
               </Link>
 
               <button 
@@ -564,7 +564,7 @@ function Layout() {
                   aria-label="Toggle solutions in mobile menu"
                   className="flex min-h-[44px] items-center gap-2 px-2 py-2 text-text hover:text-secondary transition-colors font-medium w-full cursor-pointer"
                 >
-                  <FileText className="w-5 h-5" /> Solutions
+                  <FileText className="w-5 h-5" /> Business Solutions
                   <ChevronDown className={`w-4 h-4 ml-auto transition-transform duration-200 ${isCareersOpen ? 'rotate-180' : ''}`} />
                 </button>
 
@@ -576,7 +576,7 @@ function Layout() {
                       className="flex items-center w-full min-h-[44px] py-3 px-4 text-base font-semibold text-primary cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
                     >
                       <Users className="w-4 h-4 mr-2" />
-                      Careers
+                      Hiring Services
                       <ChevronDown className={`w-4 h-4 ml-auto transition-transform duration-200 ${isSolutionCareersOpen ? 'rotate-180' : ''}`} />
                     </button>
 
@@ -602,7 +602,7 @@ function Layout() {
                       onClick={(e) => handleMobileNav(e, '/cashflow')}
                     >
                       <Receipt className="w-4 h-4" />
-                      Cashflow Management
+                      Managing Cashflow
                     </a>
                     <a
                       href="/business-growth"
@@ -620,7 +620,7 @@ function Layout() {
                 onClick={closeAllMenus}
                 className={({ isActive }) => `flex items-center gap-2 py-3 px-3 rounded-lg transition-colors font-medium ${isActive ? 'text-secondary bg-surface' : 'text-text hover:text-secondary hover:bg-surface'}`}
               >
-                <Info className="w-5 h-5" /> About
+                <Info className="w-5 h-5" /> Why Ofstride
               </NavLink>
               <NavLink
                 to="/contact"

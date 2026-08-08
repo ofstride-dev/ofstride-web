@@ -65,3 +65,10 @@ AzuriteConfig
 __azurite_db_*__.json
 __blobstorage__/
 __queuestorage__/
+
+# Azure Functions local dependencies and accidental nested workspace artifacts
+api/.python_packages/
+api/api/
+
+# Local settings for comms API
+comms-api/local.settings.json

@@ -277,7 +277,7 @@ function Careers() {
         }
       }
 
-      const completeResponse = await completeCareersUpload(initResponse.application_id, resumeContentBase64);
+      const completeResponse = await completeCareersUpload(initResponse.application_id);
       setReferenceId(completeResponse.reference_id || initResponse.reference_id);
       setSubmitted(true);
     } catch (error) {
@@ -287,7 +287,8 @@ function Careers() {
       } else if (error instanceof ApiClientError) {
         setSubmitError(error.message || "Submission failed. Please try again.");
       } else {
-        setSubmitError("Submission failed. Please try again.");
+        const fallbackMessage = error instanceof Error ? error.message : "Submission failed. Please try again.";
+        setSubmitError(fallbackMessage || "Submission failed. Please try again.");
       }
     } finally {
       setSubmitting(false);
@@ -322,18 +323,39 @@ function Careers() {
             We are a recruitment solutions provider. Explore live opportunities and submit your candidate profile through a secure, structured application workflow.
           </p>
 
-          <div className="mt-6 grid sm:grid-cols-3 gap-3 text-sm text-primary">
-            <div className="group relative overflow-hidden rounded-xl border border-blue-400/70 bg-gradient-to-br from-sky-700 via-blue-700 to-indigo-700 px-4 py-3 text-white shadow-[inset_0_1px_0_rgba(191,219,254,0.45),0_10px_18px_rgba(37,99,235,0.35)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(191,219,254,0.6),0_14px_24px_rgba(37,99,235,0.42)]">
-              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.24),rgba(255,255,255,0.05)_40%,rgba(56,189,248,0.28))]" />
-              <span className="relative inline-flex items-center"><ShieldCheck className="w-4 h-4 mr-2 text-sky-100" />Secure Smart Upload</span>
+          <div className="mt-7 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-xl border border-slate-200 bg-white px-4 py-4">
+              <div className="flex items-start gap-3">
+                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
+                  <UploadCloud className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-primary">Secure Smart Upload</p>
+                  <p className="mt-1 text-xs text-slate-600">Resume file is uploaded safely and prepared for parsing.</p>
+                </div>
+              </div>
             </div>
-            <div className="group relative overflow-hidden rounded-xl border border-blue-400/70 bg-gradient-to-br from-sky-700 via-blue-700 to-indigo-700 px-4 py-3 text-white shadow-[inset_0_1px_0_rgba(191,219,254,0.45),0_10px_18px_rgba(37,99,235,0.35)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(191,219,254,0.6),0_14px_24px_rgba(37,99,235,0.42)]">
-              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.24),rgba(255,255,255,0.05)_40%,rgba(29,78,216,0.32))]" />
-              <span className="relative inline-flex items-center"><Users className="w-4 h-4 mr-2 text-sky-100" />Dual AI-assisted match engine</span>
+            <div className="rounded-xl border border-slate-200 bg-white px-4 py-4">
+              <div className="flex items-start gap-3">
+                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-700">
+                  <Users className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-primary">Dual AI-assisted Match Engine</p>
+                  <p className="mt-1 text-xs text-slate-600">Candidate profile and job signals are compared in parallel.</p>
+                </div>
+              </div>
             </div>
-            <div className="group relative overflow-hidden rounded-xl border border-blue-400/70 bg-gradient-to-br from-sky-700 via-blue-700 to-indigo-700 px-4 py-3 text-white shadow-[inset_0_1px_0_rgba(191,219,254,0.45),0_10px_18px_rgba(37,99,235,0.35)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[inset_0_1px_0_rgba(191,219,254,0.6),0_14px_24px_rgba(37,99,235,0.42)]">
-              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(199,210,254,0.3),rgba(255,255,255,0.05)_45%,rgba(14,116,144,0.28))]" />
-              <span className="relative inline-flex items-center"><FileText className="w-4 h-4 mr-2 text-sky-100" />Human-Verified Alerts</span>
+            <div className="rounded-xl border border-slate-200 bg-white px-4 py-4">
+              <div className="flex items-start gap-3">
+                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-50 text-violet-700">
+                  <ShieldCheck className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-primary">Human-Verified Alerts</p>
+                  <p className="mt-1 text-xs text-slate-600">Review checkpoints ensure the final recommendation is validated.</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>

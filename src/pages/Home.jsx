@@ -16,6 +16,7 @@ import {
   Cpu,
   Target,
   Globe,
+  Sparkles,
   Phone,
   Mail,
   Calendar,
@@ -234,7 +235,43 @@ function Home() {
                 Ofstride runs the back office of India's micro, small and medium enterprises: GST and tax filings, Udyam and bank credit, payroll and labour compliance, contracts and recovery — one senior team, standard and transparent pricing.
               </p>
 
-              <div className="rounded-2xl border border-slate-200 bg-white/90 backdrop-blur-sm p-2.5 sm:p-3 w-full sm:w-auto max-w-full shadow-sm">
+              <div className="mb-5 sm:mb-6 w-full max-w-2xl">
+                <div className="release-panel-shell">
+                  <p className="release-topline">
+                    Explore OfstrideServices Business Solutions
+                    <Sparkles className="inline-block w-4 h-4 ml-2 text-secondary align-[-2px]" aria-hidden="true" />
+                  </p>
+                  <div className="release-solution-grid" aria-label="Live release solutions">
+                    <article className="release-solution-card">
+                      <h3 className="release-solution-title">Cash flow &amp; working capital</h3>
+                      <ul className="release-solution-points">
+                        <li><span className="point-dot point-green" aria-hidden="true"></span>Spot delayed payments from buyers &amp; vendors</li>
+                        <li><span className="point-dot point-blue" aria-hidden="true"></span>Flag GST mismatch risks before filing</li>
+                        <li><span className="point-dot point-red" aria-hidden="true"></span>90-day liquidity forecast &amp; early warnings</li>
+                      </ul>
+                      <Link to="/cashflow" className="release-link-pill">
+                        Run free cash flow check
+                        <span className="release-arrow" aria-hidden="true">→</span>
+                      </Link>
+                    </article>
+
+                    <article className="release-solution-card">
+                      <h3 className="release-solution-title">Pan-India hiring solution</h3>
+                      <ul className="release-solution-points">
+                        <li><span className="point-dot point-green" aria-hidden="true"></span>AI-generated job descriptions</li>
+                        <li><span className="point-dot point-blue" aria-hidden="true"></span>Pan-India candidate reach</li>
+                        <li><span className="point-dot point-red" aria-hidden="true"></span>ATS score booster for applicants</li>
+                      </ul>
+                      <Link to="/careers/jobs" className="release-link-pill">
+                        Try hiring engine
+                        <span className="release-arrow" aria-hidden="true">→</span>
+                      </Link>
+                    </article>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-2 sm:mt-3 rounded-2xl border border-slate-200 bg-white/90 backdrop-blur-sm p-2.5 sm:p-3 w-full sm:w-auto max-w-full shadow-sm">
                 <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-stretch sm:items-center">
                   <Link
                     to="/book-call"
