@@ -2,7 +2,7 @@ import { Outlet, Link, NavLink, useLocation, useNavigate } from 'react-router-do
 import { useState, useEffect, useRef } from 'react'
 import { 
   Menu, X, ChevronDown, Phone, Mail, MapPin, Calendar, Home, 
-  Briefcase, Users, Info, MessageCircle, FileText, Bot, Receipt, BarChart3,
+  Briefcase, Users, Info, MessageCircle, FileText, Bot, Receipt,
   Landmark, Gavel, Search, FileCheck, Globe, Monitor, Cpu, Target, ShieldCheck
 } from 'lucide-react'
 import { ChatWidget } from './chat/ChatWidget'
@@ -448,18 +448,6 @@ function Layout() {
                         <Receipt className="w-4 h-4" />
                         Managing Cashflow
                       </Link>
-                      <Link
-                        to="/business-growth"
-                        role="menuitem"
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-text hover:bg-surface hover:text-secondary rounded-lg transition-colors"
-                        onClick={() => {
-                          setIsCareersOpen(false)
-                          setIsSolutionCareersOpen(false)
-                        }}
-                      >
-                        <BarChart3 className="w-4 h-4" />
-                        Growth Execution Planner
-                      </Link>
                     </div>
                   </div>
                 )}
@@ -603,14 +591,6 @@ function Layout() {
                     >
                       <Receipt className="w-4 h-4" />
                       Managing Cashflow
-                    </a>
-                    <a
-                      href="/business-growth"
-                      className="flex items-center gap-2 w-full min-h-[44px] py-3 px-4 text-base font-medium text-text cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
-                      onClick={(e) => handleMobileNav(e, '/business-growth')}
-                    >
-                      <BarChart3 className="w-4 h-4" />
-                      Growth Execution Planner
                     </a>
                   </div>
                 )}
