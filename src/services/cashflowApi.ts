@@ -18,6 +18,7 @@ function getOrCreateCashflowLocalId(): string {
 
 export const CASHFLOW_API_BASE =
   (import.meta.env.VITE_CASHFLOW_API_URL as string | undefined)
+  || (import.meta.env.DEV ? "/api" : undefined)
   || (import.meta.env.VITE_CAREER_API_URL as string | undefined)
   || DEFAULT_FUNC_API_BASE;
 
@@ -65,13 +66,16 @@ export async function cashflowFetch(
   path: string,
   init: RequestInit = {}
 ): Promise<Response> {
+  const normalizedBase = CASHFLOW_API_BASE.replace(/\/+$/, "");
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+
   const baseHeaders = await cashflowIdentityHeaders();
   const mergedHeaders: HeadersInit = {
     ...(baseHeaders as Record<string, string>),
     ...((init.headers || {}) as Record<string, string>),
   };
 
-  return fetch(`${CASHFLOW_API_BASE}${path}`, {
+  return fetch(`${normalizedBase}${normalizedPath}`, {
     ...init,
     headers: mergedHeaders,
   });
