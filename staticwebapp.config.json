@@ -13,15 +13,10 @@
         "Access-Control-Allow-Headers": "Content-Type, Authorization, x-admin-key, x-ms-blob-type, x-user-id, x-cashflow-user-id, x-app-role",
         "Access-Control-Expose-Headers": "x-ms-request-id"
       }
-    },
-    {
-      "route": "/*",
-      "serve": "/index.html",
-      "statusCode": 200
     }
   ],
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/api/*", "/assets/*", "/.auth/*"]
+    "exclude": ["/api/*", "/assets/*", "/.auth/*", "/robots.txt", "/sitemap.xml", "/*.png", "/*.svg"]
   }
 }

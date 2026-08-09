@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /cashflow/
+Disallow: /expenses/
+
+Sitemap: https://ofstrideservices.com/sitemap.xml

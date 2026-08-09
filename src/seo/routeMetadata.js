@@ -18,7 +18,7 @@ const routes = {
   '/careers/upload': { title: `Upload Resume or JD | ${SITE_NAME}`, description: 'Share your resume or job description with the Ofstride careers team.' },
   '/careers/veteran-transition': { title: `Veteran Connect | ${SITE_NAME}`, description: 'Connect with Ofstride for veteran transition and career support.' },
   '/employer': { title: `Employer Careers | ${SITE_NAME}`, description: 'Connect with Ofstride for recruitment and workforce solutions.' },
-  '/career-connect': { title: `Veteran Connect | ${SITE_NAME}`, description: 'Connect with Ofstride for veteran transition and career support.' },
+  '/career-connect': { title: `Career Connect | ${SITE_NAME}`, description: 'Connect with Ofstride for veteran transition, career planning and support.' },
 }
 
 const serviceMetadata = {
