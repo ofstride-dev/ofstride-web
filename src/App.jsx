@@ -33,51 +33,35 @@ import MyExpenses from './pages/expenses/MyExpenses.jsx'
 import SubmitExpense from './pages/expenses/SubmitExpense.jsx'
 import ExpenseDetail from './pages/expenses/ExpenseDetail.jsx'
 import AdminExpenseQueue from './pages/expenses/AdminExpenseQueue.jsx'
+import { getMetaTags } from './seo/routeMetadata.js'
 
 function App() {
   const location = useLocation()
 
   useEffect(() => {
-    const routeTitleMap = {
-      '/': 'Ofstride Services LLP — AI-Powered Business Consulting',
-      '/services': 'Services | Ofstride Services LLP',
-      '/about': 'About | Ofstride Services LLP',
-      '/industries': 'Industries | Ofstride Services LLP',
-      '/contact': 'Contact | Ofstride Services LLP',
-      '/book-call': 'Book a Free Call | Ofstride Services LLP',
-      '/contact-form': 'Contact Form | Ofstride Services LLP',
-      '/privacy-policy': 'Privacy Policy | Ofstride Services LLP',
-      '/careers': 'Careers | Ofstride Services LLP',
-      '/careers/jobs': 'Jobseeker Careers | Ofstride Services LLP',
-      '/careers/upload': 'Upload Resume or JD | Ofstride Services LLP',
-      '/careers/veteran-transition': 'Veteran Connect | Ofstride Services LLP',
-      '/employer': 'Employer Careers | Ofstride Services LLP',
-      '/admin/careers': 'Admin Careers | Ofstride Services LLP',
-      '/career-connect': 'Veteran Connect | Ofstride Services LLP',
-      '/expenses/login': 'Sign In | Expense Portal',
-      '/expenses': 'My Expenses | Expense Portal',
-      '/expenses/new': 'Submit Claim | Expense Portal',
-      '/expenses/admin': 'Admin Queue | Expense Portal',
-      '/cashflow': 'Cash Flow Suite | Ofstride Services LLP',
-      '/cashflow/dashboard': 'Dashboard | Cash Flow Suite',
-      '/cashflow/ap': 'Accounts Payable | Cash Flow Suite',
-      '/cashflow/ar': 'Accounts Receivable | Cash Flow Suite',
-      '/cashflow/pettycash': 'Petty Cash | Cash Flow Suite',
-      '/cashflow/reconcile': 'Bank Statement Reconcile | Cash Flow Suite',
-      '/cashflow/expense': 'Expense Portal | Cash Flow Suite',
+    const metadata = getMetaTags(location.pathname)
+    document.title = metadata.title
+    const setMeta = (selector, attribute, content) => {
+      let element = document.head.querySelector(selector)
+      if (!element) { element = document.createElement('meta'); element.setAttribute(attribute, content); document.head.appendChild(element) }
+      element.setAttribute('content', content)
     }
-
-    if (location.pathname.startsWith('/services/')) {
-      document.title = 'Service Details | Ofstride Services LLP'
-      return
-    }
-
-    if (location.pathname.startsWith('/cashflow')) {
-      document.title = routeTitleMap[location.pathname] || 'Cash Flow Suite | Ofstride Services LLP'
-      return
-    }
-
-    document.title = routeTitleMap[location.pathname] || 'Ofstride Services LLP'
+    setMeta('meta[name="description"]', 'name', metadata.description)
+    setMeta('meta[property="og:type"]', 'property', 'website')
+    setMeta('meta[property="og:site_name"]', 'property', 'Ofstride Services LLP')
+    setMeta('meta[property="og:title"]', 'property', metadata.title)
+    setMeta('meta[property="og:description"]', 'property', metadata.description)
+    setMeta('meta[property="og:url"]', 'property', metadata.url)
+    setMeta('meta[property="og:image"]', 'property', metadata.image)
+    setMeta('meta[property="og:image:width"]', 'property', '1200')
+    setMeta('meta[property="og:image:height"]', 'property', '630')
+    setMeta('meta[name="twitter:card"]', 'name', 'summary_large_image')
+    setMeta('meta[name="twitter:title"]', 'name', metadata.title)
+    setMeta('meta[name="twitter:description"]', 'name', metadata.description)
+    setMeta('meta[name="twitter:image"]', 'name', metadata.image)
+    let canonical = document.head.querySelector('link[rel="canonical"]')
+    if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical) }
+    canonical.href = metadata.url
   }, [location.pathname])
 
   return (
