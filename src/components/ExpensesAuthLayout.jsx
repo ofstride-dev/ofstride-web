@@ -1,7 +1,13 @@
-import { Outlet } from "react-router-dom";
-import { ExpenseAuthProvider } from "../context/ExpenseAuthContext";
+import { Outlet, useLocation } from "react-router-dom";
 
 function ExpensesAuthLayout() {
+  const location = useLocation();
+  const isCashflowEntry = location.pathname === "/cashflow/login";
+
+  if (isCashflowEntry) {
+    return <Outlet />;
+  }
+
   const styles = {
     container: {
       width: "100%",
@@ -55,19 +61,16 @@ function ExpensesAuthLayout() {
   };
 
   return (
-    <ExpenseAuthProvider>
-      <div style={styles.container}>
-        <div style={styles.headerRow}>
-          <div>
-            <h2 style={styles.title}>Expense Portal</h2>
-            <p style={styles.subtitle}>Claims, approvals, and reimbursements</p>
-          </div>
-          
+    <div style={styles.container}>
+      <div style={styles.headerRow}>
+        <div>
+          <h2 style={styles.title}>Expense Portal</h2>
+          <p style={styles.subtitle}>Claims, approvals, and reimbursements</p>
         </div>
-
-        <Outlet />
       </div>
-    </ExpenseAuthProvider>
+
+      <Outlet />
+    </div>
   );
 }
 

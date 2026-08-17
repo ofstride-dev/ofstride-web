@@ -433,6 +433,10 @@ class CareersSupabaseStore:
             "careers_application_analysis(analysis_status,match_score),"
             "careers_jobs!left(title)"
         )
+        fallback_select_fields = (
+            "id,reference_id,job_id,full_name,email,resume_original_name,"
+            "submission_status,created_at,submitted_at"
+        )
         params: dict[str, str] = {
             "select": select_fields,
             "order": "created_at.desc",
@@ -444,7 +448,16 @@ class CareersSupabaseStore:
         if (job_id or "").strip():
             params["job_id"] = f"eq.{str(job_id).strip()}"
 
-        result = self._request("GET", "careers_applications", params=params)
+        try:
+            result = self._request("GET", "careers_applications", params=params)
+        except Exception as exc:
+            fallback_params = dict(params)
+            fallback_params["select"] = fallback_select_fields
+            _logger.warning(
+                "list_applications falling back to base fields because embedded relationship lookup failed: %s",
+                exc,
+            )
+            result = self._request("GET", "careers_applications", params=fallback_params)
         if not isinstance(result, list):
             return []
 

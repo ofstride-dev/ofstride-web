@@ -93,11 +93,11 @@ function SubmitExpense() {
       return;
     }
 
-    // company_id is NOT NULL in the DB. If the profile hasn't loaded (e.g. the
-    // profiles query failed), fall back to the shared default company so the
-    // insert doesn't blow up with "null value in column company_id".
-    const DEFAULT_COMPANY_ID = "00000000-0000-0000-0000-000000000001";
-    const companyId = profile?.company_id || DEFAULT_COMPANY_ID;
+    const companyId = profile?.company_id;
+    if (!companyId) {
+      alert("Complete workspace onboarding before submitting expenses.");
+      return;
+    }
 
     try {
       setSubmitting(true);

@@ -3,11 +3,15 @@
 // NOTE: Business logic is unchanged from your original file.
 // Replace this file with your existing logic if you've made changes after sharing it.
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { cashflowFetch, parseCashflowResponse } from '../../services/cashflowApi';
 import { exportRowsAsCsv } from '../../services/csvExport';
+import { useExpenseAuth } from '../../context/ExpenseAuthContext';
 
 export default function AccountsPayable() {
+  const { isAdmin, session, profile } = useExpenseAuth();
+  const authIdentityKey = `${session?.user?.id || ''}:${profile?.company_id || ''}`;
+  const activeIdentityKeyRef = useRef(authIdentityKey);
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [ocrLoading, setOcrLoading] = useState(false);
@@ -25,15 +29,40 @@ export default function AccountsPayable() {
     tds_section: 'NONE'
   });
 
-  useEffect(() => { fetchInvoices(); }, []);
+  useEffect(() => {
+    let isCurrent = true;
+    activeIdentityKeyRef.current = authIdentityKey;
+    setInvoices([]);
+    setLoading(true);
 
-  const fetchInvoices = async () => {
+    fetchInvoices(() => isCurrent);
+
+    return () => {
+      isCurrent = false;
+      if (activeIdentityKeyRef.current === authIdentityKey) {
+        activeIdentityKeyRef.current = '';
+      }
+    };
+  }, [authIdentityKey]);
+
+  const fetchInvoices = async (isRequestCurrent = () => true) => {
     try {
       const res = await cashflowFetch('/cashflow/ap/list');
       const parsed = await parseCashflowResponse(res);
-      if (parsed.ok) setInvoices(parsed.data || []);
-      else console.error('AP list failed:', parsed.error);
-    } finally { setLoading(false); }
+      if (!isRequestCurrent()) return;
+      if (parsed.ok) {
+        setInvoices(parsed.data || []);
+      } else {
+        // For first-time setup or transient API issues, show an empty list.
+        setInvoices([]);
+        console.warn('AP list failed:', parsed.error);
+      }
+    } catch (err) {
+      if (isRequestCurrent()) setInvoices([]);
+      console.warn('AP list error:', err);
+    } finally {
+      if (isRequestCurrent()) setLoading(false);
+    }
   };
 
   const handleFileUpload = async (e) => {
@@ -71,6 +100,7 @@ export default function AccountsPayable() {
     setOcrLoading(true);
     setOcrStatus({ type: '', message: '' });
     setOcrDebugDetail('');
+    const requestIdentityKey = authIdentityKey;
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = async () => {
@@ -81,6 +111,7 @@ export default function AccountsPayable() {
           body:JSON.stringify({file:reader.result})
         });
         const parsed = await parseCashflowResponse(res);
+        if (activeIdentityKeyRef.current !== requestIdentityKey) return;
         if(parsed.ok) {
           const payload = parsed.data || {};
           const scanStatus = String(payload._scan_status || '').toLowerCase();
@@ -115,7 +146,9 @@ export default function AccountsPayable() {
           setOcrStatus({ type: 'error', message: parsed.error || 'Scan failed. Please retry.' });
           setOcrDebugDetail('');
         }
-      } finally { setOcrLoading(false); }
+      } finally {
+        if (activeIdentityKeyRef.current === requestIdentityKey) setOcrLoading(false);
+      }
     };
   };
 
@@ -139,6 +172,7 @@ export default function AccountsPayable() {
 
   const handleApproveBill = async (billId) => {
     if (!billId) return;
+    const requestIdentityKey = authIdentityKey;
     setApprovingId(billId);
     try {
       const res = await cashflowFetch('/cashflow/ap/approve', {
@@ -147,32 +181,40 @@ export default function AccountsPayable() {
         body: JSON.stringify({ bill_id: billId }),
       });
       const parsed = await parseCashflowResponse(res);
+      if (activeIdentityKeyRef.current !== requestIdentityKey) return;
       if (parsed.ok && parsed.data) {
         setInvoices((prev) => prev.map((bill) => (bill.id === billId ? parsed.data : bill)));
       } else {
         console.error('AP approve failed:', parsed.error);
       }
     } finally {
-      setApprovingId('');
+      if (activeIdentityKeyRef.current === requestIdentityKey) setApprovingId('');
     }
   };
 
   const handleSaveInvoice=async(e)=>{
     e.preventDefault();
-    const res=await cashflowFetch('/cashflow/ap/save',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        ...formData,
-        amount: formData.total_amount,
-      })
-    });
-    const parsed = await parseCashflowResponse(res);
-    if(parsed.ok){
-      setInvoices([parsed.data,...invoices]);
-      setFormData({vendor_name:'',bill_number:'',bill_date:'',amount_before_gst:'',gst_amount:'',total_amount:'',tds_section:'NONE'});
-    } else {
-      console.error('AP save failed:', parsed.error);
+    const requestIdentityKey = authIdentityKey;
+    try {
+      const res=await cashflowFetch('/cashflow/ap/save',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          ...formData,
+          amount: formData.total_amount,
+        })
+      });
+      const parsed = await parseCashflowResponse(res);
+      if (activeIdentityKeyRef.current !== requestIdentityKey) return;
+      if(parsed.ok){
+        setInvoices((previousInvoices) => [parsed.data, ...previousInvoices]);
+        setFormData({vendor_name:'',bill_number:'',bill_date:'',amount_before_gst:'',gst_amount:'',total_amount:'',tds_section:'NONE'});
+      } else {
+        const msg = String(parsed.error || 'Unable to save bill.');
+        console.error('AP save failed:', msg);
+      }
+    } catch (error) {
+      console.error('AP save failed:', error instanceof Error ? error.message : 'Unable to save bill.');
     }
   };
 
@@ -330,7 +372,7 @@ export default function AccountsPayable() {
                 <td style={{padding:20,color:'#059669',fontWeight:700}}>₹{net.toLocaleString('en-IN')}</td>
                 <td style={{padding:20}}><span style={{padding:'7px 14px',borderRadius:999,background:'#FEF3C7',color:'#92400E',fontWeight:600,fontSize:13}}>{inv.status}</span></td>
                 <td style={{padding:20}}>
-                  {pending ? (
+                  {pending && isAdmin ? (
                     <button
                       type="button"
                       onClick={() => handleApproveBill(inv.id)}

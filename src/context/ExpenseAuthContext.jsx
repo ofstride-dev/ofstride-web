@@ -1,45 +1,81 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { supabase, signInWithEmail, signOut as supabaseSignOut } from "../services/supabase";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  acceptCompanyInvite,
+  bootstrapCompanyOwner,
+  createCompanyInvite,
+  getDemoCredentials,
+  getMyCashflowProfile,
+  listCompanyInvites,
+} from "../services/cashflowTenantApi";
+import {
+  signInWithEmail,
+  signInWithGoogle,
+  signInWithOtp,
+  signOut as supabaseSignOut,
+  supabase,
+} from "../services/supabase";
 
 const ExpenseAuthContext = createContext(undefined);
+const CASHFLOW_PROFILE_CACHE_KEY = "ofstride_cashflow_profile";
+
+function cacheProfile(profile) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  if (!profile) {
+    window.localStorage.removeItem(CASHFLOW_PROFILE_CACHE_KEY);
+    return;
+  }
+
+  window.localStorage.setItem(CASHFLOW_PROFILE_CACHE_KEY, JSON.stringify(profile));
+}
 
 async function fetchProfile(userId) {
   if (!userId) {
     return null;
   }
   
-  // 1. Use .maybeSingle() to safely check for a profile without throwing a 406 error
-  let { data, error } = await supabase
-    .from("profiles")
-    .select("id, full_name, role, company_id, created_at")
-    .eq("id", userId)
-    .maybeSingle();
+  let data = null;
+  let error = null;
+
+  try {
+    data = await getMyCashflowProfile();
+  } catch (rpcError) {
+    error = rpcError;
+  }
 
   if (error) {
-    // If a real database error occurs (e.g. RLS recursion / 500), surface it
     return { error };
   }
 
-  // 2. SELF-HEALING FALLBACK: If the profile row is missing (data is null),
-  // automatically create a default row so older accounts don't break the UI!
   if (!data) {
-    console.warn("Profile row missing for user. Self-healing by creating a default profile...");
-    
+    // Get the user's email from the session if available
+    let userEmail = null;
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      userEmail = sessionData?.session?.user?.email || sessionData?.session?.user?.user_metadata?.email || null;
+    } catch {
+      userEmail = null;
+    }
+
     const defaultProfile = {
       id: userId,
-      full_name: "Team Member", // Default fallback name
-      role: "employee",        // Default fallback role
+      full_name: "Team Member",
+      role: "employee",
+      company_id: null,
+      company_name: null,
+      company_slug: null,
+      email: userEmail,
     };
 
     const { data: createdProfile, error: createError } = await supabase
       .from("profiles")
-      .upsert(defaultProfile)
-      .select("id, full_name, role, company_id, created_at")
+      .upsert({ ...defaultProfile, email: userEmail })
+      .select("id, full_name, role, company_id, email, created_at, updated_at")
       .maybeSingle();
 
     if (createError) {
-      console.error("Failed to self-heal profile:", createError);
-      // Return a temporary in-memory profile so the UI still loads without crashing
       return defaultProfile;
     }
 
@@ -52,8 +88,45 @@ async function fetchProfile(userId) {
 export function ExpenseAuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [invites, setInvites] = useState([]);
   const [profileError, setProfileError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const activeUserIdRef = useRef(null);
+
+  const refreshProfile = async (userId) => {
+    if (!userId) {
+      setProfile(null);
+      setInvites([]);
+      return null;
+    }
+
+    const result = await fetchProfile(userId);
+    if (result?.error) {
+      setProfile(null);
+      setProfileError(result.error);
+      setInvites([]);
+      cacheProfile(null);
+      return null;
+    }
+
+    setProfile(result);
+    setProfileError(null);
+    cacheProfile(result);
+
+    const role = String(result?.role || "").toLowerCase();
+    if (role === "owner" || role === "admin" || role === "finance") {
+      try {
+        const nextInvites = await listCompanyInvites();
+        setInvites(nextInvites);
+      } catch {
+        setInvites([]);
+      }
+    } else {
+      setInvites([]);
+    }
+
+    return result;
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -61,16 +134,31 @@ export function ExpenseAuthProvider({ children }) {
     async function init() {
       const { data } = await supabase.auth.getSession();
       if (!isMounted) return;
+      const nextUserId = data.session?.user?.id || null;
+      activeUserIdRef.current = nextUserId;
+      // Never let a previous user's tenant profile survive a new session.
+      cacheProfile(null);
       setSession(data.session || null);
-      if (data.session?.user?.id) {
-        const result = await fetchProfile(data.session.user.id);
+      if (nextUserId) {
+        const result = await fetchProfile(nextUserId);
         if (isMounted) {
+          if (activeUserIdRef.current !== nextUserId) return;
           if (result?.error) {
             setProfile(null);
             setProfileError(result.error);
+            cacheProfile(null);
           } else {
             setProfile(result);
             setProfileError(null);
+            cacheProfile(result);
+            const role = String(result?.role || "").toLowerCase();
+            if (role === "owner" || role === "admin" || role === "finance") {
+              try {
+                setInvites(await listCompanyInvites());
+              } catch {
+                setInvites([]);
+              }
+            }
           }
         }
       }
@@ -81,21 +169,47 @@ export function ExpenseAuthProvider({ children }) {
 
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
       if (!isMounted) return;
+      const nextUserId = newSession?.user?.id || null;
+      // Clear the previous company's cached identity before resolving the new
+      // user's profile. This prevents a sign-in switch from reusing stale
+      // role/company headers or rendering the old workspace temporarily.
+      if (activeUserIdRef.current !== nextUserId) {
+        activeUserIdRef.current = nextUserId;
+        cacheProfile(null);
+        setProfile(null);
+        setProfileError(null);
+        setInvites([]);
+      }
       setSession(newSession || null);
-      if (newSession?.user?.id) {
-        const result = await fetchProfile(newSession.user.id);
+      if (nextUserId) {
+        const result = await fetchProfile(nextUserId);
         if (isMounted) {
+          if (activeUserIdRef.current !== nextUserId) return;
           if (result?.error) {
             setProfile(null);
             setProfileError(result.error);
+            cacheProfile(null);
           } else {
             setProfile(result);
             setProfileError(null);
+            cacheProfile(result);
+            const role = String(result?.role || "").toLowerCase();
+            if (role === "owner" || role === "admin" || role === "finance") {
+              try {
+                setInvites(await listCompanyInvites());
+              } catch {
+                setInvites([]);
+              }
+            } else {
+              setInvites([]);
+            }
           }
         }
       } else {
         setProfile(null);
         setProfileError(null);
+        setInvites([]);
+        cacheProfile(null);
       }
       setLoading(false);
     });
@@ -111,13 +225,14 @@ export function ExpenseAuthProvider({ children }) {
     return { user, error };
   };
 
+  const signInWithGoogleProvider = async (redirectPath = "/cashflow/dashboard") => signInWithGoogle(redirectPath);
+  const signInWithInviteLink = async (email, redirectPath = "/cashflow/dashboard") => signInWithOtp(email, redirectPath);
+
   const signUp = async (email, password, fullName, role = "employee") => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        // The handle_new_expense_profile trigger reads these from
-        // raw_user_meta_data and inserts/updates the profiles row accordingly.
         data: { full_name: fullName, role },
       },
     });
@@ -131,19 +246,77 @@ export function ExpenseAuthProvider({ children }) {
     await supabaseSignOut();
     setSession(null);
     setProfile(null);
+    setInvites([]);
     setProfileError(null);
+    cacheProfile(null);
   };
 
-  const value = {
+  const onboardOwner = async (companyName, fullName, isDemo = false, companyEmail = null) => {
+    await bootstrapCompanyOwner(companyName, fullName, isDemo, companyEmail);
+    return refreshProfile(session?.user?.id || null);
+  };
+
+  const inviteMember = async (email, role = "employee") => {
+    const invite = await createCompanyInvite(email, role);
+    try {
+      setInvites(await listCompanyInvites());
+    } catch {
+      setInvites((prev) => [invite, ...prev]);
+    }
+    return invite;
+  };
+
+  const acceptInvite = async (inviteToken, fullName) => {
+    const result = await acceptCompanyInvite(inviteToken, fullName);
+    await refreshProfile(session?.user?.id || null);
+    return result;
+  };
+
+  const demoLogin = async () => {
+    const { email, password, companyName } = getDemoCredentials();
+    let result = await signInWithEmail(email, password);
+
+    if (result.error) {
+      const signUpResult = await signUp(email, password, "Demo Owner", "employee");
+      if (signUpResult.error && !String(signUpResult.error).toLowerCase().includes("already registered")) {
+        return signUpResult;
+      }
+      result = await signInWithEmail(email, password);
+    }
+
+    if (result.error) {
+      return result;
+    }
+
+    const latestProfile = await refreshProfile(result.user?.id || null);
+    if (!latestProfile?.company_id) {
+      await onboardOwner(companyName, latestProfile?.full_name || "Demo Owner", true, email);
+    }
+
+    return { user: result.user, error: null };
+  };
+
+  const value = useMemo(() => ({
     session,
     user: session?.user || null,
     profile,
+    invites,
     profileError,
     loading,
     signIn,
+    signInWithGoogle: signInWithGoogleProvider,
+    signInWithInviteLink,
     signUp,
     signOut,
-  };
+    onboardOwner,
+    inviteMember,
+    acceptInvite,
+    demoLogin,
+    refreshProfile: () => refreshProfile(session?.user?.id || null),
+    isOwner: profile?.role === "owner",
+    isAdmin: profile?.role === "owner" || profile?.role === "admin" || profile?.role === "finance",
+    hasCompany: Boolean(profile?.company_id),
+  }), [session, profile, invites, profileError, loading]);
 
   return <ExpenseAuthContext.Provider value={value}>{children}</ExpenseAuthContext.Provider>;
 }

@@ -1,10 +1,10 @@
 import azure.functions as func
 from shared.api_contract import create_response
-from shared.admin_auth import validate_identity_headers
+from shared.admin_auth import require_cashflow_tenant
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     action = req.route_params.get("action")
-    auth = validate_identity_headers(req)
+    auth = require_cashflow_tenant(req)
     if not auth["ok"]:
         return create_response(auth["status_code"], False, error=auth["error"])
 

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { cashflowFetch, parseCashflowResponse } from '../../services/cashflowApi';
 import { exportRowsAsCsv } from '../../services/csvExport';
+import { useExpenseAuth } from '../../context/ExpenseAuthContext';
 
 export default function PettyCash() {
+  const { isAdmin } = useExpenseAuth();
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -255,7 +257,7 @@ export default function PettyCash() {
                     </span>
                   </td>
                   <td style={{ padding: '0.85rem 1rem' }}>
-                    {String(entry.status || 'pending') === 'pending' ? (
+                    {String(entry.status || 'pending') === 'pending' && isAdmin ? (
                       <button
                         type="button"
                         onClick={() => handleApproveEntry(entry.id)}

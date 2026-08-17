@@ -7,7 +7,7 @@ import re
 from datetime import datetime, timedelta
 from shared.db import get_supabase_client
 from shared.tax_engine_interface import calculate_tds, calculate_msme_due_date
-from shared.admin_auth import resolve_identity_headers, validate_identity_headers
+from shared.admin_auth import identity_can_approve, identity_can_use_cashflow, resolve_identity_headers, validate_identity_headers
 
 
 def _safe_float(value, default: float = 0.0) -> float:
@@ -264,16 +264,24 @@ def _run_ap_ocr_pipeline(file_bytes: bytes, endpoint: str, key: str) -> dict:
         },
     }
 
-def get_or_create_vendor(supabase, vendor_name: str, gstin: str = None) -> str:
+def get_or_create_vendor(supabase, company_id: str, vendor_name: str, gstin: str = None) -> str:
     if not vendor_name:
         vendor_name = "Unassigned Vendor"
         
-    res = supabase.table('cashflow_entities').select('id').eq('name', vendor_name).eq('entity_type', 'vendor').execute()
+    res = (
+        supabase.table('cashflow_entities')
+        .select('id')
+        .eq('company_id', company_id)
+        .eq('name', vendor_name)
+        .eq('entity_type', 'vendor')
+        .execute()
+    )
     if res.data and len(res.data) > 0:
         return res.data[0]['id']
 
     new_vendor = {
         "name": vendor_name,
+        "company_id": company_id,
         "entity_type": "vendor",
         "gstin": gstin if gstin else None,
         "msme_registered": False,
@@ -287,6 +295,23 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     action = req.route_params.get("action")
     if not action and req.method == "GET":
         action = "list"
+
+    auth = validate_identity_headers(req)
+    if not auth["ok"]:
+        return func.HttpResponse(
+            json.dumps({"ok": False, "error": auth["error"]}),
+            mimetype="application/json",
+            status_code=auth["status_code"],
+        )
+
+    identity = auth.get("identity") or {}
+    company_id = str(identity.get("company_id") or "").strip()
+    if not company_id and action != "ocr":
+        return func.HttpResponse(
+            json.dumps({"ok": False, "error": "Complete workspace onboarding before using Accounts Payable."}),
+            mimetype="application/json",
+            status_code=403,
+        )
     
     try:
         supabase = get_supabase_client()
@@ -325,13 +350,33 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     mimetype="application/json",
                     status_code=auth["status_code"],
                 )
+            identity = auth.get("identity") or {}
+            company_id = str(identity.get("company_id") or "").strip()
+            if not company_id:
+                return func.HttpResponse(
+                    json.dumps({"ok": False, "error": "Complete workspace onboarding before using Accounts Payable."}),
+                    mimetype="application/json",
+                    status_code=403,
+                )
 
         # 1. GET /api/cashflow/ap/list
         if req.method == "GET" and action == "list":
-            response = supabase.table('cashflow_bills').select(
-                '*, cashflow_entities(id, name, gstin, msme_category)'
-            ).order('created_at', desc=True).execute()
-            
+            try:
+                response = (
+                    supabase.table('cashflow_bills')
+                    .select('*, cashflow_entities(id, name, gstin, msme_category)')
+                    .eq('company_id', company_id)
+                    .order('created_at', desc=True)
+                    .execute()
+                )
+            except Exception as list_error:
+                msg = str(list_error or "")
+                lowered = msg.lower()
+                if "pgrst205" in lowered or "could not find the table" in lowered:
+                    # Cashflow tables not migrated yet — return an empty list.
+                    return func.HttpResponse(json.dumps({"ok": True, "data": []}), mimetype="application/json")
+                raise
+
             return func.HttpResponse(json.dumps({"ok": True, "data": response.data}), mimetype="application/json")
 
         # 2. POST /api/cashflow/ap/ocr
@@ -399,8 +444,16 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     mimetype="application/json",
                     status_code=auth["status_code"],
                 )
+            identity = auth.get("identity") or {}
+            company_id = str(identity.get("company_id") or "").strip()
+            if not identity_can_use_cashflow(identity):
+                return func.HttpResponse(
+                    json.dumps({"ok": False, "error": "Cashflow access requires membership in a company workspace."}),
+                    mimetype="application/json",
+                    status_code=403,
+                )
             data = req.get_json()
-            vendor_id = get_or_create_vendor(supabase, data.get("vendor_name"), data.get("vendor_gstin"))
+            vendor_id = get_or_create_vendor(supabase, company_id, data.get("vendor_name"), data.get("vendor_gstin"))
 
             amount = float(data.get("total_amount", data.get("amount", 0)))
             amount_before_gst = float(data.get("amount_before_gst", max(amount - float(data.get("gst_amount", 0)), 0)))
@@ -412,6 +465,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             due_date = calculate_msme_due_date(bill_date, False) or (datetime.strptime(bill_date, "%Y-%m-%d") + timedelta(days=30)).strftime("%Y-%m-%d")
 
             new_bill = {
+                "company_id": company_id,
                 "vendor_id": vendor_id,
                 "bill_number": data.get("bill_number", f"BILL-{int(datetime.now().timestamp())}"),
                 "bill_date": bill_date,
@@ -419,13 +473,21 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 "amount": amount,
                 "gst_amount": float(data.get("gst_amount", 0)),
                 "tds_amount": tds_amount,
+                "created_by": identity.get("user_id"),
                 "status": "pending"
             }
             
             response = supabase.table('cashflow_bills').insert(new_bill).execute()
             
             # Re-query with vendor relationship
-            bill_with_vendor = supabase.table('cashflow_bills').select('*, cashflow_entities(id, name, gstin)').eq('id', response.data[0]['id']).single().execute()
+            bill_with_vendor = (
+                supabase.table('cashflow_bills')
+                .select('*, cashflow_entities(id, name, gstin)')
+                .eq('company_id', company_id)
+                .eq('id', response.data[0]['id'])
+                .single()
+                .execute()
+            )
             
             return func.HttpResponse(json.dumps({"ok": True, "data": bill_with_vendor.data}), mimetype="application/json")
 
@@ -437,6 +499,20 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     json.dumps({"ok": False, "error": auth["error"]}),
                     mimetype="application/json",
                     status_code=auth["status_code"],
+                )
+            identity = auth.get("identity") or {}
+            company_id = str(identity.get("company_id") or "").strip()
+            if not company_id:
+                return func.HttpResponse(
+                    json.dumps({"ok": False, "error": "Complete workspace onboarding before approving bills."}),
+                    mimetype="application/json",
+                    status_code=403,
+                )
+            if not identity_can_approve(identity):
+                return func.HttpResponse(
+                    json.dumps({"ok": False, "error": "Only owners or admins can approve bills."}),
+                    mimetype="application/json",
+                    status_code=403,
                 )
             try:
                 data = req.get_json()
@@ -455,7 +531,14 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     status_code=400,
                 )
 
-            current = supabase.table('cashflow_bills').select('id,status').eq('id', bill_id).limit(1).execute()
+            current = (
+                supabase.table('cashflow_bills')
+                .select('id,status')
+                .eq('company_id', company_id)
+                .eq('id', bill_id)
+                .limit(1)
+                .execute()
+            )
             current_rows = current.data or []
             if not current_rows:
                 return func.HttpResponse(
@@ -466,7 +549,14 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
             current_status = str(current_rows[0].get("status") or "")
             if current_status == "approved":
-                approved = supabase.table('cashflow_bills').select('*, cashflow_entities(id, name, gstin)').eq('id', bill_id).single().execute()
+                approved = (
+                    supabase.table('cashflow_bills')
+                    .select('*, cashflow_entities(id, name, gstin)')
+                    .eq('company_id', company_id)
+                    .eq('id', bill_id)
+                    .single()
+                    .execute()
+                )
                 return func.HttpResponse(json.dumps({"ok": True, "data": approved.data}), mimetype="application/json")
 
             if current_status != "pending":
@@ -479,6 +569,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             updated = (
                 supabase.table('cashflow_bills')
                 .update({"status": "approved"})
+                .eq('company_id', company_id)
                 .eq('id', bill_id)
                 .execute()
             )
@@ -491,7 +582,14 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     status_code=500,
                 )
 
-            bill_with_vendor = supabase.table('cashflow_bills').select('*, cashflow_entities(id, name, gstin)').eq('id', bill_id).single().execute()
+            bill_with_vendor = (
+                supabase.table('cashflow_bills')
+                .select('*, cashflow_entities(id, name, gstin)')
+                .eq('company_id', company_id)
+                .eq('id', bill_id)
+                .single()
+                .execute()
+            )
             return func.HttpResponse(json.dumps({"ok": True, "data": bill_with_vendor.data}), mimetype="application/json")
 
         return func.HttpResponse(

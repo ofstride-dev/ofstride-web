@@ -1,10 +1,14 @@
 import React, { useMemo, useState } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Download, X } from 'lucide-react';
 import { cashflowFetch } from '../../services/cashflowApi';
+import { ExpenseAuthProvider, useExpenseAuth } from '../../context/ExpenseAuthContext';
 
-export default function CashflowLayout() {
+function CashflowShell() {
+  const { session, profile, signOut, isAdmin, loading } = useExpenseAuth();
+
   const location = useLocation();
+  const isLoginRoute = location.pathname === '/cashflow/login';
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -105,16 +109,62 @@ export default function CashflowLayout() {
     return location.pathname === path;
   };
 
+  if (isLoginRoute) {
+    return (
+      <div className="pt-12 sm:pt-16 min-h-screen bg-[radial-gradient(circle_at_0%_0%,rgba(56,189,248,0.10),transparent_40%),radial-gradient(circle_at_100%_100%,rgba(59,130,246,0.10),transparent_42%),#f8fafc]">
+        <Outlet />
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="pt-12 sm:pt-16 min-h-screen bg-slate-50 flex items-center justify-center">
+        <p className="text-sm text-slate-600">Loading workspace…</p>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return <Navigate to="/cashflow/login" replace />;
+  }
+
   return (
     <div className="pt-12 sm:pt-16 min-h-screen bg-[radial-gradient(circle_at_0%_0%,rgba(56,189,248,0.10),transparent_40%),radial-gradient(circle_at_100%_100%,rgba(59,130,246,0.10),transparent_42%),#f8fafc]">
       <section className="py-10 sm:py-14">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-6 sm:mb-8 rounded-2xl border border-slate-200 bg-white/90 backdrop-blur-sm shadow-sm px-5 sm:px-7 py-5 sm:py-6">
-            <p className="text-sm font-semibold uppercase tracking-wider text-secondary mb-2">Solutions</p>
-            <h1 className="text-3xl sm:text-4xl font-bold text-primary">Managing Cashflow</h1>
-            <p className="text-text mt-3 max-w-3xl">
-              Unified finance operations for AP, AR, petty cash, and employee expense workflows.
-            </p>
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-wider text-secondary mb-2">Solutions</p>
+                <h1 className="text-3xl sm:text-4xl font-bold text-primary">Managing Cashflow</h1>
+                <p className="text-text mt-3 max-w-3xl">
+                  Unified finance operations for AP, AR, petty cash, and employee expense workflows.
+                </p>
+              </div>
+              <div className="text-right">
+                {session ? (
+                  <>
+                    <p className="text-sm font-medium text-primary">{profile?.company_name || 'Workspace setup pending'}</p>
+                    <p className="text-xs text-muted mt-1">{session.user?.email} · {profile?.role || 'employee'}</p>
+                    <div className="mt-3 flex flex-wrap justify-end gap-2">
+                      {isAdmin && (
+                        <Link to="/cashflow/invites" className="btn-ui btn-ui-sm btn-ui-neutral">
+                          Invite Admin
+                        </Link>
+                      )}
+                      <button type="button" onClick={signOut} className="btn-ui btn-ui-sm btn-ui-danger">
+                        Sign Out
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <Link to="/cashflow/login" className="btn-ui btn-ui-sm btn-ui-primary">
+                    Sign In
+                  </Link>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="rounded-2xl bg-white/95 border border-slate-200 shadow-[0_10px_30px_rgba(15,23,42,0.06)] p-2 sm:p-3 backdrop-blur-sm">
@@ -227,5 +277,13 @@ export default function CashflowLayout() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function CashflowLayout() {
+  return (
+    <ExpenseAuthProvider>
+      <CashflowShell />
+    </ExpenseAuthProvider>
   );
 }

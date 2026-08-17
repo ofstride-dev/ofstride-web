@@ -68,6 +68,10 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     auth = validate_identity_headers(req)
     if not auth.get("ok"):
         return _err(auth.get("status_code", 401), auth.get("error") or "Unauthorized", trace_id)
+    identity = auth.get("identity") or {}
+    company_id = str(identity.get("company_id") or "").strip()
+    if not company_id:
+        return _err(403, "Complete workspace onboarding before exporting GST reports", trace_id)
 
     start_date = str(req.params.get("start_date") or "").strip()
     end_date = str(req.params.get("end_date") or "").strip()
@@ -96,6 +100,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         invoices_res = (
             supabase.table("cashflow_invoices")
             .select("*, cashflow_entities!cashflow_invoices_customer_id_fkey(id,name,gstin)")
+            .eq("company_id", company_id)
             .in_("status", ["approved", "paid"])
             .eq("is_proforma", False)
             .gte("invoice_date", start_date)
@@ -107,6 +112,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         bills_res = (
             supabase.table("cashflow_bills")
             .select("*, cashflow_entities!cashflow_bills_vendor_id_fkey(id,name,gstin)")
+            .eq("company_id", company_id)
             .in_("status", ["approved", "paid"])
             .gte("bill_date", start_date)
             .lte("bill_date", end_date)

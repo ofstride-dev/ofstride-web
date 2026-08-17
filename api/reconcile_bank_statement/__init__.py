@@ -413,12 +413,13 @@ def _parse_pdf_report(file_name: str, raw_bytes: bytes):
     return pd.DataFrame(records)
 
 
-def _build_platform_rows(supabase, start_date: str, end_date: str):
+def _build_platform_rows(supabase, company_id: str, start_date: str, end_date: str):
     platform_rows = []
 
     bills_res = (
         supabase.table("cashflow_bills")
         .select("*, cashflow_entities!cashflow_bills_vendor_id_fkey(name)")
+        .eq("company_id", company_id)
         .in_("status", ["approved", "paid"])
         .gte("bill_date", start_date)
         .lte("bill_date", end_date)
@@ -442,6 +443,7 @@ def _build_platform_rows(supabase, start_date: str, end_date: str):
     inv_res = (
         supabase.table("cashflow_invoices")
         .select("*, cashflow_entities!cashflow_invoices_customer_id_fkey(name)")
+        .eq("company_id", company_id)
         .in_("status", ["approved", "paid"])
         .eq("is_proforma", False)
         .gte("invoice_date", start_date)
@@ -466,6 +468,7 @@ def _build_platform_rows(supabase, start_date: str, end_date: str):
     petty_res = (
         supabase.table("cashflow_petty_cash")
         .select("*")
+        .eq("company_id", company_id)
         .gte("entry_date", start_date)
         .lte("entry_date", end_date)
         .execute()
@@ -650,8 +653,9 @@ def _run_reconcile(bank_rows: list[dict], platform_rows: list[dict]):
     return summary, reconcile_rows
 
 
-def _save_run(supabase, start_date: str, end_date: str, file_name: str, file_type: str, summary: dict, user_id: str):
+def _save_run(supabase, company_id: str, start_date: str, end_date: str, file_name: str, file_type: str, summary: dict, user_id: str):
     payload = {
+        "company_id": company_id,
         "start_date": start_date,
         "end_date": end_date,
         "source_file_name": file_name,
@@ -678,7 +682,7 @@ def _save_run(supabase, start_date: str, end_date: str, file_name: str, file_typ
     return rows[0]["id"]
 
 
-def _save_rows(supabase, run_id: str, rows: list[dict]):
+def _save_rows(supabase, company_id: str, run_id: str, rows: list[dict]):
     if not rows:
         return
 
@@ -689,6 +693,7 @@ def _save_rows(supabase, run_id: str, rows: list[dict]):
 
         payload.append(
             {
+                "company_id": company_id,
                 "run_id": run_id,
                 "source_side": source_side,
                 "voucher_type": row.get("voucher_type") or "",
@@ -764,7 +769,7 @@ def _promote_first_row_as_header(df):
     return promoted
 
 
-def _run_bank_statement_pipeline(report_df, compare_with_platform: bool, supabase, start_date: str, end_date: str):
+def _run_bank_statement_pipeline(report_df, compare_with_platform: bool, supabase, company_id: str, start_date: str, end_date: str):
     working_df = _normalize_report_df(report_df)
     best_result = None
     pass_details = []
@@ -773,7 +778,7 @@ def _run_bank_statement_pipeline(report_df, compare_with_platform: bool, supabas
         bank_rows, mapped_columns, column_warnings = _extract_bank_rows(working_df)
         row_issues_count = sum(1 for row in bank_rows if row.get("validation_issues"))
         if compare_with_platform:
-            platform_rows = _build_platform_rows(supabase, start_date, end_date)
+            platform_rows = _build_platform_rows(supabase, company_id, start_date, end_date)
             summary, reconcile_rows = _run_reconcile(bank_rows, platform_rows)
         else:
             summary, reconcile_rows = _statement_only_summary(bank_rows)
@@ -898,6 +903,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             auth = resolve_identity_headers(req, allow_anonymous=True)
             identity = auth.get("identity") or {}
             user_id = identity.get("user_id")
+            company_id = str(identity.get("company_id") or "").strip()
+            if not company_id:
+                return _err(403, "Complete workspace onboarding before saving reconciliation runs", trace_id)
 
             compare_with_platform = bool(body.get("compare_with_platform"))
 
@@ -905,6 +913,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 report_df,
                 compare_with_platform,
                 supabase,
+                company_id,
                 start_date,
                 end_date,
             )
@@ -919,6 +928,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             try:
                 run_id = _save_run(
                     supabase,
+                    company_id,
                     start_date,
                     end_date,
                     file_name,
@@ -926,7 +936,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     summary,
                     user_id,
                 )
-                _save_rows(supabase, run_id, reconcile_rows)
+                _save_rows(supabase, company_id, run_id, reconcile_rows)
             except Exception as persist_error:
                 if _is_missing_table_error(persist_error):
                     persistence_warning = (
@@ -959,6 +969,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
         identity = auth.get("identity") or {}
         user_id = identity.get("user_id")
+        company_id = str(identity.get("company_id") or "").strip()
+        if not company_id:
+            return _err(403, "Complete workspace onboarding before using bank reconciliation", trace_id)
 
         if req.method == "GET" and action == "summary":
             run_id = str(req.params.get("run_id") or "").strip()
@@ -966,7 +979,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 return _err(400, "run_id is required", trace_id)
 
             try:
-                run_res = supabase.table("cashflow_bank_reconcile_runs").select("*").eq("id", run_id).limit(1).execute()
+                run_res = supabase.table("cashflow_bank_reconcile_runs").select("*").eq("company_id", company_id).eq("id", run_id).limit(1).execute()
             except Exception as fetch_error:
                 if _is_missing_table_error(fetch_error):
                     return _ok({"run": None, "rows": [], "warning": "Bank reconcile tables are not configured yet."}, trace_id)
@@ -978,6 +991,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 rows_res = (
                     supabase.table("cashflow_bank_reconcile_rows")
                     .select("*")
+                    .eq("company_id", company_id)
                     .eq("run_id", run_id)
                     .order("created_at", desc=False)
                     .execute()
@@ -1008,6 +1022,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 runs_res = (
                     supabase.table("cashflow_bank_reconcile_runs")
                     .select("id,start_date,end_date,source_file_name,summary,created_at")
+                    .eq("company_id", company_id)
                     .order("created_at", desc=True)
                     .limit(parsed_limit)
                     .execute()
@@ -1046,6 +1061,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 rows_res = (
                     supabase.table("cashflow_bank_reconcile_rows")
                     .select("*")
+                    .eq("company_id", company_id)
                     .eq("run_id", run_id)
                     .order("created_at", desc=False)
                     .execute()

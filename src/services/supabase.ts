@@ -90,6 +90,46 @@ export async function signInWithEmail(
   return { user: data.user, error: null };
 }
 
+export async function signInWithGoogle(
+  _redirectPath?: string
+): Promise<{ error: string | null }> {
+  // Use a fixed redirect URL that matches exactly what's configured in Supabase.
+  // After Google OAuth completes, Supabase redirects back here and the app's
+  // auth listener will detect the new session and route the user appropriately.
+  // WARNING: redirectTo MUST match one of the allowed Redirect URLs configured
+  // in the Supabase Dashboard → Authentication → Settings → Redirect URLs.
+  // For local dev add: http://localhost:5174/**
+  // For production add: https://yourdomain.com/**
+  // After Google OAuth completes, Supabase redirects back here.
+  // The ExpenseProtectedRoute wrapper on /cashflow/dashboard will
+  // detect the new session and render the dashboard immediately.
+  const fixedRedirectUrl = `${window.location.origin}/cashflow/dashboard`;
+  // Sign out first to purge any stale session so the OAuth flow is clean
+  await supabase.auth.signOut();
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: fixedRedirectUrl,
+    },
+  });
+  return { error: error ? error.message : null };
+}
+
+export async function signInWithOtp(
+  email: string,
+  redirectPath = "/cashflow/expense"
+): Promise<{ error: string | null }> {
+  const redirectUrl = new URL(redirectPath, window.location.origin).toString();
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: redirectUrl,
+      shouldCreateUser: true,
+    },
+  });
+  return { error: error ? error.message : null };
+}
+
 /**
  * Sign up a new user
  */

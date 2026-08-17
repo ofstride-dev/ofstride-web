@@ -1,9 +1,27 @@
-import { Navigate, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Navigate } from "react-router-dom";
 import { useExpenseAuth } from "../context/ExpenseAuthContext";
 
-function ExpenseProtectedRoute({ children, adminOnly = false }) {
-  const { session, profile, profileError, loading, signOut } = useExpenseAuth();
-  const navigate = useNavigate();
+function ExpenseProtectedRoute({ children, adminOnly = false, allowedRoles = null, allowWithoutCompany = false }) {
+  const { session, profile, profileError, loading, refreshProfile } = useExpenseAuth();
+  const attemptedRecoveryRef = useRef(false);
+  const [retryingProfile, setRetryingProfile] = useState(false);
+
+  useEffect(() => {
+    attemptedRecoveryRef.current = false;
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    if (!session || loading || profile || (!profileError && profile !== null) || attemptedRecoveryRef.current) {
+      return;
+    }
+
+    attemptedRecoveryRef.current = true;
+    setRetryingProfile(true);
+    Promise.resolve(refreshProfile())
+      .catch(() => null)
+      .finally(() => setRetryingProfile(false));
+  }, [session, profile, profileError, loading, refreshProfile]);
 
   if (loading) {
     return (
@@ -14,7 +32,7 @@ function ExpenseProtectedRoute({ children, adminOnly = false }) {
   }
 
   if (!session) {
-    return <Navigate to="/cashflow/expense/login" replace />;
+    return <Navigate to="/cashflow/login" replace />;
   }
 
   // If we have a session but the profile query failed (e.g. RLS misconfig /
@@ -32,20 +50,49 @@ function ExpenseProtectedRoute({ children, adminOnly = false }) {
               <code className="mx-1 px-1 py-0.5 rounded bg-slate-100 text-xs">sql/expenses.sql</code>
               in the Supabase SQL editor and sign in again.
             </p>
+            {profileError?.message ? (
+              <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2 mb-4">
+                {profileError.message}
+              </p>
+            ) : null}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setRetryingProfile(true);
+                  Promise.resolve(refreshProfile())
+                    .catch(() => null)
+                    .finally(() => setRetryingProfile(false));
+                }}
+                className="inline-flex items-center justify-center bg-primary text-white px-5 py-2.5 rounded-xl font-semibold text-sm"
+              >
+                {retryingProfile ? "Retrying..." : "Retry profile"}
+              </button>
             <a
-              href="/cashflow/expense/login"
-              className="inline-flex items-center justify-center bg-primary text-white px-5 py-2.5 rounded-xl font-semibold text-sm"
+              href="/cashflow/login"
+              className="inline-flex items-center justify-center border border-slate-200 px-5 py-2.5 rounded-xl font-semibold text-sm text-primary"
             >
               Back to sign in
             </a>
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
-  if (adminOnly && profile?.role !== "admin") {
-    return <Navigate to="/cashflow/expense" replace />;
+  if (!allowWithoutCompany && !profile?.company_id) {
+    return <Navigate to="/cashflow/expense/company-profile" replace />;
+  }
+
+  const effectiveRole = String(profile?.role || "").toLowerCase();
+
+  if (adminOnly && !["owner", "admin", "finance"].includes(effectiveRole)) {
+    return <Navigate to="/cashflow/dashboard" replace />;
+  }
+
+  if (Array.isArray(allowedRoles) && allowedRoles.length > 0 && !allowedRoles.includes(effectiveRole)) {
+    return <Navigate to="/cashflow/dashboard" replace />;
   }
 
   return children;

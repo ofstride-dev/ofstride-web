@@ -25,6 +25,7 @@ $$;
 -- 2. VENDORS & CUSTOMERS
 CREATE TABLE IF NOT EXISTS public.cashflow_entities (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     entity_type cashflow_party_type NOT NULL,
     pan TEXT,
@@ -39,6 +40,7 @@ CREATE TABLE IF NOT EXISTS public.cashflow_entities (
 -- 3. AP BILLS (Vendors)
 CREATE TABLE IF NOT EXISTS public.cashflow_bills (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE,
     vendor_id UUID REFERENCES public.cashflow_entities(id) ON DELETE RESTRICT,
     bill_number TEXT NOT NULL,
     bill_date DATE NOT NULL,
@@ -55,6 +57,7 @@ CREATE TABLE IF NOT EXISTS public.cashflow_bills (
 -- 4. AR INVOICES (Customers)
 CREATE TABLE IF NOT EXISTS public.cashflow_invoices (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE,
     customer_id UUID REFERENCES public.cashflow_entities(id) ON DELETE RESTRICT,
     invoice_number TEXT NOT NULL UNIQUE,
     invoice_date DATE NOT NULL,
@@ -79,6 +82,7 @@ ALTER TABLE public.cashflow_invoices
 -- 5. PAYMENTS & COLLECTIONS
 CREATE TABLE IF NOT EXISTS public.cashflow_transactions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE,
     bill_id UUID REFERENCES public.cashflow_bills(id) ON DELETE SET NULL,
     invoice_id UUID REFERENCES public.cashflow_invoices(id) ON DELETE SET NULL,
     transaction_date DATE NOT NULL,
@@ -92,6 +96,7 @@ CREATE TABLE IF NOT EXISTS public.cashflow_transactions (
 -- 6. PETTY CASH & AUTOCATEGORIZATION LEDGER
 CREATE TABLE IF NOT EXISTS public.cashflow_petty_cash (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE,
     entry_date DATE NOT NULL DEFAULT CURRENT_DATE,
     description TEXT NOT NULL,
     category TEXT NOT NULL DEFAULT 'Uncategorized',
@@ -110,6 +115,30 @@ ALTER TABLE public.cashflow_petty_cash
 ALTER TABLE public.cashflow_petty_cash
     ADD COLUMN IF NOT EXISTS approved_at TIMESTAMPTZ;
 
+ALTER TABLE public.cashflow_entities
+    ADD COLUMN IF NOT EXISTS company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE;
+
+ALTER TABLE public.cashflow_bills
+    ADD COLUMN IF NOT EXISTS company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE;
+
+ALTER TABLE public.cashflow_invoices
+    ADD COLUMN IF NOT EXISTS company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE;
+
+ALTER TABLE public.cashflow_transactions
+    ADD COLUMN IF NOT EXISTS company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE;
+
+ALTER TABLE public.cashflow_petty_cash
+    ADD COLUMN IF NOT EXISTS company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE;
+
+ALTER TABLE public.cashflow_bank_reconcile_runs
+    ADD COLUMN IF NOT EXISTS company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE;
+
+ALTER TABLE public.cashflow_bank_reconcile_rows
+    ADD COLUMN IF NOT EXISTS company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE;
+
+ALTER TABLE public.cashflow_period_close
+    ADD COLUMN IF NOT EXISTS company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE;
+
 UPDATE public.cashflow_petty_cash
 SET status = 'pending'
 WHERE status IS NULL;
@@ -117,6 +146,7 @@ WHERE status IS NULL;
 -- 6B. BANK STATEMENT IMPORT / RECONCILIATION RUNS
 CREATE TABLE IF NOT EXISTS public.cashflow_bank_reconcile_runs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     source_file_name TEXT,
@@ -128,6 +158,7 @@ CREATE TABLE IF NOT EXISTS public.cashflow_bank_reconcile_runs (
 
 CREATE TABLE IF NOT EXISTS public.cashflow_bank_reconcile_rows (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE,
     run_id UUID NOT NULL REFERENCES public.cashflow_bank_reconcile_runs(id) ON DELETE CASCADE,
     source_side TEXT NOT NULL CHECK (source_side IN ('bank', 'platform')),
     voucher_type TEXT,
@@ -143,10 +174,19 @@ CREATE TABLE IF NOT EXISTS public.cashflow_bank_reconcile_rows (
 
 CREATE INDEX IF NOT EXISTS idx_cashflow_bank_rows_run_id ON public.cashflow_bank_reconcile_rows(run_id);
 CREATE INDEX IF NOT EXISTS idx_cashflow_bank_rows_status ON public.cashflow_bank_reconcile_rows(status);
+CREATE INDEX IF NOT EXISTS idx_cashflow_entities_company_id ON public.cashflow_entities(company_id);
+CREATE INDEX IF NOT EXISTS idx_cashflow_bills_company_id ON public.cashflow_bills(company_id);
+CREATE INDEX IF NOT EXISTS idx_cashflow_invoices_company_id ON public.cashflow_invoices(company_id);
+CREATE INDEX IF NOT EXISTS idx_cashflow_transactions_company_id ON public.cashflow_transactions(company_id);
+CREATE INDEX IF NOT EXISTS idx_cashflow_petty_cash_company_id ON public.cashflow_petty_cash(company_id);
+CREATE INDEX IF NOT EXISTS idx_cashflow_bank_runs_company_id ON public.cashflow_bank_reconcile_runs(company_id);
+CREATE INDEX IF NOT EXISTS idx_cashflow_bank_rows_company_id ON public.cashflow_bank_reconcile_rows(company_id);
+CREATE INDEX IF NOT EXISTS idx_cashflow_period_close_company_id ON public.cashflow_period_close(company_id);
 
 -- 6C. SOFT PERIOD CLOSE TRACKING (NO HARD LOCK YET)
 CREATE TABLE IF NOT EXISTS public.cashflow_period_close (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE,
     period_month DATE NOT NULL,
     status TEXT NOT NULL CHECK (status IN ('open', 'soft_closed', 'hard_closed')) DEFAULT 'open',
     notes TEXT,
@@ -184,27 +224,27 @@ ALTER TABLE public.cashflow_period_close ENABLE ROW LEVEL SECURITY;
 
 -- Security Policies (Admin / Finance Access)
 DROP POLICY IF EXISTS cashflow_admin_all ON public.cashflow_entities;
-CREATE POLICY cashflow_admin_all ON public.cashflow_entities FOR ALL TO authenticated USING (auth.jwt() ->> 'role' IN ('admin', 'finance'));
+CREATE POLICY cashflow_admin_all ON public.cashflow_entities FOR ALL TO authenticated USING (public.is_admin() AND company_id = public.my_company_id()) WITH CHECK (public.is_admin() AND company_id = public.my_company_id());
 
 DROP POLICY IF EXISTS cashflow_bills_all ON public.cashflow_bills;
-CREATE POLICY cashflow_bills_all ON public.cashflow_bills FOR ALL TO authenticated USING (auth.jwt() ->> 'role' IN ('admin', 'finance'));
+CREATE POLICY cashflow_bills_all ON public.cashflow_bills FOR ALL TO authenticated USING (company_id = public.my_company_id()) WITH CHECK (company_id = public.my_company_id());
 
 DROP POLICY IF EXISTS cashflow_invoices_all ON public.cashflow_invoices;
-CREATE POLICY cashflow_invoices_all ON public.cashflow_invoices FOR ALL TO authenticated USING (auth.jwt() ->> 'role' IN ('admin', 'finance'));
+CREATE POLICY cashflow_invoices_all ON public.cashflow_invoices FOR ALL TO authenticated USING (company_id = public.my_company_id()) WITH CHECK (company_id = public.my_company_id());
 
 DROP POLICY IF EXISTS cashflow_transactions_all ON public.cashflow_transactions;
-CREATE POLICY cashflow_transactions_all ON public.cashflow_transactions FOR ALL TO authenticated USING (auth.jwt() ->> 'role' IN ('admin', 'finance'));
+CREATE POLICY cashflow_transactions_all ON public.cashflow_transactions FOR ALL TO authenticated USING (company_id = public.my_company_id()) WITH CHECK (company_id = public.my_company_id());
 
 DROP POLICY IF EXISTS cashflow_petty_cash_all ON public.cashflow_petty_cash;
-CREATE POLICY cashflow_petty_cash_all ON public.cashflow_petty_cash FOR ALL TO authenticated USING (auth.jwt() ->> 'role' IN ('admin', 'finance'));
+CREATE POLICY cashflow_petty_cash_all ON public.cashflow_petty_cash FOR ALL TO authenticated USING (company_id = public.my_company_id()) WITH CHECK (company_id = public.my_company_id());
 
 DROP POLICY IF EXISTS cashflow_bank_runs_all ON public.cashflow_bank_reconcile_runs;
-CREATE POLICY cashflow_bank_runs_all ON public.cashflow_bank_reconcile_runs FOR ALL TO authenticated USING (auth.jwt() ->> 'role' IN ('admin', 'finance'));
+CREATE POLICY cashflow_bank_runs_all ON public.cashflow_bank_reconcile_runs FOR ALL TO authenticated USING (company_id = public.my_company_id()) WITH CHECK (company_id = public.my_company_id());
 
 DROP POLICY IF EXISTS cashflow_bank_rows_all ON public.cashflow_bank_reconcile_rows;
-CREATE POLICY cashflow_bank_rows_all ON public.cashflow_bank_reconcile_rows FOR ALL TO authenticated USING (auth.jwt() ->> 'role' IN ('admin', 'finance'));
+CREATE POLICY cashflow_bank_rows_all ON public.cashflow_bank_reconcile_rows FOR ALL TO authenticated USING (company_id = public.my_company_id()) WITH CHECK (company_id = public.my_company_id());
 
 DROP POLICY IF EXISTS cashflow_period_close_all ON public.cashflow_period_close;
-CREATE POLICY cashflow_period_close_all ON public.cashflow_period_close FOR ALL TO authenticated USING (auth.jwt() ->> 'role' IN ('admin', 'finance'));
+CREATE POLICY cashflow_period_close_all ON public.cashflow_period_close FOR ALL TO authenticated USING (company_id = public.my_company_id()) WITH CHECK (company_id = public.my_company_id());
 
 COMMIT;

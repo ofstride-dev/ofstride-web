@@ -135,6 +135,16 @@ def _public_metrics(store, *, jobs_count: int, departments_count: int) -> dict[s
     }
 
 
+def _empty_public_metrics(*, jobs_count: int, departments_count: int) -> dict[str, int]:
+    return {
+        "jobs_posted_total": int(jobs_count),
+        "departments_count": int(departments_count),
+        "resumes_received_total": 0,
+        "resumes_last_24h": 0,
+        "shortlisted_total": 0,
+    }
+
+
 async def main(req: func.HttpRequest) -> func.HttpResponse:
     trace_id = get_trace_id(req)
     if req.method == "OPTIONS":
@@ -187,13 +197,15 @@ async def main(req: func.HttpRequest) -> func.HttpResponse:
     departments = sorted({str(job.get("department") or "").strip() for job in all_jobs if str(job.get("department") or "").strip()}, key=lambda value: value.lower())
     locations = sorted({str(job.get("location") or "").strip() for job in all_jobs if str(job.get("location") or "").strip()}, key=lambda value: value.lower())
     employment_types = sorted({str(job.get("employment_type") or "").strip() for job in all_jobs if str(job.get("employment_type") or "").strip()}, key=lambda value: value.lower())
-    metrics = _public_metrics(store, jobs_count=len(all_jobs), departments_count=len(departments)) if store.is_available else {
-        "jobs_posted_total": 0,
-        "departments_count": 0,
-        "resumes_received_total": 0,
-        "resumes_last_24h": 0,
-        "shortlisted_total": 0,
-    }
+    if store.is_available:
+        try:
+            metrics = _public_metrics(store, jobs_count=len(all_jobs), departments_count=len(departments))
+        except Exception as exc:
+            tb = traceback.format_exc()
+            _logger.error("public metrics failed: %s\n%s", exc, tb)
+            metrics = _empty_public_metrics(jobs_count=len(all_jobs), departments_count=len(departments))
+    else:
+        metrics = _empty_public_metrics(jobs_count=0, departments_count=0)
 
     jobs = [
         job

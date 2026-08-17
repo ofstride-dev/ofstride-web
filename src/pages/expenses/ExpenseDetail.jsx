@@ -49,8 +49,7 @@ const DETAIL_FIELDS = [
 
 function ExpenseDetail() {
   const { id } = useParams();
-  const { profile } = useExpenseAuth();
-  const isAdmin = profile?.role === "admin";
+  const { profile, isAdmin } = useExpenseAuth();
 
   const [expense, setExpense] = useState(null);
   const [attachments, setAttachments] = useState([]);

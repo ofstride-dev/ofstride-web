@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { cashflowFetch, parseCashflowResponse } from '../../services/cashflowApi';
 import { exportRowsAsCsv } from '../../services/csvExport';
+import { useExpenseAuth } from '../../context/ExpenseAuthContext';
 
 export default function AccountsReceivable() {
+  const { isAdmin, session, profile } = useExpenseAuth();
+  const authIdentityKey = `${session?.user?.id || ''}:${profile?.company_id || ''}`;
+  const activeIdentityKeyRef = useRef(authIdentityKey);
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -95,18 +99,32 @@ export default function AccountsReceivable() {
     URL.revokeObjectURL(url);
   };
 
-  useEffect(() => { fetchInvoices(); }, []);
+  useEffect(() => {
+    let isCurrent = true;
+    activeIdentityKeyRef.current = authIdentityKey;
+    setInvoices([]);
+    setLoading(true);
+    fetchInvoices(() => isCurrent);
 
-  const fetchInvoices = async () => {
+    return () => {
+      isCurrent = false;
+      if (activeIdentityKeyRef.current === authIdentityKey) {
+        activeIdentityKeyRef.current = '';
+      }
+    };
+  }, [authIdentityKey]);
+
+  const fetchInvoices = async (isRequestCurrent = () => true) => {
     try {
       const res = await cashflowFetch('/cashflow/ar/list');
       const parsed = await parseCashflowResponse(res);
+      if (!isRequestCurrent()) return;
       if (parsed.ok) setInvoices(parsed.data || []);
       else throw new Error(parsed.error || `Server returned ${parsed.status}`);
     } catch (err) {
-      console.error("Fetch invoices failed:", err);
+      if (isRequestCurrent()) console.error("Fetch invoices failed:", err);
     } finally {
-      setLoading(false);
+      if (isRequestCurrent()) setLoading(false);
     }
   };
 
@@ -117,6 +135,7 @@ export default function AccountsReceivable() {
 
   const handleCreateInvoice = async (e) => {
     e.preventDefault();
+    const requestIdentityKey = authIdentityKey;
     setSaving(true);
     try {
       const res = await cashflowFetch('/cashflow/ar/create', {
@@ -125,8 +144,9 @@ export default function AccountsReceivable() {
         body: JSON.stringify(formData)
       });
       const parsed = await parseCashflowResponse(res);
+      if (activeIdentityKeyRef.current !== requestIdentityKey) return;
       if (parsed.ok) {
-        setInvoices([parsed.data, ...invoices]);
+        setInvoices((previousInvoices) => [parsed.data, ...previousInvoices]);
         setFormData({ 
           customer_name: '', customer_gstin: '', invoice_number: '', 
           invoice_date: new Date().toISOString().split('T')[0], 
@@ -139,7 +159,7 @@ export default function AccountsReceivable() {
       console.error("Save Failed:", err);
       alert("Failed to create invoice.");
     } finally {
-      setSaving(false);
+      if (activeIdentityKeyRef.current === requestIdentityKey) setSaving(false);
     }
   };
 
@@ -149,6 +169,7 @@ export default function AccountsReceivable() {
       invoice.amount + invoice.gst_amount
     );
     if (!paymentAmount) return;
+    const requestIdentityKey = authIdentityKey;
 
     try {
       const res = await cashflowFetch('/cashflow/ar/collect', {
@@ -161,9 +182,10 @@ export default function AccountsReceivable() {
         })
       });
       const parsed = await parseCashflowResponse(res);
+      if (activeIdentityKeyRef.current !== requestIdentityKey) return;
       if (parsed.ok) {
         alert("Payment recorded successfully!");
-        fetchInvoices(); 
+        fetchInvoices(() => activeIdentityKeyRef.current === requestIdentityKey);
       } else {
         throw new Error(parsed.error || `Server error ${parsed.status}`);
       }
@@ -175,6 +197,7 @@ export default function AccountsReceivable() {
 
   const handleApproveInvoice = async (invoiceId) => {
     if (!invoiceId) return;
+    const requestIdentityKey = authIdentityKey;
     setApprovingId(invoiceId);
     try {
       const res = await cashflowFetch('/cashflow/ar/approve', {
@@ -183,6 +206,7 @@ export default function AccountsReceivable() {
         body: JSON.stringify({ invoice_id: invoiceId }),
       });
       const parsed = await parseCashflowResponse(res);
+      if (activeIdentityKeyRef.current !== requestIdentityKey) return;
       if (parsed.ok && parsed.data) {
         setInvoices((prev) => prev.map((inv) => (inv.id === invoiceId ? parsed.data : inv)));
       } else {
@@ -192,7 +216,7 @@ export default function AccountsReceivable() {
       console.error("Approve Failed:", err);
       alert("Failed to approve invoice.");
     } finally {
-      setApprovingId('');
+      if (activeIdentityKeyRef.current === requestIdentityKey) setApprovingId('');
     }
   };
 
@@ -407,7 +431,7 @@ export default function AccountsReceivable() {
                     </span>
                   </td>
                   <td style={styles.td}>
-                    {inv.status === 'pending' && !inv.is_proforma && (
+                    {inv.status === 'pending' && !inv.is_proforma && isAdmin && (
                       <button
                         onClick={() => handleApproveInvoice(inv.id)}
                         disabled={approvingId === inv.id}

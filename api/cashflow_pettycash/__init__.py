@@ -3,7 +3,7 @@ import json
 import logging
 from datetime import datetime, timezone
 from shared.db import get_supabase_client
-from shared.admin_auth import validate_identity_headers
+from shared.admin_auth import identity_can_approve, validate_identity_headers
 
 def ai_categorize_expense(description: str) -> tuple[str, bool]:
     desc_lower = description.lower().strip()
@@ -42,6 +42,12 @@ def _is_missing_column_error(exc: Exception) -> bool:
     message = str(exc).lower()
     return "column" in message and ("does not exist" in message or "not found" in message)
 
+
+def _is_missing_table_error(exc: Exception) -> bool:
+    text = str(exc or "")
+    lowered = text.lower()
+    return "pgrst205" in lowered or "could not find the table" in lowered
+
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Processing Petty Cash request.')
     action = req.route_params.get("action")
@@ -57,10 +63,26 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     try:
         supabase = get_supabase_client()
         method = req.method
+        identity = auth.get("identity") or {}
+        company_id = str(identity.get("company_id") or "").strip()
+        if not company_id:
+            return func.HttpResponse(
+                json.dumps({"ok": False, "error": "Complete workspace onboarding before using petty cash."}),
+                mimetype="application/json",
+                status_code=403,
+            )
 
         if method == "GET" and (not action or action == "list"):
-            # Correct table: cashflow_petty_cash
-            response = supabase.table('cashflow_petty_cash').select('*').order('entry_date', desc=True).execute()
+            try:
+                response = supabase.table('cashflow_petty_cash').select('*').eq('company_id', company_id).order('entry_date', desc=True).execute()
+            except Exception as list_error:
+                if _is_missing_table_error(list_error):
+                    return func.HttpResponse(
+                        json.dumps({"ok": True, "data": []}),
+                        mimetype="application/json",
+                        status_code=200
+                    )
+                raise
             return func.HttpResponse(
                 json.dumps({"ok": True, "data": response.data}),
                 mimetype="application/json",
@@ -81,12 +103,14 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
             # Schema exact mapping
             new_entry = {
+                "company_id": company_id,
                 "entry_date": req_body.get('date'),
                 "description": description,
                 "category": category,
                 "auto_categorized": auto_categorized,
                 "cash_in": amount if entry_type == 'IN' else 0.00,
                 "cash_out": amount if entry_type == 'OUT' else 0.00,
+                "recorded_by": identity.get("user_id"),
                 "status": "pending",
             }
 
@@ -94,15 +118,11 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 response = supabase.table('cashflow_petty_cash').insert(new_entry).execute()
             except Exception as insert_error:
                 if _is_missing_column_error(insert_error):
-                    legacy_entry = {
-                        "entry_date": new_entry["entry_date"],
-                        "description": new_entry["description"],
-                        "category": new_entry["category"],
-                        "auto_categorized": new_entry["auto_categorized"],
-                        "cash_in": new_entry["cash_in"],
-                        "cash_out": new_entry["cash_out"],
-                    }
-                    response = supabase.table('cashflow_petty_cash').insert(legacy_entry).execute()
+                    return func.HttpResponse(
+                        json.dumps({"ok": False, "error": "Petty cash schema is missing required columns. Run the latest cashflow schema migration first."}),
+                        mimetype="application/json",
+                        status_code=409,
+                    )
                 else:
                     raise
 
@@ -113,6 +133,12 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             )
 
         elif req.method == "POST" and action == "approve":
+            if not identity_can_approve(identity):
+                return func.HttpResponse(
+                    json.dumps({"ok": False, "error": "Only owners or admins can approve petty cash entries."}),
+                    mimetype="application/json",
+                    status_code=403,
+                )
             try:
                 req_body = req.get_json()
             except ValueError:
@@ -130,7 +156,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     status_code=400,
                 )
 
-            current = supabase.table('cashflow_petty_cash').select('*').eq('id', entry_id).limit(1).execute()
+            current = supabase.table('cashflow_petty_cash').select('*').eq('company_id', company_id).eq('id', entry_id).limit(1).execute()
             current_rows = current.data or []
             if not current_rows:
                 return func.HttpResponse(
@@ -169,6 +195,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     "status": "approved",
                     "approved_at": datetime.now(timezone.utc).isoformat(),
                 })
+                .eq('company_id', company_id)
                 .eq('id', entry_id)
                 .execute()
             )

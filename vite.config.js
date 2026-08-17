@@ -17,7 +17,13 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:7071',
+        // Keep local Functions development opt-in. When the Functions host is
+        // not running, proxying to localhost produces ECONNREFUSED for every
+        // Cashflow request. The deployed API is a usable default for the
+        // frontend dev server; set VITE_DEV_API_PROXY_TARGET to localhost:7071
+        // when running `func start` locally.
+        target: process.env.VITE_DEV_API_PROXY_TARGET
+          || 'https://func-ofs-carrer-001-dzd4h9andncbhfha.southindia-01.azurewebsites.net',
         changeOrigin: true,
       },
     },

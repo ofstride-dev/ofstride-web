@@ -4,6 +4,7 @@ const DEFAULT_FUNC_API_BASE =
   "https://func-ofs-carrer-001-dzd4h9andncbhfha.southindia-01.azurewebsites.net/api";
 
 const CASHFLOW_LOCAL_ID_KEY = "ofstride_cashflow_user_id";
+const CASHFLOW_PROFILE_CACHE_KEY = "ofstride_cashflow_profile";
 
 function getOrCreateCashflowLocalId(): string {
   const existing = localStorage.getItem(CASHFLOW_LOCAL_ID_KEY);
@@ -14,6 +15,23 @@ function getOrCreateCashflowLocalId(): string {
   const nextId = crypto.randomUUID();
   localStorage.setItem(CASHFLOW_LOCAL_ID_KEY, nextId);
   return nextId;
+}
+
+function getCachedCashflowProfile(): Record<string, any> | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(CASHFLOW_PROFILE_CACHE_KEY);
+    if (!raw) {
+      return null;
+    }
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
 }
 
 export const CASHFLOW_API_BASE =
@@ -43,20 +61,27 @@ async function cashflowIdentityHeaders(): Promise<HeadersInit> {
     headers["Authorization"] = `Bearer ${session.access_token}`;
   }
 
-  const resolvedUserId = user?.id || getOrCreateCashflowLocalId();
-  headers["x-user-id"] = resolvedUserId;
-  headers["x-cashflow-user-id"] = resolvedUserId;
+  const cachedProfile = getCachedCashflowProfile();
+  const cachedRole = String(cachedProfile?.role || "").trim().toLowerCase();
+  const cachedCompanyId = String(cachedProfile?.company_id || "").trim();
+  const cachedUserId = String(cachedProfile?.id || cachedProfile?.user_id || "").trim();
 
-  const rawRole = String(
-    user?.user_metadata?.role || user?.app_metadata?.role || ""
-  ).toLowerCase();
+  // Prefer the authenticated Supabase user id, but preserve cached profile ids
+  // for local/dev flows where the profile record is created independently.
+  const identityUserId = user?.id || cachedUserId || getOrCreateCashflowLocalId();
 
-  // Keep cashflow auth strict and explicit. We only pass roles expected by
-  // backend validator so malformed/unknown roles are rejected cleanly.
-  if (rawRole === "admin" || rawRole === "finance" || rawRole === "employer") {
-    headers["x-app-role"] = rawRole;
-  } else {
-    headers["x-app-role"] = "employer";
+  headers["x-user-id"] = identityUserId;
+  headers["x-cashflow-user-id"] = identityUserId;
+
+  // Once Supabase has authenticated the user, the API must resolve role and
+  // company from the bearer token/profile. Do not send cached tenant headers
+  // for an authenticated session: those values can belong to a prior company
+  // or role and must never influence Cashflow authorization.
+  if (!user?.id) {
+    headers["x-app-role"] = cachedRole || "employee";
+    if (cachedCompanyId) {
+      headers["x-company-id"] = cachedCompanyId;
+    }
   }
 
   return headers;

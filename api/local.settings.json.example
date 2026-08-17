@@ -54,8 +54,8 @@
     "ENTRA_EMPLOYER_GROUP_IDS": "",
     "ENTRA_ADMIN_GROUP_IDS": "",
 
-    "SUPABASE_URL": "",
-    "SUPABASE_SERVICE_KEY": "",
+    "SUPABASE_URL": "https://jxocmzvsspdnooganlps.supabase.co",
+    "SUPABASE_SERVICE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4b2NtenZzc3Bkbm9vZ2FubHBzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MzkyMzQzOSwiZXhwIjoyMDk5NDk5NDM5fQ.outhxp3YvjS2hsBwrMdcoE0M4zb6tK_Izt3jTjOcrRA",
     "SUPABASE_JWT_SECRET": "",
     "SUPABASE_AUTH_AUDIENCE": "authenticated",
     "ADMIN_ALLOWED_ROLES": "admin,employer",

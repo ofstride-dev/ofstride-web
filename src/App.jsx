@@ -34,6 +34,10 @@ import SubmitExpense from './pages/expenses/SubmitExpense.jsx'
 import ExpenseDetail from './pages/expenses/ExpenseDetail.jsx'
 import AdminExpenseQueue from './pages/expenses/AdminExpenseQueue.jsx'
 import { getMetaTags } from './seo/routeMetadata.js'
+import OwnerOnboarding from './pages/expenses/OwnerOnboarding.jsx'
+import CompanyProfile from './pages/expenses/CompanyProfile.jsx'
+import AcceptInvite from './pages/expenses/AcceptInvite.jsx'
+import AdminInvites from './pages/expenses/AdminInvites.jsx'
 
 function App() {
   const location = useLocation()
@@ -46,6 +50,7 @@ function App() {
       if (!element) { element = document.createElement('meta'); element.setAttribute(attribute, content); document.head.appendChild(element) }
       element.setAttribute('content', content)
     }
+
     setMeta('meta[name="description"]', 'name', metadata.description)
     setMeta('meta[property="og:type"]', 'property', 'website')
     setMeta('meta[property="og:site_name"]', 'property', 'Ofstride Services LLP')
@@ -87,13 +92,42 @@ function App() {
 
           {/* CASHFLOW SUITE ROUTES (NOW INSIDE PUBLIC LAYOUT) */}
           <Route path="cashflow" element={<CashflowLayout />}>
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<CashflowDashboard />} />
-            <Route path="ap" element={<AccountsPayable />} />
-            <Route path="ar" element={<AccountsReceivable />} />
-            <Route path="pettycash" element={<PettyCash />} />
-            <Route path="reconcile" element={<BankStatementReconcile />} />
+            <Route index element={<Navigate to="login" replace />} />
+            <Route path="login" element={<ExpensesAuthLayout />}>
+              <Route index element={<ExpensesLogin />} />
+            </Route>
+            <Route path="dashboard" element={<ExpenseProtectedRoute><CashflowDashboard /></ExpenseProtectedRoute>} />
+            <Route path="ap" element={<ExpenseProtectedRoute><AccountsPayable /></ExpenseProtectedRoute>} />
+            <Route path="ar" element={<ExpenseProtectedRoute><AccountsReceivable /></ExpenseProtectedRoute>} />
+            <Route path="pettycash" element={<ExpenseProtectedRoute><PettyCash /></ExpenseProtectedRoute>} />
+            <Route path="reconcile" element={<ExpenseProtectedRoute><BankStatementReconcile /></ExpenseProtectedRoute>} />
+            <Route
+              path="invites"
+              element={
+                <ExpenseProtectedRoute allowedRoles={["owner", "admin", "finance"]}>
+                  <AdminInvites />
+                </ExpenseProtectedRoute>
+              }
+            />
             <Route path="expense" element={<ExpensesAuthLayout />}>
+              <Route path="login" element={<ExpensesLogin />} />
+              <Route path="accept-invite" element={<AcceptInvite />} />
+              <Route
+                path="onboarding"
+                element={
+                  <ExpenseProtectedRoute allowWithoutCompany>
+                    <OwnerOnboarding />
+                  </ExpenseProtectedRoute>
+                }
+              />
+              <Route
+                path="company-profile"
+                element={
+                  <ExpenseProtectedRoute allowWithoutCompany>
+                    <CompanyProfile />
+                  </ExpenseProtectedRoute>
+                }
+              />
               <Route
                 index
                 element={
@@ -102,7 +136,6 @@ function App() {
                   </ExpenseProtectedRoute>
                 }
               />
-              <Route path="login" element={<ExpensesLogin />} />
               <Route
                 path="new"
                 element={
