@@ -5,7 +5,7 @@ from urllib import request as url_request
 
 import azure.functions as func
 
-from shared.admin_auth import identity_can_approve, validate_identity_headers
+from shared.admin_auth import identity_can_approve, require_cashflow_tenant
 
 
 def _response(status_code: int, ok: bool, data=None, error: str | None = None) -> func.HttpResponse:
@@ -37,7 +37,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     if req.method != "POST" or action != "notify":
         return _response(404, False, error="Unsupported cashflow invite action")
 
-    auth = validate_identity_headers(req)
+    auth = require_cashflow_tenant(req)
     if not auth.get("ok"):
         return _response(auth.get("status_code", 401), False, error=auth.get("error") or "Unauthorized")
 

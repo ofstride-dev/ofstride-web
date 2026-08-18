@@ -1,9 +1,9 @@
 import azure.functions as func
 import json
 import logging
-from datetime import datetime, timezone
 from shared.db import get_supabase_client
-from shared.admin_auth import identity_can_approve, validate_identity_headers
+from shared.admin_auth import identity_can_approve, require_cashflow_tenant
+from cashflow.pettycash import MissingTableError, PettyCashRepository
 
 def ai_categorize_expense(description: str) -> tuple[str, bool]:
     desc_lower = description.lower().strip()
@@ -43,16 +43,11 @@ def _is_missing_column_error(exc: Exception) -> bool:
     return "column" in message and ("does not exist" in message or "not found" in message)
 
 
-def _is_missing_table_error(exc: Exception) -> bool:
-    text = str(exc or "")
-    lowered = text.lower()
-    return "pgrst205" in lowered or "could not find the table" in lowered
-
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Processing Petty Cash request.')
     action = req.route_params.get("action")
 
-    auth = validate_identity_headers(req)
+    auth = require_cashflow_tenant(req)
     if not auth["ok"]:
         return func.HttpResponse(
             json.dumps({"ok": False, "error": auth["error"]}),
@@ -64,25 +59,20 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         supabase = get_supabase_client()
         method = req.method
         identity = auth.get("identity") or {}
-        company_id = str(identity.get("company_id") or "").strip()
-        if not company_id:
-            return func.HttpResponse(
-                json.dumps({"ok": False, "error": "Complete workspace onboarding before using petty cash."}),
-                mimetype="application/json",
-                status_code=403,
-            )
+        context = auth.get("tenant")
+        if context is None:
+            return func.HttpResponse(json.dumps({"ok": False, "error": "Cashflow workspace membership is required."}), mimetype="application/json", status_code=403)
+        repository = PettyCashRepository(supabase)
 
         if method == "GET" and (not action or action == "list"):
             try:
-                response = supabase.table('cashflow_petty_cash').select('*').eq('company_id', company_id).order('entry_date', desc=True).execute()
-            except Exception as list_error:
-                if _is_missing_table_error(list_error):
-                    return func.HttpResponse(
-                        json.dumps({"ok": True, "data": []}),
-                        mimetype="application/json",
-                        status_code=200
-                    )
-                raise
+                response = repository.list_entries(context)
+            except MissingTableError:
+                return func.HttpResponse(
+                    json.dumps({"ok": True, "data": []}),
+                    mimetype="application/json",
+                    status_code=200
+                )
             return func.HttpResponse(
                 json.dumps({"ok": True, "data": response.data}),
                 mimetype="application/json",
@@ -103,19 +93,16 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
             # Schema exact mapping
             new_entry = {
-                "company_id": company_id,
                 "entry_date": req_body.get('date'),
                 "description": description,
                 "category": category,
                 "auto_categorized": auto_categorized,
                 "cash_in": amount if entry_type == 'IN' else 0.00,
                 "cash_out": amount if entry_type == 'OUT' else 0.00,
-                "recorded_by": identity.get("user_id"),
-                "status": "pending",
             }
 
             try:
-                response = supabase.table('cashflow_petty_cash').insert(new_entry).execute()
+                response = repository.create_entry(context, new_entry)
             except Exception as insert_error:
                 if _is_missing_column_error(insert_error):
                     return func.HttpResponse(
@@ -156,7 +143,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     status_code=400,
                 )
 
-            current = supabase.table('cashflow_petty_cash').select('*').eq('company_id', company_id).eq('id', entry_id).limit(1).execute()
+            current = repository.get_entry(context, entry_id)
             current_rows = current.data or []
             if not current_rows:
                 return func.HttpResponse(
@@ -189,16 +176,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     status_code=400,
                 )
 
-            updated = (
-                supabase.table('cashflow_petty_cash')
-                .update({
-                    "status": "approved",
-                    "approved_at": datetime.now(timezone.utc).isoformat(),
-                })
-                .eq('company_id', company_id)
-                .eq('id', entry_id)
-                .execute()
-            )
+            updated = repository.approve_entry(context, entry_id)
 
             updated_rows = updated.data or []
             if not updated_rows:

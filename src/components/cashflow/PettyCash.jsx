@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { cashflowFetch, parseCashflowResponse } from '../../services/cashflowApi';
 import { exportRowsAsCsv } from '../../services/csvExport';
-import { useExpenseAuth } from '../../context/ExpenseAuthContext';
+import { useCashflowAuth } from '../../context/CashflowAuthContext';
 
 export default function PettyCash() {
-  const { isAdmin } = useExpenseAuth();
+  const { isAdmin, session, profile } = useCashflowAuth();
+  const authIdentityKey = `${session?.user?.id || ''}:${profile?.company_id || ''}`;
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -20,19 +21,28 @@ export default function PettyCash() {
   });
 
   useEffect(() => {
-    fetchLedger();
-  }, []);
+    let isCurrent = true;
+    setEntries([]);
+    setLoading(true);
 
-  const fetchLedger = async () => {
+    fetchLedger(() => isCurrent);
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [authIdentityKey]);
+
+  const fetchLedger = async (isRequestCurrent = () => true) => {
     try {
       const res = await cashflowFetch('/cashflow/pettycash');
       const parsed = await parseCashflowResponse(res);
+      if (!isRequestCurrent()) return;
       if (parsed.ok) setEntries(parsed.data || []);
       else throw new Error(parsed.error || `Server returned ${parsed.status}`);
     } catch (err) {
-      console.error("Failed to fetch ledger", err);
+      if (isRequestCurrent()) console.error("Failed to fetch ledger", err);
     } finally {
-      setLoading(false);
+      if (isRequestCurrent()) setLoading(false);
     }
   };
 

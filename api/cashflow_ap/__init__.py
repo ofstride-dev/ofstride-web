@@ -7,7 +7,8 @@ import re
 from datetime import datetime, timedelta
 from shared.db import get_supabase_client
 from shared.tax_engine_interface import calculate_tds, calculate_msme_due_date
-from shared.admin_auth import identity_can_approve, identity_can_use_cashflow, resolve_identity_headers, validate_identity_headers
+from shared.admin_auth import identity_can_approve, identity_can_use_cashflow, require_cashflow_tenant, resolve_identity_headers
+from cashflow.ap import APRepository
 
 
 def _safe_float(value, default: float = 0.0) -> float:
@@ -264,39 +265,13 @@ def _run_ap_ocr_pipeline(file_bytes: bytes, endpoint: str, key: str) -> dict:
         },
     }
 
-def get_or_create_vendor(supabase, company_id: str, vendor_name: str, gstin: str = None) -> str:
-    if not vendor_name:
-        vendor_name = "Unassigned Vendor"
-        
-    res = (
-        supabase.table('cashflow_entities')
-        .select('id')
-        .eq('company_id', company_id)
-        .eq('name', vendor_name)
-        .eq('entity_type', 'vendor')
-        .execute()
-    )
-    if res.data and len(res.data) > 0:
-        return res.data[0]['id']
-
-    new_vendor = {
-        "name": vendor_name,
-        "company_id": company_id,
-        "entity_type": "vendor",
-        "gstin": gstin if gstin else None,
-        "msme_registered": False,
-        "msme_category": "none"
-    }
-    v_res = supabase.table('cashflow_entities').insert(new_vendor).execute()
-    return v_res.data[0]['id']
-
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Processing Accounts Payable request.')
     action = req.route_params.get("action")
     if not action and req.method == "GET":
         action = "list"
 
-    auth = validate_identity_headers(req)
+    auth = require_cashflow_tenant(req)
     if not auth["ok"]:
         return func.HttpResponse(
             json.dumps({"ok": False, "error": auth["error"]}),
@@ -343,7 +318,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             )
 
         if req.method == "GET" and action == "list":
-            auth = validate_identity_headers(req)
+            auth = require_cashflow_tenant(req)
             if not auth["ok"]:
                 return func.HttpResponse(
                     json.dumps({"ok": False, "error": auth["error"]}),
@@ -362,20 +337,10 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         # 1. GET /api/cashflow/ap/list
         if req.method == "GET" and action == "list":
             try:
-                response = (
-                    supabase.table('cashflow_bills')
-                    .select('*, cashflow_entities(id, name, gstin, msme_category)')
-                    .eq('company_id', company_id)
-                    .order('created_at', desc=True)
-                    .execute()
-                )
+                response = APRepository(supabase).list_bills(auth["tenant"])
             except Exception as list_error:
-                msg = str(list_error or "")
-                lowered = msg.lower()
-                if "pgrst205" in lowered or "could not find the table" in lowered:
-                    # Cashflow tables not migrated yet — return an empty list.
-                    return func.HttpResponse(json.dumps({"ok": True, "data": []}), mimetype="application/json")
-                raise
+                # Cashflow tables not migrated yet — return an empty list.
+                return func.HttpResponse(json.dumps({"ok": True, "data": []}), mimetype="application/json")
 
             return func.HttpResponse(json.dumps({"ok": True, "data": response.data}), mimetype="application/json")
 
@@ -437,7 +402,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
         # 3. POST /api/cashflow/ap/save
         elif req.method == "POST" and action == "save":
-            auth = validate_identity_headers(req)
+            auth = require_cashflow_tenant(req)
             if not auth["ok"]:
                 return func.HttpResponse(
                     json.dumps({"ok": False, "error": auth["error"]}),
@@ -453,7 +418,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                     status_code=403,
                 )
             data = req.get_json()
-            vendor_id = get_or_create_vendor(supabase, company_id, data.get("vendor_name"), data.get("vendor_gstin"))
+            vendor_id = APRepository(supabase).get_or_create_vendor(auth["tenant"], data.get("vendor_name"), data.get("vendor_gstin"))
 
             amount = float(data.get("total_amount", data.get("amount", 0)))
             amount_before_gst = float(data.get("amount_before_gst", max(amount - float(data.get("gst_amount", 0)), 0)))
@@ -493,7 +458,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
         # 4. POST /api/cashflow/ap/approve
         elif req.method == "POST" and action == "approve":
-            auth = validate_identity_headers(req)
+            auth = require_cashflow_tenant(req)
             if not auth["ok"]:
                 return func.HttpResponse(
                     json.dumps({"ok": False, "error": auth["error"]}),

@@ -60,6 +60,16 @@ export async function acceptCompanyInvite(inviteToken: string, fullName: string)
   return firstRow<any>(data) || data;
 }
 
+export async function revokeCompanyInvite(inviteToken: string) {
+  const { data, error } = await supabase.rpc("revoke_company_invite", {
+    p_invite_token: inviteToken,
+  });
+  if (error) {
+    throw error;
+  }
+  return firstRow<any>(data) || data;
+}
+
 export async function createCompanyInvite(email: string, role: "admin" | "employee" = "employee") {
   const normalizedEmail = email.trim().toLowerCase();
   const { data, error } = await supabase.rpc("create_company_invite", {
@@ -88,6 +98,11 @@ export async function createCompanyInvite(email: string, role: "admin" | "employ
   });
   const parsed = await parseCashflowResponse<{ support_sent?: boolean }>(notifyRes);
   if (!parsed.ok) {
+    try {
+      await revokeCompanyInvite(String(invite?.invite_token || ""));
+    } catch {
+      // Preserve the delivery error; the server-side revoke remains best effort.
+    }
     throw new Error(parsed.error || "Invite email could not be sent.");
   }
 

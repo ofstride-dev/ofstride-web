@@ -2,9 +2,11 @@ from datetime import date, datetime, timedelta
 
 import azure.functions as func
 
-from shared.admin_auth import validate_identity_headers
+from shared.admin_auth import require_cashflow_tenant
 from shared.api_contract import create_response
 from shared.db import get_supabase_client
+from shared.tenant import TenantContext
+from cashflow.dashboard import DashboardRepository
 
 
 def _safe_float(value) -> float:
@@ -111,7 +113,7 @@ def _empty_dashboard(start_date, end_date, applied_period) -> dict:
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    auth = validate_identity_headers(req)
+    auth = require_cashflow_tenant(req)
     if not auth["ok"]:
         return create_response(auth["status_code"], False, error=auth["error"])
     identity = auth.get("identity") or {}
@@ -130,96 +132,25 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         end_key = end_date.isoformat()
         days_in_window = max((end_date - start_date).days + 1, 1)
 
-        supabase = get_supabase_client()
-
-        # Wrap each Supabase query so a missing/unmigrated table returns
-        # empty data instead of crashing the whole dashboard for new workspaces.
-        def _query_table(table_name, select_str, **filters):
-            try:
-                query = supabase.table(table_name).select(select_str)
-                for key, value in filters.items():
-                    query = query.eq(key, value)
-                return (query.execute().data or [])
-            except Exception as exc:
-                if _is_missing_table_error(exc):
-                    raise
-                return []
-
+        context = TenantContext(
+            user_id=str(identity.get("user_id") or ""),
+            company_id=company_id,
+            role=str(identity.get("role") or ""),
+            email=identity.get("email"),
+            full_name=identity.get("full_name"),
+        )
+        repository = DashboardRepository(get_supabase_client())
         try:
-            tx_rows = (
-                supabase.table("cashflow_transactions")
-                .select("amount,invoice_id,bill_id")
-                .eq("company_id", company_id)
-                .gte("transaction_date", start_key)
-                .lte("transaction_date", end_key)
-                .execute()
-            )
-            tx_data = tx_rows.data or []
+            window = repository.read_window(context, start_date, end_date)
         except Exception as exc:
             if _is_missing_table_error(exc):
                 return create_response(200, True, data=_empty_dashboard(start_date, end_date, applied_period))
             raise
-
-        try:
-            petty_rows = (
-                supabase.table("cashflow_petty_cash")
-                .select("cash_in,cash_out")
-                .eq("company_id", company_id)
-                .gte("entry_date", start_key)
-                .lte("entry_date", end_key)
-                .execute()
-            )
-        except Exception as exc:
-            if _is_missing_table_error(exc):
-                return create_response(200, True, data=_empty_dashboard(start_date, end_date, applied_period))
-            raise
-
-        try:
-            pending_ar_rows = (
-                supabase.table("cashflow_invoices")
-                .select("amount,gst_amount")
-                .eq("company_id", company_id)
-                .eq("status", "pending")
-                .eq("is_proforma", False)
-                .gte("invoice_date", start_key)
-                .lte("invoice_date", end_key)
-                .execute()
-            )
-        except Exception as exc:
-            if _is_missing_table_error(exc):
-                return create_response(200, True, data=_empty_dashboard(start_date, end_date, applied_period))
-            raise
-
-        try:
-            payable_rows = (
-                supabase.table("cashflow_bills")
-                .select("amount,gst_amount")
-                .eq("company_id", company_id)
-                .in_("status", ["pending", "approved"])
-                .gte("bill_date", start_key)
-                .lte("bill_date", end_key)
-                .execute()
-            )
-        except Exception as exc:
-            if _is_missing_table_error(exc):
-                return create_response(200, True, data=_empty_dashboard(start_date, end_date, applied_period))
-            raise
-
-        try:
-            msme_candidates = (
-                supabase.table("cashflow_bills")
-                .select("due_date,amount,gst_amount,cashflow_entities!cashflow_bills_vendor_id_fkey(name,msme_category)")
-                .eq("company_id", company_id)
-                .in_("status", ["pending", "approved"])
-                .gte("due_date", start_key)
-                .lte("due_date", end_key)
-                .order("due_date", desc=False)
-                .execute()
-            )
-        except Exception as exc:
-            if _is_missing_table_error(exc):
-                return create_response(200, True, data=_empty_dashboard(start_date, end_date, applied_period))
-            raise
+        tx_rows = window["transactions"]
+        petty_rows = window["petty_cash"]
+        pending_ar_rows = window["pending_invoices"]
+        payable_rows = window["payable_bills"]
+        msme_candidates = window["msme_candidates"]
 
         # Last 6 months trend for dashboard charts.
         current_month = _month_start(date.today())
@@ -228,32 +159,13 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         trend_end_key = end_key
 
         try:
-            trend_tx_rows = (
-                supabase.table("cashflow_transactions")
-                .select("transaction_date,amount,invoice_id,bill_id")
-                .eq("company_id", company_id)
-                .gte("transaction_date", trend_start_key)
-                .lte("transaction_date", trend_end_key)
-                .execute()
-            )
+            trend = repository.read_trend(context, trend_start, end_date)
         except Exception as exc:
             if _is_missing_table_error(exc):
                 return create_response(200, True, data=_empty_dashboard(start_date, end_date, applied_period))
             raise
-
-        try:
-            trend_petty_rows = (
-                supabase.table("cashflow_petty_cash")
-                .select("entry_date,cash_in,cash_out")
-                .eq("company_id", company_id)
-                .gte("entry_date", trend_start_key)
-                .lte("entry_date", trend_end_key)
-                .execute()
-            )
-        except Exception as exc:
-            if _is_missing_table_error(exc):
-                return create_response(200, True, data=_empty_dashboard(start_date, end_date, applied_period))
-            raise
+        trend_tx_rows = trend["transactions"]
+        trend_petty_rows = trend["petty_cash"]
 
         tx_data = tx_rows.data or []
         cash_received = round(sum(_safe_float(r.get("amount")) for r in tx_data if r.get("invoice_id")), 2)

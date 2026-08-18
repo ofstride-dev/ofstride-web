@@ -9,6 +9,7 @@ if API_ROOT not in sys.path:
     sys.path.insert(0, API_ROOT)
 
 from shared import admin_auth  # noqa: E402
+from shared.tenant import TenantContext  # noqa: E402
 
 
 class FakeRequest:
@@ -71,3 +72,54 @@ class CashflowAdminAuthTests(unittest.TestCase):
         self.assertFalse(result["ok"])
         self.assertEqual(result["status_code"], 503)
         self.assertEqual(result["error_code"], "profile_lookup_failed")
+
+    def test_cashflow_guard_rejects_missing_company_membership(self):
+        request = FakeRequest({})
+        unresolved = {
+            "ok": True,
+            "identity": {
+                "role": "employee",
+                "company_id": None,
+                "tenant_status": "missing_company",
+            },
+        }
+
+        with patch.object(admin_auth, "validate_identity_headers", return_value=unresolved):
+            result = admin_auth.require_cashflow_tenant(request)
+
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["status_code"], 403)
+        self.assertEqual(result["error_code"], "missing_company")
+
+    def test_cashflow_guard_returns_canonical_company_id(self):
+        request = FakeRequest({})
+        company_id = "22222222-2222-4222-8222-222222222222"
+        resolved = {
+            "ok": True,
+            "identity": {
+                "user_id": "11111111-1111-4111-8111-111111111111",
+                "role": "employee",
+                "company_id": company_id,
+                "tenant_status": "resolved",
+            },
+        }
+
+        with patch.object(admin_auth, "validate_identity_headers", return_value=resolved):
+            result = admin_auth.require_cashflow_tenant(request)
+
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["company_id"], company_id)
+        self.assertIsInstance(result["tenant"], TenantContext)
+        self.assertEqual(result["tenant"].company_id, company_id)
+
+    def test_tenant_context_is_independent_of_profile_storage_shape(self):
+        context = admin_auth.context_from_identity(
+            {
+                "user_id": "11111111-1111-4111-8111-111111111111",
+                "company_id": "22222222-2222-4222-8222-222222222222",
+                "role": "Finance",
+            }
+        )
+
+        self.assertEqual(context.role, "finance")
+        self.assertEqual(context.company_id, "22222222-2222-4222-8222-222222222222")

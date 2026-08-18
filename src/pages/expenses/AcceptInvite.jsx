@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
-import { useExpenseAuth } from "../../context/ExpenseAuthContext";
+import { getCashflowPostAuthRoute, useCashflowAuth } from "../../context/CashflowAuthContext";
 
 function AcceptInvite() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { session, profile, acceptInvite, loading, signOut } = useExpenseAuth();
+  const { session, profile, acceptInvite, loading, signOut } = useCashflowAuth();
   const inviteToken = useMemo(() => String(searchParams.get("token") || "").trim(), [searchParams]);
   const invitedEmail = useMemo(() => String(searchParams.get("email") || "").trim().toLowerCase(), [searchParams]);
   const invitedRole = useMemo(() => String(searchParams.get("role") || "").trim().toLowerCase(), [searchParams]);
@@ -32,8 +32,8 @@ function AcceptInvite() {
     setSubmitting(true);
     setError("");
     try {
-      await acceptInvite(inviteToken, fullName.trim());
-      navigate("/cashflow/expense/admin", { replace: true });
+      const result = await acceptInvite(inviteToken, fullName.trim());
+      navigate(getCashflowPostAuthRoute({ session, profile: result?.profile }) || "/cashflow/login", { replace: true });
     } catch (nextError) {
       setError(nextError?.message || "Invite could not be accepted.");
     } finally {

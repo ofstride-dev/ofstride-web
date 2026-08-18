@@ -9,7 +9,7 @@ from decimal import Decimal
 import azure.functions as func
 import pandas as pd
 
-from shared.admin_auth import validate_identity_headers
+from shared.admin_auth import require_cashflow_tenant
 from shared.db import get_supabase_client
 
 
@@ -65,7 +65,7 @@ def _split_tax(total_gst: float, seller_gstin: str | None, buyer_gstin: str | No
 def main(req: func.HttpRequest) -> func.HttpResponse:
     trace_id = str(uuid.uuid4())
 
-    auth = validate_identity_headers(req)
+    auth = require_cashflow_tenant(req)
     if not auth.get("ok"):
         return _err(auth.get("status_code", 401), auth.get("error") or "Unauthorized", trace_id)
     identity = auth.get("identity") or {}

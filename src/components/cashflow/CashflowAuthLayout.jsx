@@ -1,6 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
 
-function ExpensesAuthLayout() {
+function CashflowAuthLayout() {
   const location = useLocation();
   const isCashflowEntry = location.pathname === "/cashflow/login";
 
@@ -74,4 +74,4 @@ function ExpensesAuthLayout() {
   );
 }
 
-export default ExpensesAuthLayout;
+export default CashflowAuthLayout;

@@ -2,13 +2,13 @@ import React, { useMemo, useState } from 'react';
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Download, X } from 'lucide-react';
 import { cashflowFetch } from '../../services/cashflowApi';
-import { ExpenseAuthProvider, useExpenseAuth } from '../../context/ExpenseAuthContext';
+import { CashflowAuthProvider, useCashflowAuth } from '../../context/CashflowAuthContext';
 
 function CashflowShell() {
-  const { session, profile, signOut, isAdmin, loading } = useExpenseAuth();
+  const { session, profile, signOut, isAdmin, loading } = useCashflowAuth();
 
   const location = useLocation();
-  const isLoginRoute = location.pathname === '/cashflow/login';
+  const isLoginRoute = location.pathname.replace(/\/$/, '') === '/cashflow/login';
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -282,8 +282,8 @@ function CashflowShell() {
 
 export default function CashflowLayout() {
   return (
-    <ExpenseAuthProvider>
+    <CashflowAuthProvider>
       <CashflowShell />
-    </ExpenseAuthProvider>
+    </CashflowAuthProvider>
   );
 }

@@ -20,7 +20,7 @@ except Exception as exc:
     pd = None
     PANDAS_IMPORT_ERROR = exc
 
-from shared.admin_auth import resolve_identity_headers, validate_identity_headers
+from shared.admin_auth import require_cashflow_tenant, resolve_identity_headers
 from shared.db import get_supabase_client
 
 try:
@@ -963,7 +963,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 trace_id,
             )
 
-        auth = validate_identity_headers(req)
+        auth = require_cashflow_tenant(req)
         if not auth.get("ok"):
             return _err(auth.get("status_code", 401), auth.get("error") or "Unauthorized", trace_id)
 

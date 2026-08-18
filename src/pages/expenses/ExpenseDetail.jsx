@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { FileText, Paperclip, Download, FileSpreadsheet } from "lucide-react";
-import { useExpenseAuth } from "../../context/ExpenseAuthContext";
+import { useCashflowAuth } from "../../context/CashflowAuthContext";
 import {
   getExpense,
   getExpenseHistory,
@@ -49,7 +49,7 @@ const DETAIL_FIELDS = [
 
 function ExpenseDetail() {
   const { id } = useParams();
-  const { profile, isAdmin } = useExpenseAuth();
+  const { profile, isAdmin } = useCashflowAuth();
 
   const [expense, setExpense] = useState(null);
   const [attachments, setAttachments] = useState([]);

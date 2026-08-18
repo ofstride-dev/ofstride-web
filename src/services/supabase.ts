@@ -90,8 +90,21 @@ export async function signInWithEmail(
   return { user: data.user, error: null };
 }
 
+export async function sendPasswordResetEmail(email: string): Promise<{ error: string | null }> {
+  const redirectTo = new URL("/cashflow/reset-password", window.location.origin).toString();
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+    redirectTo,
+  });
+  return { error: error ? error.message : null };
+}
+
+export async function updatePassword(password: string): Promise<{ error: string | null }> {
+  const { error } = await supabase.auth.updateUser({ password });
+  return { error: error ? error.message : null };
+}
+
 export async function signInWithGoogle(
-  _redirectPath?: string
+  redirectPath = "/cashflow/login"
 ): Promise<{ error: string | null }> {
   // Use a fixed redirect URL that matches exactly what's configured in Supabase.
   // After Google OAuth completes, Supabase redirects back here and the app's
@@ -101,15 +114,13 @@ export async function signInWithGoogle(
   // For local dev add: http://localhost:5174/**
   // For production add: https://yourdomain.com/**
   // After Google OAuth completes, Supabase redirects back here.
-  // The ExpenseProtectedRoute wrapper on /cashflow/dashboard will
-  // detect the new session and render the dashboard immediately.
-  const fixedRedirectUrl = `${window.location.origin}/cashflow/dashboard`;
+  const redirectUrl = new URL(redirectPath, window.location.origin).toString();
   // Sign out first to purge any stale session so the OAuth flow is clean
   await supabase.auth.signOut();
   const { error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: fixedRedirectUrl,
+      redirectTo: redirectUrl,
     },
   });
   return { error: error ? error.message : null };
@@ -117,7 +128,7 @@ export async function signInWithGoogle(
 
 export async function signInWithOtp(
   email: string,
-  redirectPath = "/cashflow/expense"
+  redirectPath = "/cashflow/login"
 ): Promise<{ error: string | null }> {
   const redirectUrl = new URL(redirectPath, window.location.origin).toString();
   const { error } = await supabase.auth.signInWithOtp({

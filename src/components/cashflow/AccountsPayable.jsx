@@ -6,10 +6,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { cashflowFetch, parseCashflowResponse } from '../../services/cashflowApi';
 import { exportRowsAsCsv } from '../../services/csvExport';
-import { useExpenseAuth } from '../../context/ExpenseAuthContext';
+import { useCashflowAuth } from '../../context/CashflowAuthContext';
 
 export default function AccountsPayable() {
-  const { isAdmin, session, profile } = useExpenseAuth();
+  const { isAdmin, session, profile } = useCashflowAuth();
   const authIdentityKey = `${session?.user?.id || ''}:${profile?.company_id || ''}`;
   const activeIdentityKeyRef = useRef(authIdentityKey);
   const [invoices, setInvoices] = useState([]);

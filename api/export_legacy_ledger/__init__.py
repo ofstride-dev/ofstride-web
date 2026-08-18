@@ -3,7 +3,7 @@ import uuid
 
 import azure.functions as func
 
-from shared.admin_auth import validate_identity_headers
+from shared.admin_auth import require_cashflow_tenant
 
 
 def _err(status_code: int, message: str, trace_id: str) -> func.HttpResponse:
@@ -17,7 +17,7 @@ def _err(status_code: int, message: str, trace_id: str) -> func.HttpResponse:
 def main(req: func.HttpRequest) -> func.HttpResponse:
     trace_id = str(uuid.uuid4())
 
-    auth = validate_identity_headers(req)
+    auth = require_cashflow_tenant(req)
     if not auth.get("ok"):
         return _err(auth.get("status_code", 401), auth.get("error") or "Unauthorized", trace_id)
 

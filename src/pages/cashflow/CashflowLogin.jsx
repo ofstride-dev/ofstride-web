@@ -1,30 +1,37 @@
 import { useEffect, useMemo, useState } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 import { Chrome, Sparkles, X } from "lucide-react";
-import { useExpenseAuth } from "../../context/ExpenseAuthContext";
+import { getCashflowPostAuthRoute, useCashflowAuth } from "../../context/CashflowAuthContext";
+import { sendPasswordResetEmail } from "../../services/supabase";
 
-function ExpensesLogin() {
-  const { session, signInWithGoogle, signInWithInviteLink, loading, signOut } = useExpenseAuth();
+function CashflowLogin() {
+  const { session, profile, profileError, signIn, signInWithGoogle, signInWithInviteLink, loading, signOut } = useCashflowAuth();
   const [searchParams] = useSearchParams();
 
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState("get-started");
   const [submitting, setSubmitting] = useState(false);
 
   const inviteToken = useMemo(() => String(searchParams.get("token") || "").trim(), [searchParams]);
   const inviteEmail = useMemo(() => String(searchParams.get("email") || "").trim(), [searchParams]);
   const inviteRole = useMemo(() => String(searchParams.get("role") || "").trim(), [searchParams]);
-  const inviteRedirect = useMemo(() => {
+  const invitePath = useMemo(() => {
     if (!inviteToken) {
-      return "/cashflow/expense/company-profile";
+      return null;
     }
     const params = new URLSearchParams({ token: inviteToken });
     if (inviteEmail) params.set("email", inviteEmail);
     if (inviteRole) params.set("role", inviteRole);
     return `/cashflow/expense/accept-invite?${params.toString()}`;
   }, [inviteToken, inviteEmail, inviteRole]);
+  const authRedirect = useMemo(() => {
+    if (!invitePath) return "/cashflow/login";
+    return `/cashflow/login?${new URLSearchParams({ token: inviteToken, ...(inviteEmail ? { email: inviteEmail } : {}), ...(inviteRole ? { role: inviteRole } : {}) }).toString()}`;
+  }, [invitePath, inviteToken, inviteEmail, inviteRole]);
 
   useEffect(() => {
     if (inviteEmail) {
@@ -42,14 +49,15 @@ function ExpensesLogin() {
   // If there is an existing session and the auth modal isn't open, redirect
   // to the appropriate destination (onboarding or invite accept).
   // Once the user explicitly opens the auth modal, we stay on the login page.
-  if (!loading && session && !authModalOpen) {
-    return <Navigate to={inviteRedirect} replace />;
+  const postAuthRoute = getCashflowPostAuthRoute({ session, profile, profileError, invitePath });
+  if (!loading && postAuthRoute && session && !authModalOpen) {
+    return <Navigate to={postAuthRoute} replace />;
   }
 
   const handleGoogleSignIn = async () => {
     setError("");
     setInfo("");
-    const { error: googleError } = await signInWithGoogle(inviteRedirect);
+    const { error: googleError } = await signInWithGoogle(authRedirect);
     if (googleError) {
       setError(googleError);
     }
@@ -66,12 +74,56 @@ function ExpensesLogin() {
     setError("");
     setInfo("");
     try {
-      const { error: otpError } = await signInWithInviteLink(normalizedEmail, inviteRedirect);
+      const { error: otpError } = await signInWithInviteLink(normalizedEmail, authRedirect);
       if (otpError) {
         setError(otpError);
         return;
       }
       setInfo(`A sign-in link has been sent to ${normalizedEmail}. Open that email on the same device and continue.`);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handlePasswordSignIn = async () => {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail || !password) {
+      setError("Email and password are required.");
+      return;
+    }
+
+    setSubmitting(true);
+    setError("");
+    setInfo("");
+    try {
+      const { error: signInError } = await signIn(normalizedEmail, password);
+      if (signInError) {
+        setError(signInError);
+        return;
+      }
+      setPassword("");
+      setAuthModalOpen(false);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) {
+      setError("Enter your email address first.");
+      return;
+    }
+    setSubmitting(true);
+    setError("");
+    setInfo("");
+    try {
+      const { error: resetError } = await sendPasswordResetEmail(normalizedEmail);
+      if (resetError) {
+        setError(resetError);
+        return;
+      }
+      setInfo(`A password setup link has been sent to ${normalizedEmail}. Open it on this device to choose your password.`);
     } finally {
       setSubmitting(false);
     }
@@ -105,6 +157,7 @@ function ExpensesLogin() {
               onClick={() => {
                 setError("");
                 setInfo("");
+                setAuthMode("get-started");
                 setAuthModalOpen(true);
               }}
               className="mt-8 inline-flex w-fit items-center justify-center gap-2 rounded-2xl bg-slate-900 px-7 py-3.5 text-lg font-semibold text-white shadow-[0_14px_30px_-14px_rgba(15,23,42,0.5)] hover:bg-slate-800"
@@ -153,7 +206,11 @@ function ExpensesLogin() {
             </div>
 
             <h2 className="text-center text-3xl font-semibold leading-tight text-slate-900 sm:text-4xl">
-              {inviteToken ? "Join your workspace in under a minute" : "Get started in less than 1 minute!"}
+              {inviteToken
+                ? "Join your workspace in under a minute"
+                : authMode === "sign-in"
+                  ? "Sign in to your workspace"
+                  : "Get started in less than 1 minute!"}
             </h2>
 
             {inviteToken ? (
@@ -163,26 +220,60 @@ function ExpensesLogin() {
             ) : null}
 
             <div className="mt-7 rounded-2xl bg-slate-50 p-3 sm:p-4">
-              <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="space-y-3">
                 <input
                   type="email"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="name@company.com"
-                  className="h-12 flex-1 rounded-xl border border-slate-200 bg-white px-4 text-base text-slate-700 focus:border-blue-300 focus:outline-none"
+                  className="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-base text-slate-700 focus:border-blue-300 focus:outline-none"
                   readOnly={Boolean(inviteToken && inviteEmail)}
                   autoComplete="email"
                 />
+                {authMode === "sign-in" && !inviteToken ? (
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    placeholder="Password"
+                    className="h-12 w-full rounded-xl border border-slate-200 bg-white px-4 text-base text-slate-700 focus:border-blue-300 focus:outline-none"
+                    autoComplete="current-password"
+                  />
+                ) : null}
                 <button
                   type="button"
-                  onClick={handleEmailLink}
+                  onClick={authMode === "sign-in" && !inviteToken ? handlePasswordSignIn : handleEmailLink}
                   disabled={submitting}
-                  className="h-12 rounded-xl bg-slate-900 px-6 text-base font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+                  className="h-12 w-full rounded-xl bg-slate-900 px-6 text-base font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
                 >
-                  Get Started
+                  {authMode === "sign-in" && !inviteToken ? "Sign In" : "Get Started"}
                 </button>
+                {authMode === "sign-in" && !inviteToken ? (
+                  <button
+                    type="button"
+                    onClick={handlePasswordReset}
+                    disabled={submitting}
+                    className="text-sm font-semibold text-blue-700 hover:text-blue-900 disabled:opacity-60"
+                  >
+                    Forgot or set password?
+                  </button>
+                ) : null}
               </div>
             </div>
+
+            {!inviteToken ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setError("");
+                  setInfo("");
+                  setAuthMode((current) => current === "sign-in" ? "get-started" : "sign-in");
+                }}
+                className="mt-4 w-full text-center text-sm font-semibold text-blue-700 hover:text-blue-900"
+              >
+                {authMode === "sign-in" ? "New user? Get started" : "Existing user? Sign in"}
+              </button>
+            ) : null}
 
             <div className="my-6 flex items-center gap-4 text-sm font-semibold text-slate-500">
               <div className="h-px flex-1 bg-slate-200" />
@@ -204,6 +295,11 @@ function ExpensesLogin() {
                 {error}
               </div>
             ) : null}
+            {profileError?.message ? (
+              <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                We couldn't load your Cashflow profile. Please retry or contact support.
+              </div>
+            ) : null}
             {info ? (
               <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
                 {info}
@@ -218,4 +314,4 @@ function ExpensesLogin() {
   );
 }
 
-export default ExpensesLogin;
+export default CashflowLogin;

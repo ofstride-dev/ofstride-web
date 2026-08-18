@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Plus, ShieldCheck, Download, FileSpreadsheet, FileText } from "lucide-react";
-import { useExpenseAuth } from "../../context/ExpenseAuthContext";
+import { useCashflowAuth } from "../../context/CashflowAuthContext";
 import { listMyExpenses, STATUS_LABELS, STATUS_BADGE_CLASSES } from "../../services/expenseService";
 import { downloadExpenseAsXlsx, downloadExpenseAsPdf } from "../../services/expenseExport";
 
@@ -15,7 +15,7 @@ function StatusBadge({ status }) {
 }
 
 function MyExpenses() {
-  const { user, profile, signOut } = useExpenseAuth();
+  const { user, profile, signOut } = useCashflowAuth();
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

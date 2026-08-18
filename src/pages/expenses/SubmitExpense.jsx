@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UploadCloud, ChevronDown } from "lucide-react";
-import { useExpenseAuth } from "../../context/ExpenseAuthContext";
+import { useCashflowAuth } from "../../context/CashflowAuthContext";
 import { createExpense, EXPENSE_CATEGORIES } from "../../services/expenseService";
 import { uploadReceipt } from "../../services/attachmentService";
 
@@ -12,7 +12,7 @@ const inputClass =
   "w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none";
 
 function SubmitExpense() {
-  const { user, profile } = useExpenseAuth();
+  const { user, profile } = useCashflowAuth();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({

@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useExpenseAuth } from "../../context/ExpenseAuthContext";
+import { useCashflowAuth } from "../../context/CashflowAuthContext";
 
 function AdminInvites() {
-  const { invites, inviteMember, profile } = useExpenseAuth();
+  const { invites, inviteMember, profile } = useCashflowAuth();
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("employee");
   const [submitting, setSubmitting] = useState(false);

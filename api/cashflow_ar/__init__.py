@@ -3,7 +3,8 @@ import json
 import logging
 from datetime import datetime, timedelta
 from shared.db import get_supabase_client
-from shared.admin_auth import identity_can_approve, validate_identity_headers
+from shared.admin_auth import identity_can_approve, require_cashflow_tenant
+from cashflow.ar import ARRepository, MissingTableError
 
 
 def _to_float(value, default: float = 0.0) -> float:
@@ -100,39 +101,6 @@ def _insert_invoice_with_fallback(supabase, invoice_payload: dict):
         raise
 
 
-def get_or_create_customer(supabase, company_id: str, customer_name: str, gstin: str = None) -> str:
-    """Finds existing customer by name or creates a new one in cashflow_entities."""
-    if not customer_name:
-        customer_name = "Walk-in Customer"
-
-    try:
-        res = (
-            supabase.table('cashflow_entities')
-            .select('id')
-            .eq('company_id', company_id)
-            .eq('name', customer_name)
-            .eq('entity_type', 'customer')
-            .execute()
-        )
-        if res.data and len(res.data) > 0:
-            return res.data[0]['id']
-    except Exception as exc:
-        if _is_missing_table_error(exc):
-            raise
-        raise
-
-    new_customer = {
-        "name": customer_name,
-        "company_id": company_id,
-        "entity_type": "customer",
-        "gstin": gstin if gstin else None,
-        "msme_registered": False,
-        "msme_category": "none"
-    }
-    c_res = supabase.table('cashflow_entities').insert(new_customer).execute()
-    return c_res.data[0]['id']
-
-
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Processing Accounts Receivable request.')
     action = req.route_params.get("action")
@@ -140,7 +108,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         action = "list"
 
     try:
-        auth = validate_identity_headers(req)
+        auth = require_cashflow_tenant(req)
         if not auth["ok"]:
             return func.HttpResponse(
                 _safe_json({"ok": False, "error": auth["error"]}),
@@ -150,6 +118,10 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
         supabase = get_supabase_client()
         identity = auth.get("identity") or {}
+        context = auth.get("tenant")
+        if context is None:
+            return func.HttpResponse(_safe_json({"ok": False, "error": "Cashflow workspace membership is required."}), mimetype="application/json", status_code=403)
+        repository = ARRepository(supabase)
         company_id = str(identity.get("company_id") or "").strip()
         if not company_id:
             return func.HttpResponse(
@@ -161,16 +133,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         # 1. GET /api/cashflow/ar/list -> Fetch all outbound invoices
         if req.method == "GET" and action == "list":
             try:
-                response = (
-                    supabase.table('cashflow_invoices')
-                    .select('*, cashflow_entities!cashflow_invoices_customer_id_fkey(id, name, gstin)')
-                    .eq('company_id', company_id)
-                    .order('created_at', desc=True)
-                    .execute()
-                )
-            except Exception as list_error:
-                if _is_missing_table_error(list_error):
-                    return func.HttpResponse(_safe_json({"ok": True, "data": []}), mimetype="application/json")
+                response = repository.list_invoices(context)
+            except MissingTableError:
+                return func.HttpResponse(_safe_json({"ok": True, "data": []}), mimetype="application/json")
                 raise
 
             return func.HttpResponse(_safe_json({"ok": True, "data": response.data}), mimetype="application/json")
@@ -182,7 +147,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             except ValueError:
                 return func.HttpResponse(_safe_json({"ok": False, "error": "Invalid JSON body"}), mimetype="application/json", status_code=400)
 
-            customer_id = get_or_create_customer(supabase, company_id, data.get("customer_name"), data.get("customer_gstin"))
+            customer_id = repository.get_or_create_customer(context, data.get("customer_name"), data.get("customer_gstin"))
             item_services = _normalize_item_services(data.get("item_services"))
 
             amount = _to_float(data.get("amount"), 0.0)

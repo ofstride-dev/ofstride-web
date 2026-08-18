@@ -5,10 +5,19 @@ from typing import Any
 
 import azure.functions as func
 
+from shared.tenant import TenantContext, audit
+from shared.tenant.membership import context_from_identity
+from shared.tenant.policy import (
+    CASHFLOW_APPROVER_ROLES,
+    CASHFLOW_ROLES,
+    can_approve_cashflow,
+    can_use_cashflow,
+)
 
-ALLOWED_ROLES = {"owner", "admin", "finance", "employee", "employer"}
-APPROVER_ROLES = {"owner", "admin", "finance"}
-WORKSPACE_MEMBER_ROLES = {"owner", "admin", "finance", "employee", "employer"}
+
+ALLOWED_ROLES = set(CASHFLOW_ROLES) | {"employer"}
+APPROVER_ROLES = set(CASHFLOW_APPROVER_ROLES)
+WORKSPACE_MEMBER_ROLES = set(CASHFLOW_ROLES)
 _logger = logging.getLogger("ofstride.cashflow.auth")
 
 
@@ -133,8 +142,7 @@ def _authenticate_bearer(req: func.HttpRequest) -> dict[str, Any] | None:
 
 
 def identity_can_approve(identity: dict[str, Any] | None) -> bool:
-    role = str((identity or {}).get("role") or "").strip().lower()
-    return role in APPROVER_ROLES
+    return can_approve_cashflow(identity)
 
 
 def identity_can_use_cashflow(identity: dict[str, Any] | None) -> bool:
@@ -144,9 +152,21 @@ def identity_can_use_cashflow(identity: dict[str, Any] | None) -> bool:
     including employees who joined through a company invitation. Approval is
     intentionally stricter and remains governed by ``identity_can_approve``.
     """
-    role = str((identity or {}).get("role") or "").strip().lower()
-    company_id = str((identity or {}).get("company_id") or "").strip()
-    return bool(company_id and role in WORKSPACE_MEMBER_ROLES)
+    return can_use_cashflow(identity)
+
+
+def _record_tenant_event(context: TenantContext, action: str, resource_type: str = None,
+                         resource_id: str = None, result: str = "success", details: dict | None = None):
+    """Best-effort audit logging. Never raises and never blocks the request.
+
+    If Supabase is not configured or the audit table is not yet migrated, the
+    record is skipped and logged by ``tenant.audit.record``.
+    """
+    try:
+        from shared.db import get_supabase_client
+        audit.record(get_supabase_client(), context, action, resource_type, resource_id, result, details)
+    except Exception:
+        return
 
 
 def require_cashflow_tenant(req: func.HttpRequest) -> dict[str, Any]:
@@ -176,10 +196,13 @@ def require_cashflow_tenant(req: func.HttpRequest) -> dict[str, Any]:
             "error_code": tenant_status,
         }
 
+    tenant = context_from_identity(identity)
+    _record_tenant_event(tenant, "cashflow.authenticated", result="success")
     return {
         **auth,
         "identity": identity,
         "company_id": company_id,
+        "tenant": tenant,
     }
 
 

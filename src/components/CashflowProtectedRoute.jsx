@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { useExpenseAuth } from "../context/ExpenseAuthContext";
+import { useCashflowAuth } from "../context/CashflowAuthContext";
+import { canUseCashflow, hasCashflowRole } from "../auth/cashflowPermissions";
 
-function ExpenseProtectedRoute({ children, adminOnly = false, allowedRoles = null, allowWithoutCompany = false }) {
-  const { session, profile, profileError, loading, refreshProfile } = useExpenseAuth();
+function CashflowProtectedRoute({ children, adminOnly = false, allowedRoles = null, allowWithoutCompany = false }) {
+  const { session, profile, profileError, loading, refreshProfile } = useCashflowAuth();
   const attemptedRecoveryRef = useRef(false);
   const [retryingProfile, setRetryingProfile] = useState(false);
 
@@ -45,9 +46,9 @@ function ExpenseProtectedRoute({ children, adminOnly = false, allowedRoles = nul
           <div className="bg-white rounded-2xl p-6 shadow-sm text-center">
             <h1 className="text-lg font-semibold text-primary mb-2">Profile unavailable</h1>
             <p className="text-sm text-muted mb-4">
-              We couldn't load your expense profile. This usually means the database schema
+              We couldn't load your Cashflow profile. This usually means the database schema
               hasn't been applied yet, or row-level security is misconfigured. Please run
-              <code className="mx-1 px-1 py-0.5 rounded bg-slate-100 text-xs">sql/expenses.sql</code>
+              <code className="mx-1 px-1 py-0.5 rounded bg-slate-100 text-xs">the Cashflow Supabase setup script</code>
               in the Supabase SQL editor and sign in again.
             </p>
             {profileError?.message ? (
@@ -81,21 +82,19 @@ function ExpenseProtectedRoute({ children, adminOnly = false, allowedRoles = nul
     );
   }
 
-  if (!allowWithoutCompany && !profile?.company_id) {
+  if (!allowWithoutCompany && !canUseCashflow(profile)) {
     return <Navigate to="/cashflow/expense/company-profile" replace />;
   }
 
-  const effectiveRole = String(profile?.role || "").toLowerCase();
-
-  if (adminOnly && !["owner", "admin", "finance"].includes(effectiveRole)) {
+  if (adminOnly && !hasCashflowRole(profile, ["owner", "admin", "finance"])) {
     return <Navigate to="/cashflow/dashboard" replace />;
   }
 
-  if (Array.isArray(allowedRoles) && allowedRoles.length > 0 && !allowedRoles.includes(effectiveRole)) {
+  if (!hasCashflowRole(profile, allowedRoles)) {
     return <Navigate to="/cashflow/dashboard" replace />;
   }
 
   return children;
 }
 
-export default ExpenseProtectedRoute;
+export default CashflowProtectedRoute;

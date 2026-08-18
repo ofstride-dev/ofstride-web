@@ -9,14 +9,14 @@ create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   full_name text,
   role text not null default 'employee' check (role in ('employee','admin')),
-  company_id uuid not null default '00000000-0000-0000-0000-000000000001',
+  company_id uuid not null,
   created_at timestamptz not null default now()
 );
 
 -- 2. Expense claims
 create table if not exists public.expenses (
   id uuid primary key default gen_random_uuid(),
-  company_id uuid not null default '00000000-0000-0000-0000-000000000001',
+  company_id uuid not null,
   user_id uuid not null references auth.users(id) on delete cascade,
   amount numeric(12,2) not null check (amount > 0),
   currency text not null default 'INR',
@@ -352,6 +352,7 @@ create table if not exists public.companies (
   slug text not null unique,
   owner_user_id uuid references auth.users(id) on delete set null,
   is_demo boolean not null default false,
+  is_setup_complete boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -361,6 +362,7 @@ alter table public.companies
   add column if not exists slug text,
   add column if not exists owner_user_id uuid references auth.users(id) on delete set null,
   add column if not exists is_demo boolean not null default false,
+  add column if not exists is_setup_complete boolean not null default false,
   add column if not exists created_at timestamptz not null default now(),
   add column if not exists updated_at timestamptz not null default now();
 
@@ -556,6 +558,10 @@ create trigger trg_companies_updated_at
   before update on public.companies
   for each row execute function public.set_company_updated_at();
 
+-- Return shape changed in Phase 4; drop the old signature so this remains
+-- idempotent on databases where get_my_profile() already exists.
+drop function if exists public.get_my_profile();
+
 create or replace function public.get_my_profile()
 returns table (
   id uuid,
@@ -566,6 +572,7 @@ returns table (
   company_name text,
   company_slug text,
   is_demo boolean,
+  is_setup_complete boolean,
   created_at timestamptz,
   updated_at timestamptz
 ) as $$
@@ -580,6 +587,7 @@ begin
       c.name,
       c.slug,
       coalesce(c.is_demo, false),
+      coalesce(c.is_setup_complete, false),
       p.created_at,
       p.updated_at
     from public.profiles p
@@ -635,8 +643,8 @@ begin
     v_slug := v_slug || '-' || substr(replace(v_user_id::text, '-', ''), 1, 6);
   end if;
 
-  insert into public.companies (name, email, slug, owner_user_id, is_demo)
-  values (v_name, v_email, v_slug, v_user_id, coalesce(p_is_demo, false))
+  insert into public.companies (name, email, slug, owner_user_id, is_demo, is_setup_complete)
+  values (v_name, v_email, v_slug, v_user_id, coalesce(p_is_demo, false), true)
   returning id into v_company_id;
 
   insert into public.profiles (id, full_name, email, role, company_id)

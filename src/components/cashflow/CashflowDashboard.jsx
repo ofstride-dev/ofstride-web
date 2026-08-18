@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { cashflowFetch, parseCashflowResponse } from '../../services/cashflowApi';
-import { useExpenseAuth } from '../../context/ExpenseAuthContext';
+import { useCashflowAuth } from '../../context/CashflowAuthContext';
 
 function formatMoney(value) {
   const amount = Number(value || 0);
@@ -24,7 +24,7 @@ function SafeBar({ label, value, max, color }) {
 }
 
 export default function CashflowDashboard() {
-  const { session, profile } = useExpenseAuth();
+  const { session, profile } = useCashflowAuth();
   const authIdentityKey = `${session?.user?.id || ''}:${profile?.company_id || ''}`;
   const todayIso = new Date().toISOString().slice(0, 10);
   const monthStartIso = (() => {
@@ -79,6 +79,9 @@ export default function CashflowDashboard() {
     }
 
     // Fetch dashboard metrics with graceful fallback to zero data.
+    // Cache-bust the tenant-sensitive dashboard request. The response must be
+    // recomputed after a company/account switch, even behind a dev proxy.
+    params.set('_tenant_refresh', `${authIdentityKey}:${Date.now()}`);
     const dashboardPromise = cashflowFetch(`/cashflow/dashboard?${params.toString()}`)
       .then(res => parseCashflowResponse(res))
       .then(parsed => {

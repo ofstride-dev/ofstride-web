@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { useExpenseAuth } from "../../context/ExpenseAuthContext";
+import { useCashflowAuth } from "../../context/CashflowAuthContext";
 
-function OwnerOnboarding() {
+function CashflowOnboarding() {
   const navigate = useNavigate();
-  const { user, profile, onboardOwner, hasCompany } = useExpenseAuth();
+  const { user, profile, onboardOwner, hasCompany } = useCashflowAuth();
   const [companyName, setCompanyName] = useState("");
   const [fullName, setFullName] = useState(profile?.full_name || user?.user_metadata?.full_name || "");
   const [submitting, setSubmitting] = useState(false);
@@ -71,4 +71,4 @@ function OwnerOnboarding() {
   );
 }
 
-export default OwnerOnboarding;
+export default CashflowOnboarding;

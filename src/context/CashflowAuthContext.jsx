@@ -14,9 +14,29 @@ import {
   signOut as supabaseSignOut,
   supabase,
 } from "../services/supabase";
+import { canApproveCashflow, canUseCashflow } from "../auth/cashflowPermissions";
 
-const ExpenseAuthContext = createContext(undefined);
+const CashflowAuthContext = createContext(undefined);
 const CASHFLOW_PROFILE_CACHE_KEY = "ofstride_cashflow_profile";
+
+export function getCashflowPostAuthRoute({ session, profile, profileError, invitePath = null }) {
+  if (!session) {
+    return "/cashflow/login";
+  }
+  if (profileError || !profile) {
+    return null;
+  }
+  if (invitePath) {
+    return invitePath;
+  }
+  if (!profile.company_id) {
+    return "/cashflow/expense/onboarding";
+  }
+  if (profile.is_setup_complete === false) {
+    return "/cashflow/expense/company-profile";
+  }
+  return "/cashflow/dashboard";
+}
 
 function cacheProfile(profile) {
   if (typeof window === "undefined") {
@@ -85,7 +105,7 @@ async function fetchProfile(userId) {
   return data;
 }
 
-export function ExpenseAuthProvider({ children }) {
+export function CashflowAuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
   const [invites, setInvites] = useState([]);
@@ -225,8 +245,8 @@ export function ExpenseAuthProvider({ children }) {
     return { user, error };
   };
 
-  const signInWithGoogleProvider = async (redirectPath = "/cashflow/dashboard") => signInWithGoogle(redirectPath);
-  const signInWithInviteLink = async (email, redirectPath = "/cashflow/dashboard") => signInWithOtp(email, redirectPath);
+  const signInWithGoogleProvider = async (redirectPath = "/cashflow/login") => signInWithGoogle(redirectPath);
+  const signInWithInviteLink = async (email, redirectPath = "/cashflow/login") => signInWithOtp(email, redirectPath);
 
   const signUp = async (email, password, fullName, role = "employee") => {
     const { data, error } = await supabase.auth.signUp({
@@ -268,8 +288,8 @@ export function ExpenseAuthProvider({ children }) {
 
   const acceptInvite = async (inviteToken, fullName) => {
     const result = await acceptCompanyInvite(inviteToken, fullName);
-    await refreshProfile(session?.user?.id || null);
-    return result;
+    const nextProfile = await refreshProfile(session?.user?.id || null);
+    return { ...result, profile: nextProfile };
   };
 
   const demoLogin = async () => {
@@ -313,18 +333,18 @@ export function ExpenseAuthProvider({ children }) {
     acceptInvite,
     demoLogin,
     refreshProfile: () => refreshProfile(session?.user?.id || null),
-    isOwner: profile?.role === "owner",
-    isAdmin: profile?.role === "owner" || profile?.role === "admin" || profile?.role === "finance",
-    hasCompany: Boolean(profile?.company_id),
+    isOwner: String(profile?.role || "").toLowerCase() === "owner",
+    isAdmin: canApproveCashflow(profile),
+    hasCompany: canUseCashflow(profile),
   }), [session, profile, invites, profileError, loading]);
 
-  return <ExpenseAuthContext.Provider value={value}>{children}</ExpenseAuthContext.Provider>;
+  return <CashflowAuthContext.Provider value={value}>{children}</CashflowAuthContext.Provider>;
 }
 
-export function useExpenseAuth() {
-  const ctx = useContext(ExpenseAuthContext);
+export function useCashflowAuth() {
+  const ctx = useContext(CashflowAuthContext);
   if (!ctx) {
-    throw new Error("useExpenseAuth must be used inside ExpenseAuthProvider");
+    throw new Error("useCashflowAuth must be used inside CashflowAuthProvider");
   }
   return ctx;
 }

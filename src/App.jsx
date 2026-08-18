@@ -26,16 +26,17 @@ import AccountsPayable from './components/cashflow/AccountsPayable.jsx'
 import AccountsReceivable from './components/cashflow/AccountsReceivable.jsx'
 import PettyCash from './components/cashflow/PettyCash.jsx'
 import BankStatementReconcile from './components/cashflow/BankStatementReconcile.jsx'
-import ExpensesAuthLayout from './components/ExpensesAuthLayout.jsx'
-import ExpenseProtectedRoute from './components/ExpenseProtectedRoute.jsx'
-import ExpensesLogin from './pages/expenses/ExpensesLogin.jsx'
+import CashflowAuthLayout from './components/cashflow/CashflowAuthLayout.jsx'
+import CashflowProtectedRoute from './components/CashflowProtectedRoute.jsx'
+import CashflowLogin from './pages/cashflow/CashflowLogin.jsx'
+import CashflowResetPassword from './pages/cashflow/CashflowResetPassword.jsx'
 import MyExpenses from './pages/expenses/MyExpenses.jsx'
 import SubmitExpense from './pages/expenses/SubmitExpense.jsx'
 import ExpenseDetail from './pages/expenses/ExpenseDetail.jsx'
 import AdminExpenseQueue from './pages/expenses/AdminExpenseQueue.jsx'
 import { getMetaTags } from './seo/routeMetadata.js'
-import OwnerOnboarding from './pages/expenses/OwnerOnboarding.jsx'
-import CompanyProfile from './pages/expenses/CompanyProfile.jsx'
+import CashflowOnboarding from './pages/cashflow/CashflowOnboarding.jsx'
+import CashflowCompanyProfile from './pages/cashflow/CashflowCompanyProfile.jsx'
 import AcceptInvite from './pages/expenses/AcceptInvite.jsx'
 import AdminInvites from './pages/expenses/AdminInvites.jsx'
 
@@ -93,71 +94,70 @@ function App() {
           {/* CASHFLOW SUITE ROUTES (NOW INSIDE PUBLIC LAYOUT) */}
           <Route path="cashflow" element={<CashflowLayout />}>
             <Route index element={<Navigate to="login" replace />} />
-            <Route path="login" element={<ExpensesAuthLayout />}>
-              <Route index element={<ExpensesLogin />} />
-            </Route>
-            <Route path="dashboard" element={<ExpenseProtectedRoute><CashflowDashboard /></ExpenseProtectedRoute>} />
-            <Route path="ap" element={<ExpenseProtectedRoute><AccountsPayable /></ExpenseProtectedRoute>} />
-            <Route path="ar" element={<ExpenseProtectedRoute><AccountsReceivable /></ExpenseProtectedRoute>} />
-            <Route path="pettycash" element={<ExpenseProtectedRoute><PettyCash /></ExpenseProtectedRoute>} />
-            <Route path="reconcile" element={<ExpenseProtectedRoute><BankStatementReconcile /></ExpenseProtectedRoute>} />
+            <Route path="login" element={<CashflowLogin />} />
+            <Route path="reset-password" element={<CashflowResetPassword />} />
+            <Route path="dashboard" element={<CashflowProtectedRoute><CashflowDashboard /></CashflowProtectedRoute>} />
+            <Route path="ap" element={<CashflowProtectedRoute><AccountsPayable /></CashflowProtectedRoute>} />
+            <Route path="ar" element={<CashflowProtectedRoute><AccountsReceivable /></CashflowProtectedRoute>} />
+            <Route path="pettycash" element={<CashflowProtectedRoute><PettyCash /></CashflowProtectedRoute>} />
+            <Route path="reconcile" element={<CashflowProtectedRoute><BankStatementReconcile /></CashflowProtectedRoute>} />
             <Route
               path="invites"
               element={
-                <ExpenseProtectedRoute allowedRoles={["owner", "admin", "finance"]}>
+                <CashflowProtectedRoute allowedRoles={["owner", "admin", "finance"]}>
                   <AdminInvites />
-                </ExpenseProtectedRoute>
+                </CashflowProtectedRoute>
               }
             />
-            <Route path="expense" element={<ExpensesAuthLayout />}>
-              <Route path="login" element={<ExpensesLogin />} />
+            <Route path="expense" element={<CashflowAuthLayout />}>
+              <Route path="login" element={<CashflowLogin />} />
               <Route path="accept-invite" element={<AcceptInvite />} />
               <Route
                 path="onboarding"
                 element={
-                  <ExpenseProtectedRoute allowWithoutCompany>
-                    <OwnerOnboarding />
-                  </ExpenseProtectedRoute>
+                  <CashflowProtectedRoute allowWithoutCompany>
+                    <CashflowOnboarding />
+                  </CashflowProtectedRoute>
                 }
               />
               <Route
                 path="company-profile"
                 element={
-                  <ExpenseProtectedRoute allowWithoutCompany>
-                    <CompanyProfile />
-                  </ExpenseProtectedRoute>
+                  <CashflowProtectedRoute allowWithoutCompany>
+                    <CashflowCompanyProfile />
+                  </CashflowProtectedRoute>
                 }
               />
               <Route
                 index
                 element={
-                  <ExpenseProtectedRoute>
+                  <CashflowProtectedRoute>
                     <MyExpenses />
-                  </ExpenseProtectedRoute>
+                  </CashflowProtectedRoute>
                 }
               />
               <Route
                 path="new"
                 element={
-                  <ExpenseProtectedRoute>
+                  <CashflowProtectedRoute>
                     <SubmitExpense />
-                  </ExpenseProtectedRoute>
+                  </CashflowProtectedRoute>
                 }
               />
               <Route
                 path="admin"
                 element={
-                  <ExpenseProtectedRoute adminOnly>
+                  <CashflowProtectedRoute adminOnly>
                     <AdminExpenseQueue />
-                  </ExpenseProtectedRoute>
+                  </CashflowProtectedRoute>
                 }
               />
               <Route
                 path=":id"
                 element={
-                  <ExpenseProtectedRoute>
+                  <CashflowProtectedRoute>
                     <ExpenseDetail />
-                  </ExpenseProtectedRoute>
+                  </CashflowProtectedRoute>
                 }
               />
             </Route>

@@ -55,6 +55,8 @@ async function cashflowIdentityHeaders(): Promise<HeadersInit> {
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    "Cache-Control": "no-store",
+    "Pragma": "no-cache",
   };
 
   if (session?.access_token) {
@@ -102,6 +104,7 @@ export async function cashflowFetch(
 
   return fetch(`${normalizedBase}${normalizedPath}`, {
     ...init,
+    cache: "no-store",
     headers: mergedHeaders,
   });
 }
