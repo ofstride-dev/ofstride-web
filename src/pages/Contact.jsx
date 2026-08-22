@@ -1,9 +1,14 @@
 import { Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { MapPin, Phone, Mail, Globe, Calendar, ExternalLink } from 'lucide-react'
 
 function Contact() {
   return (
     <div className="pt-12 sm:pt-16">
+      <Helmet>
+        <title>Contact | Ofstride Services LLP</title>
+        <meta name="description" content="Talk to Ofstride about your business, people, finance, compliance, technology or growth challenge." />
+      </Helmet>
       {/* Hero */}
       <section className="py-10 sm:py-14 lg:py-20 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

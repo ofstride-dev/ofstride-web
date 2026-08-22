@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { ArrowRight, ArrowLeft, CheckCircle2, Users, Search, FileCheck, Landmark, Receipt, Gavel, Monitor, Cpu, Target, Globe, Phone, Mail, Calendar, MessageCircle } from 'lucide-react'
 
 function ServiceDetail() {
@@ -285,6 +286,10 @@ function ServiceDetail() {
 
   return (
     <div className="pt-12 sm:pt-16">
+      <Helmet>
+        <title>{service.title} | Ofstride Services</title>
+        <meta name="description" content={service.heroDesc} />
+      </Helmet>
       {/* Hero */}
       <section className="py-10 sm:py-14 lg:py-20 service-hero">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

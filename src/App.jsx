@@ -1,5 +1,4 @@
-import { Routes, Route, useLocation, Navigate, useParams } from 'react-router-dom'
-import { useEffect } from 'react'
+import { createRoutesFromElements, Route, Navigate, useParams } from 'react-router-dom'
 import Layout from './components/Layout.jsx'
 import Home from './pages/Home.jsx'
 import Services from './pages/Services.jsx'
@@ -34,46 +33,17 @@ import MyExpenses from './pages/expenses/MyExpenses.jsx'
 import SubmitExpense from './pages/expenses/SubmitExpense.jsx'
 import ExpenseDetail from './pages/expenses/ExpenseDetail.jsx'
 import AdminExpenseQueue from './pages/expenses/AdminExpenseQueue.jsx'
-import { getMetaTags } from './seo/routeMetadata.js'
 import CashflowOnboarding from './pages/cashflow/CashflowOnboarding.jsx'
 import CashflowCompanyProfile from './pages/cashflow/CashflowCompanyProfile.jsx'
 import AcceptInvite from './pages/expenses/AcceptInvite.jsx'
 import AdminInvites from './pages/expenses/AdminInvites.jsx'
+import { PUBLIC_ROUTES } from './seo/routeMetadata.js'
+import { HelmetProvider } from 'react-helmet-async'
 
-function App() {
-  const location = useLocation()
-
-  useEffect(() => {
-    const metadata = getMetaTags(location.pathname)
-    document.title = metadata.title
-    const setMeta = (selector, attribute, content) => {
-      let element = document.head.querySelector(selector)
-      if (!element) { element = document.createElement('meta'); element.setAttribute(attribute, content); document.head.appendChild(element) }
-      element.setAttribute('content', content)
-    }
-
-    setMeta('meta[name="description"]', 'name', metadata.description)
-    setMeta('meta[property="og:type"]', 'property', 'website')
-    setMeta('meta[property="og:site_name"]', 'property', 'Ofstride Services LLP')
-    setMeta('meta[property="og:title"]', 'property', metadata.title)
-    setMeta('meta[property="og:description"]', 'property', metadata.description)
-    setMeta('meta[property="og:url"]', 'property', metadata.url)
-    setMeta('meta[property="og:image"]', 'property', metadata.image)
-    setMeta('meta[property="og:image:width"]', 'property', '1200')
-    setMeta('meta[property="og:image:height"]', 'property', '630')
-    setMeta('meta[name="twitter:card"]', 'name', 'summary_large_image')
-    setMeta('meta[name="twitter:title"]', 'name', metadata.title)
-    setMeta('meta[name="twitter:description"]', 'name', metadata.description)
-    setMeta('meta[name="twitter:image"]', 'name', metadata.image)
-    let canonical = document.head.querySelector('link[rel="canonical"]')
-    if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical) }
-    canonical.href = metadata.url
-  }, [location.pathname])
-
-  return (
-    <Routes>
+export const routes = createRoutesFromElements(
+  <>
       {/* PUBLIC MARKETING WEBSITE ROUTES */}
-      <Route path="/" element={<Layout />}>
+      <Route path="/" element={<HelmetProvider><Layout /></HelmetProvider>}>
         <Route index element={<Home />} />
         <Route path="services" element={<Services />} />
         <Route path="services/:slug" element={<ServiceDetail />} />
@@ -170,8 +140,15 @@ function App() {
       <Route path="/expenses/new" element={<Navigate to="/cashflow/expense/new" replace />} />
       <Route path="/expenses/admin" element={<Navigate to="/cashflow/expense/admin" replace />} />
       <Route path="/expenses/:id" element={<ExpenseIdRedirect />} />
-    </Routes>
-  )
+  </>,
+)
+
+// vite-react-ssg uses this route option to expand the dynamic service route.
+const publicServicePaths = PUBLIC_ROUTES.filter((path) => path.startsWith('/services/'))
+const marketingRoute = routes.find((route) => route.path === '/')
+const serviceRoute = marketingRoute?.children?.find((route) => route.path === 'services/:slug')
+if (serviceRoute) {
+  serviceRoute.getStaticPaths = () => publicServicePaths
 }
 
-export default App
+export default routes

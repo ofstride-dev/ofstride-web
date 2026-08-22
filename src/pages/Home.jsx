@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { useEffect, useRef, useState } from 'react'
 import HeroRightGraphic from '../components/HeroRightGraphic.jsx'
 import { 
@@ -216,6 +217,10 @@ function Home() {
 
   return (
     <div>
+      <Helmet>
+        <title>Ofstride Services LLP — AI-Powered Business Consulting</title>
+        <meta name="description" content="AI-powered business consulting in HR, Finance, Legal, IT and Strategy for ambitious businesses across India." />
+      </Helmet>
       {/* Hero Section */}
       <section className="min-h-screen flex items-start hero-pattern pt-12 sm:pt-16 lg:pt-14">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-16">

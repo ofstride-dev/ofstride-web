@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { ArrowRight, Users, Search, FileCheck, Landmark, Receipt, Gavel, Monitor, Cpu, Target, Globe, Calendar, Mail, ChevronDown } from 'lucide-react'
 
 function Services() {
@@ -112,6 +113,10 @@ function Services() {
 
   return (
       <div className="pt-12 sm:pt-16">
+        <Helmet>
+          <title>Services | Ofstride Services LLP</title>
+          <meta name="description" content="Explore Ofstride consulting services across HR, finance, tax, legal, technology and business strategy." />
+        </Helmet>
         {/* Hero */}
         <section className="py-10 sm:py-14 lg:py-20 bg-surface">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

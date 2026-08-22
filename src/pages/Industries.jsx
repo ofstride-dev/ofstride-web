@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { ArrowRight, Factory, Stethoscope, Cpu, Truck, Hotel, ShoppingCart, Shield, Pill, GraduationCap, Dumbbell, Rocket, Building2, Globe } from 'lucide-react'
 
 function Industries() {
@@ -91,6 +92,10 @@ function Industries() {
 
   return (
     <div className="pt-14">
+      <Helmet>
+        <title>Industries | Ofstride Services LLP</title>
+        <meta name="description" content="Consulting solutions for manufacturing, technology, healthcare, retail, startups, MSMEs and more." />
+      </Helmet>
       {/* Hero */}
       <section className="py-14 lg:py-20 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath, URL } from 'node:url'
+import { PUBLIC_ROUTES } from './src/seo/routeMetadata.js'
 
 export default defineConfig({
   plugins: [
@@ -13,6 +14,12 @@ export default defineConfig({
       // to the CommonJS build (xlsx.js) which Vite can transform cleanly.
       xlsx: fileURLToPath(new URL('./node_modules/xlsx/xlsx.js', import.meta.url)),
     },
+  },
+  ssgOptions: {
+    // Public marketing pages are safe to render without authenticated browser
+    // state. Protected cashflow/admin routes remain client-rendered.
+    includedRoutes: () => PUBLIC_ROUTES,
+    dirStyle: 'nested',
   },
   server: {
     proxy: {
