@@ -64,6 +64,18 @@ def _deterministic_focus(primary_challenge: str, sub_challenge: str) -> dict:
     """
     primary = (primary_challenge or "your selected business challenge").strip()
     sub = (sub_challenge or "your selected sub-hurdle").strip()
+    if primary.lower() == "ai & automation" and sub.lower() == "automate repetitive work":
+        return {
+            "focus_title": "Repetitive Work Automation Plan",
+            "validation_summary": (
+                "Repeating the same manual steps consumes team capacity and makes errors more likely, especially when work moves between people and systems. "
+                "The core bottleneck is usually an undocumented process with unclear ownership, inconsistent inputs, or no reliable system hand-off."
+            ),
+            "recommended_agenda_items": [
+                "Map the highest-volume repetitive task from trigger to completion, then identify the decisions, approvals, and data sources that must remain under human control.",
+                "Prioritise a small, low-risk pilot and define the workflow rules, integrations, exception handling, and success measures needed before scaling it across the team.",
+            ],
+        }
     return {
         "focus_title": f"Strategic Agenda: {primary}",
         "validation_summary": (

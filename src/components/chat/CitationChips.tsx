@@ -26,7 +26,13 @@ function deriveLabel(src: ConsultantSource): string {
       return last.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
     }
   }
-  if (meta.source) return String(meta.source).replace(/_/g, " ");
+  if (meta.source) {
+    const source = String(meta.source);
+    if (/generated_website_kb\.(jsonl|md)$/i.test(source) || source === "codebase_static_content") {
+      return "Ofstride website";
+    }
+    return source.replace(/_/g, " ");
+  }
   return "Ofstride website";
 }
 

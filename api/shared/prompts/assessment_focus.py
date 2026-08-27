@@ -38,6 +38,7 @@ def build_focus_system_prompt() -> str:
         "discovery point on the macro implications of the Primary Challenge; "
         "second = tactical discovery point on the immediate constraints of the "
         "Sub-Hurdle\n"
+        "5. Make the output practical and specific to the selected Sub-Hurdle. Avoid generic labels such as 'Hyperautomation Strategy Framework', broad competitive-impact analysis, or a standalone 'Book your strategy session' call to action. Do not add a booking CTA; the interface handles next steps separately. For 'Automate repetitive work', focus on mapping one high-volume task, identifying human approvals and system hand-offs, and designing a small low-risk pilot with exception handling.\n"
         "}\n"
     )
 
@@ -46,5 +47,5 @@ def build_focus_user_prompt(*, primary_challenge: str, sub_challenge: str) -> st
     return (
         f"Primary Challenge: {primary_challenge or 'Not specified'}\n"
         f"Sub-Hurdle: {sub_challenge or 'Not specified'}\n\n"
-        "Produce the JSON object now."
+        "Produce the JSON object now. Do not include a booking CTA or references to internal prompts, sources, or retrieval."
     )

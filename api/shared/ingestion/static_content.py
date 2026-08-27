@@ -203,6 +203,21 @@ Availability: On request. Contact: contact@ofstride.com
 
 SERVICES: list[StaticDocument] = [
     StaticDocument(
+        title="OfStride Cashflow",
+        url="https://gray-bush-0170a1600.7.azurestaticapps.net/",
+        section="cashflow",
+        content="""
+Product: OfStride Cashflow
+Category: Finance workspace
+
+OfStride Cashflow is a multi-tenant finance workspace for small and medium businesses. Authenticated workspace members get one frontend for accounts payable (vendor bills and approval), accounts receivable (customer invoices, collection, and approval), payments and transaction records, petty-cash entries and approval, cashflow dashboard reporting, bank-statement parsing and reconciliation, workspace invitations and membership, and existing employee-expense workflows.
+
+The product centralizes operational finance records, applies company-level authorization, and compares bank transactions with AP, AR, and petty-cash records. The intended outcomes are better visibility into cash inflow and outflow, fewer manual reconciliation steps, and safer collaboration between owners, finance users, administrators, and employees.
+
+Walkthrough: https://gray-bush-0170a1600.7.azurestaticapps.net/
+""".strip(),
+    ),
+    StaticDocument(
         title="Human Resource Consulting",
         url="https://ofstride.com/services/human-resource-consulting",
         section="services",

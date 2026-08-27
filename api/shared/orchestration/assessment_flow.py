@@ -73,6 +73,12 @@ def _final_actions() -> list[dict[str, str]]:
             "kind": "quick_reply",
         },
         {
+            "id": "assessment_manage_cashflow",
+            "label": "Manage cashflow",
+            "value": "Manage cashflow",
+            "kind": "cta",
+        },
+        {
             "id": "assessment_restart",
             "label": "Start Assessment",
             "value": "Start Assessment",
@@ -285,6 +291,12 @@ def _build_final_response(
         lines.append(f"- {outcome}")
     lines.append("")
     lines.append("Would you like a consultant to discuss how these outcomes could apply to your business?")
+    lines.append("")
+    lines.append(
+        "Would you also like a walkthrough of OfStride Cashflow, our multi-tenant finance workspace "
+        "for managing payables, receivables, payments, petty cash, reporting, and bank reconciliation? "
+        "[Manage cashflow](https://gray-bush-0170a1600.7.azurestaticapps.net/)"
+    )
 
     updates = {
         "assessment_status": "completed",

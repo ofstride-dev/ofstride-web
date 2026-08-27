@@ -7,6 +7,10 @@ type ConsultantCardsProps = {
 
 export const ConsultantCards: React.FC<ConsultantCardsProps> = ({ sources }) => {
   const consultants = sources
+    .filter((src) => {
+      const sourceType = String(src.metadata.source_type ?? "");
+      return sourceType === "consultant_profile" || sourceType === "consultant_cv" || sourceType === "consultant_data" || Boolean(src.metadata.consultant_name);
+    })
     .map((src) => ({
       name: String(src.metadata.consultant_name || src.metadata.source || "Ofstride Consultant"),
       role: String(src.metadata.role || "Consultant"),
