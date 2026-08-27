@@ -22,6 +22,7 @@ export default defineConfig({
     dirStyle: 'nested',
   },
   server: {
+    port: 5174,
     proxy: {
       '/api': {
         // Local development must use the local Functions host by default. Do

@@ -41,6 +41,8 @@ jobs:
 
       - name: Sync App Settings
         shell: bash
+        env:
+          REPORT_EMAIL_SHARED_SECRET: ${{ secrets.REPORT_EMAIL_SHARED_SECRET }}
         run: |
           RG=$(az resource list --name func-ofs-comms-001 --resource-type Microsoft.Web/sites --query "[0].resourceGroup" -o tsv)
           if [ -z "$RG" ]; then
@@ -54,7 +56,8 @@ jobs:
               ACS_ENDPOINT="https://acs-ofs-001.india.communication.azure.com" \
               EMAIL_SENDER_ADDRESS="DoNotReply@eafd51a7-7800-4251-bf8f-a8b754530fc3.azurecomm.net" \
               NOTIFY_RECIPIENTS="support@ofstrideservices.com,ofstride@gmail.com" \
-              ALLOWED_ORIGINS="https://white-water-027449900.7.azurestaticapps.net,https://ofstrideservices.com,http://localhost:5173,http://localhost:4280"
+              ALLOWED_ORIGINS="https://white-water-027449900.7.azurestaticapps.net,https://ofstrideservices.com,http://localhost:5173,http://localhost:4280" \
+              REPORT_EMAIL_SHARED_SECRET="$REPORT_EMAIL_SHARED_SECRET"
 
       - name: Deploy to Azure Functions
         uses: Azure/functions-action@v1

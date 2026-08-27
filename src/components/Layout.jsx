@@ -6,6 +6,8 @@ import {
   Landmark, Gavel, Search, FileCheck, Globe, Monitor, Cpu, Target, ShieldCheck
 } from 'lucide-react'
 import { ChatWidget } from './chat/ChatWidget'
+const CASHFLOW_APP_URL =
+  import.meta.env.VITE_CASHFLOW_APP_URL || 'https://gray-bush-0170a1600.7.azurestaticapps.net'
 
 function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -436,8 +438,10 @@ function Layout() {
                         )}
                       </div>
 
-                      <Link
-                        to="/cashflow"
+                      <a
+                        href={CASHFLOW_APP_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         role="menuitem"
                         className="flex items-center gap-2 px-4 py-2 text-sm text-text hover:bg-surface hover:text-secondary rounded-lg transition-colors"
                         onClick={() => {
@@ -447,7 +451,7 @@ function Layout() {
                       >
                         <Receipt className="w-4 h-4" />
                         Managing Cashflow
-                      </Link>
+                      </a>
                     </div>
                   </div>
                 )}
@@ -585,9 +589,11 @@ function Layout() {
                     )}
 
                     <a
-                      href="/cashflow"
+                      href={CASHFLOW_APP_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="flex items-center gap-2 w-full min-h-[44px] py-3 px-4 text-base font-medium text-text cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
-                      onClick={(e) => handleMobileNav(e, '/cashflow')}
+                      onClick={closeAllMenus}
                     >
                       <Receipt className="w-4 h-4" />
                       Managing Cashflow

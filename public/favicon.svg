@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-labelledby="title">
+  <title>Ofstride</title>
+  <rect width="100" height="100" rx="18" fill="#ffffff"/>
+  <g fill="#0033a0">
+    <path d="M12 72 31 28h16L28 72H12Z"/>
+    <path d="M36 72 55 28h16L52 72H36Z"/>
+    <path d="M60 72 79 28h9L69 72H60Z"/>
+  </g>
+</svg>

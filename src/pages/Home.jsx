@@ -24,6 +24,8 @@ import {
   ChevronDown,
   MessageCircle
 } from 'lucide-react'
+const CASHFLOW_APP_URL =
+  import.meta.env.VITE_CASHFLOW_APP_URL || 'https://gray-bush-0170a1600.7.azurestaticapps.net'
 
 const practiceScenarios = [
   {
@@ -254,10 +256,15 @@ function Home() {
                         <li><span className="point-dot point-blue" aria-hidden="true"></span>Flag GST mismatch risks before filing</li>
                         <li><span className="point-dot point-red" aria-hidden="true"></span>90-day liquidity forecast &amp; early warnings</li>
                       </ul>
-                      <Link to="/cashflow" className="release-link-pill">
+                      <a
+                        href={CASHFLOW_APP_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="release-link-pill"
+                      >
                         Run free cash flow check
                         <span className="release-arrow" aria-hidden="true">→</span>
-                      </Link>
+                      </a>
                     </article>
 
                     <article className="release-solution-card">
