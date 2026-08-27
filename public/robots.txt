@@ -4,4 +4,15 @@ Disallow: /admin/
 Disallow: /cashflow/
 Disallow: /expenses/
 
+# Explicitly allow Google to crawl the homepage and favicon assets.
+User-agent: Googlebot
+Allow: /
+Allow: /favicon.svg
+Allow: /favicon.png
+
+User-agent: Googlebot-Image
+Allow: /
+Allow: /favicon.svg
+Allow: /favicon.png
+
 Sitemap: https://ofstrideservices.com/sitemap.xml

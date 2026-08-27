@@ -25,7 +25,7 @@ import {
   MessageCircle
 } from 'lucide-react'
 const CASHFLOW_APP_URL =
-  import.meta.env.VITE_CASHFLOW_APP_URL || 'https://gray-bush-0170a1600.7.azurestaticapps.net'
+  import.meta.env.VITE_CASHFLOW_APP_URL || 'https://gray-bush-0170a160.7.azurestaticapps.net/'
 
 const practiceScenarios = [
   {
