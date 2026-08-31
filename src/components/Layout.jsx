@@ -7,7 +7,7 @@ import {
 } from 'lucide-react'
 import { ChatWidget } from './chat/ChatWidget'
 const CASHFLOW_APP_URL =
-  import.meta.env.VITE_CASHFLOW_APP_URL || 'https://gray-bush-0170a1600.7.azurestaticapps.net/dashboard'
+  'https://cashpulse.ofstrideservices.com/cashflow/login'
 
 function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)

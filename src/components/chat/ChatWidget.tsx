@@ -85,7 +85,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ onClose }) => {
     const normalized = value.trim().toLowerCase();
     if (normalized.includes("manage cashflow")) {
       void emitEvent("cta_selected", { value, destination: "cashflow" });
-      window.open("https://gray-bush-0170a1600.7.azurestaticapps.net/", "_blank", "noopener,noreferrer");
+      window.open("https://cashpulse.ofstrideservices.com/cashflow/login", "_blank", "noopener,noreferrer");
       return;
     }
     if (normalized.includes("schedule a call") || normalized.includes("book a free call") || normalized.includes("book a call") || normalized === "call") {
