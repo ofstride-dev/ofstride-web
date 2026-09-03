@@ -254,7 +254,7 @@ function Home() {
                       <ul className="release-solution-points">
                         <li><span className="point-dot point-green" aria-hidden="true"></span>Spot delayed payments from buyers &amp; vendors</li>
                         <li><span className="point-dot point-blue" aria-hidden="true"></span>Flag GST mismatch risks before filing</li>
-                        <li><span className="point-dot point-red" aria-hidden="true"></span>90-day liquidity forecast &amp; early warnings</li>
+                        <li><span className="point-dot point-red" aria-hidden="true"></span>Helps MSMEs, accounts teams &amp; CAs stay cash-flow ready</li>
                       </ul>
                       <a
                         href={CASHFLOW_APP_URL}
@@ -262,7 +262,7 @@ function Home() {
                         rel="noopener noreferrer"
                         className="release-link-pill"
                       >
-                        Run free cash flow check
+                        Try CashPulse free for 30 days
                         <span className="release-arrow" aria-hidden="true">→</span>
                       </a>
                     </article>
