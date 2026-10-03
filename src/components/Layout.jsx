@@ -8,6 +8,8 @@ import {
 import { ChatWidget } from './chat/ChatWidget'
 const CASHFLOW_APP_URL =
   'https://cashpulse.ofstrideservices.com/cashflow/login'
+const VETERAN_CONNECT_APP_URL =
+  'https://blue-forest-031e54600.5.azurestaticapps.net/#top'
 
 function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -148,7 +150,6 @@ function Layout() {
 
   const careersItems = [
     { name: 'Apply For Jobs', to: '/careers/jobs', icon: Briefcase },
-    { name: 'Veteran Connect', to: '/careers/veteran-transition', icon: ShieldCheck },
     { name: 'Employer Login', to: '/employer', icon: Users },
   ]
 
@@ -439,6 +440,21 @@ function Layout() {
                       </div>
 
                       <a
+                        href={VETERAN_CONNECT_APP_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        role="menuitem"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-text hover:bg-surface hover:text-secondary rounded-lg transition-colors"
+                        onClick={() => {
+                          setIsCareersOpen(false)
+                          setIsSolutionCareersOpen(false)
+                        }}
+                      >
+                        <ShieldCheck className="w-4 h-4" />
+                        Veteran Connect
+                      </a>
+
+                      <a
                         href={CASHFLOW_APP_URL}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -587,6 +603,17 @@ function Layout() {
                         ))}
                       </div>
                     )}
+
+                    <a
+                      href={VETERAN_CONNECT_APP_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 w-full min-h-[44px] py-3 px-4 text-base font-medium text-text cursor-pointer select-none active:bg-gray-100 hover:text-secondary transition-colors"
+                      onClick={closeAllMenus}
+                    >
+                      <ShieldCheck className="w-4 h-4" />
+                      Veteran Connect
+                    </a>
 
                     <a
                       href={CASHFLOW_APP_URL}
