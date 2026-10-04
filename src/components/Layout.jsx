@@ -32,9 +32,10 @@ function Layout() {
 
   const navLinkClass = ({ isActive }) => {
     const base = `flex items-center gap-1.5 transition-colors font-medium ${desktopNavPad} py-1 rounded-lg`
+    const homeColor = !isScrolled && isHomePage ? 'text-white hover:text-white hover:bg-white/10' : 'text-text hover:text-secondary hover:bg-surface'
     return isActive
       ? `${base} text-secondary bg-surface`
-      : `${base} text-text hover:text-secondary hover:bg-surface`
+      : `${base} ${homeColor}`
   }
 
   // Close dropdown when clicking outside
@@ -252,43 +253,11 @@ function Layout() {
           isScrolled || forceSolidHeader ? 'bg-white/95 backdrop-blur-md shadow-sm' : 'bg-transparent'
         }`}
       >
-        {/* Top contact bar — hidden on scroll */}
-        <div className={`transition-all duration-300 overflow-hidden ${isScrolled ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-12 opacity-100'}`}>
-          <div className="bg-primary text-white py-1.5 px-4 flex items-center justify-center flex-wrap gap-x-6 gap-y-1 text-xs sm:text-sm">
-            <a href="tel:+918951606862" className="flex items-center gap-1.5 hover:text-blue-200 transition-colors whitespace-nowrap">
-              <Phone className="w-3 h-3" />
-              +91 89516 06862
-            </a>
-            <a href="mailto:support@ofstrideservices.com" className="hidden sm:inline-flex items-center gap-1.5 hover:text-blue-200 transition-colors">
-              <Mail className="w-3 h-3" />
-              support@ofstrideservices.com
-            </a>
-            
-            <a
-              href="https://wa.me/918951606862?text=Hi%2C+I%27d+like+to+know+more+about+Ofstride%27s+services"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-emerald-300 hover:text-emerald-200 transition-colors whitespace-nowrap"
-            >
-              <MessageCircle className="w-3 h-3" />
-              WhatsApp Us
-            </a>
-            <a
-              href="https://in.linkedin.com/company/ofstride-services-llp"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="LinkedIn"
-              className="hidden sm:inline-flex items-center justify-center hover:text-blue-200 transition-colors whitespace-nowrap"
-            >
-              <img src="/linkedin-icon.svg" alt="" className="w-6 h-6" />
-            </a>
-          </div>
-        </div>
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 lg:h-20 gap-2">
+          <div className="flex items-center justify-between h-14 lg:h-16 gap-2">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3">
-              <img src="/logo.png" alt="Ofstride Services LLP" className="logo-header" />
+              <img src="/logo.png" alt="Ofstride Services LLP" className={`logo-header ${!isScrolled && isHomePage ? 'logo-header--hero' : ''}`} />
             </Link>
 
             {/* Desktop Nav */}
@@ -311,7 +280,7 @@ function Layout() {
                   aria-expanded={isServicesOpen}
                   aria-haspopup="menu"
                   aria-label="Open services menu"
-                  className={`flex items-center gap-1 text-text hover:text-secondary transition-colors font-medium ${desktopNavPad} py-1 rounded-lg hover:bg-surface`}
+                  className={`flex items-center gap-1 transition-colors font-semibold ${desktopNavPad} py-1 rounded-lg ${!isScrolled && isHomePage ? 'text-white hover:text-white hover:bg-white/10' : 'text-text hover:text-secondary hover:bg-surface'}`}
                 >
                   <Briefcase className="w-4 h-4" />
                   Services
@@ -383,7 +352,7 @@ function Layout() {
                   aria-expanded={isCareersOpen}
                   aria-haspopup="menu"
                   aria-label="Open solutions menu"
-                  className={`flex items-center gap-1 text-text hover:text-secondary transition-colors font-medium ${desktopNavPad} py-1 rounded-lg hover:bg-surface`}
+                  className={`flex items-center gap-1 transition-colors font-semibold ${desktopNavPad} py-1 rounded-lg ${!isScrolled && isHomePage ? 'text-white hover:text-white hover:bg-white/10' : 'text-text hover:text-secondary hover:bg-surface'}`}
                 >
                   <FileText className="w-4 h-4" />
                   Business Solutions

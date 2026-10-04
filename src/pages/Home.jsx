@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { useEffect, useRef, useState } from 'react'
-import HeroRightGraphic from '../components/HeroRightGraphic.jsx'
+import EditorialServicesHero from '../components/EditorialServicesHero.jsx'
 import { 
   ArrowRight, 
   Brain, 
@@ -17,7 +17,6 @@ import {
   Cpu,
   Target,
   Globe,
-  Sparkles,
   Phone,
   Mail,
   Calendar,
@@ -26,7 +25,6 @@ import {
 } from 'lucide-react'
 const CASHFLOW_APP_URL =
   'https://cashpulse.ofstrideservices.com/cashflow/login'
-
 const practiceScenarios = [
   {
     icon: Building2,
@@ -223,130 +221,18 @@ function Home() {
         <title>Ofstride Services LLP — AI-Powered Business Consulting</title>
         <meta name="description" content="AI-powered business consulting in HR, Finance, Legal, IT and Strategy for ambitious businesses across India." />
       </Helmet>
-      {/* Hero Section */}
-      <section className="min-h-screen flex items-start hero-pattern pt-12 sm:pt-16 lg:pt-14">
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-12 items-start">
-            <div className="animate-fade-up">
-              <div className="inline-flex items-center gap-2 bg-blue-50 text-secondary px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium mb-3 sm:mb-4">
-                <span className="w-2 h-2 bg-accent rounded-full ai-badge"></span>
-                AI-Powered Compliance &amp; Back-Office for Indian MSMEs
-              </div>
+      <EditorialServicesHero />
 
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-primary leading-tight mb-4 sm:mb-6">
-                Build a Business<br />
-                <span className="gradient-text">That Thinks Ahead.</span>
-              </h1>
-
-              <p className="text-base sm:text-lg text-text leading-relaxed mb-6 sm:mb-8 max-w-xl">
-                Ofstride runs the back office of India's micro, small and medium enterprises: GST and tax filings, Udyam and bank credit, payroll and labour compliance, contracts and recovery — one senior team, standard and transparent pricing.
-              </p>
-
-              <div className="mb-5 sm:mb-6 w-full max-w-2xl">
-                <div className="release-panel-shell">
-                  <p className="release-topline">
-                    Explore OfstrideServices Business Solutions
-                    <Sparkles className="inline-block w-4 h-4 ml-2 text-secondary align-[-2px]" aria-hidden="true" />
-                  </p>
-                  <div className="release-solution-grid" aria-label="Live release solutions">
-                    <article className="release-solution-card">
-                      <h3 className="release-solution-title">Cash flow &amp; working capital</h3>
-                      <ul className="release-solution-points">
-                        <li><span className="point-dot point-green" aria-hidden="true"></span>Spot delayed payments from buyers &amp; vendors</li>
-                        <li><span className="point-dot point-blue" aria-hidden="true"></span>Flag GST mismatch risks before filing</li>
-                        <li><span className="point-dot point-red" aria-hidden="true"></span>Helps MSMEs, accounts teams &amp; CAs stay cash-flow ready</li>
-                      </ul>
-                      <a
-                        href={CASHFLOW_APP_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="release-link-pill"
-                      >
-                        Try CashPulse free for 30 days
-                        <span className="release-arrow" aria-hidden="true">→</span>
-                      </a>
-                    </article>
-
-                    <article className="release-solution-card">
-                      <h3 className="release-solution-title">Pan-India hiring solution</h3>
-                      <ul className="release-solution-points">
-                        <li><span className="point-dot point-green" aria-hidden="true"></span>AI-generated job descriptions</li>
-                        <li><span className="point-dot point-blue" aria-hidden="true"></span>Pan-India candidate reach</li>
-                        <li><span className="point-dot point-red" aria-hidden="true"></span>ATS score booster for applicants</li>
-                      </ul>
-                      <Link to="/careers/jobs" className="release-link-pill">
-                        Try hiring engine
-                        <span className="release-arrow" aria-hidden="true">→</span>
-                      </Link>
-                    </article>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-2 sm:mt-3 rounded-2xl border border-slate-200 bg-white/90 backdrop-blur-sm p-2.5 sm:p-3 w-full sm:w-auto max-w-full shadow-sm">
-                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-stretch sm:items-center">
-                  <Link
-                    to="/book-call"
-                    className="btn-primary inline-flex items-center justify-center gap-2 w-full sm:w-auto text-center bg-primary text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm"
-                  >
-                    <Calendar className="w-4 h-4" />
-                    Book a Free Call
-                  </Link>
-                  <Link
-                    to="/services"
-                    className="btn-secondary inline-flex items-center justify-center gap-2 w-full sm:w-auto text-center border border-blue-200 bg-blue-50 text-secondary px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm"
-                  >
-                    Explore Services
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
-                  <a
-                    href="https://wa.me/918951606862?text=Hi%2C+I%27d+like+to+know+more+about+Ofstride%27s+services"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 w-full sm:w-auto text-center border border-emerald-700 bg-emerald-600 text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm hover:bg-emerald-700 transition-colors"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    WhatsApp Us
-                  </a>
-                </div>
-              </div>
-
-              <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 text-xs sm:text-sm text-muted">
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 bg-accent rounded-full"></div>
-                  <span>New Delhi & Bengaluru</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 bg-accent rounded-full"></div>
-                  <span>Since 2019</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 bg-accent rounded-full"></div>
-                  <span>32+ Years Leadership</span>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Hero Visual — Ofstride Core Engine */}
-            <div className="flex flex-col gap-5 w-full max-w-md mx-auto lg:max-w-none lg:mx-0 lg:-mt-8">
-              <HeroRightGraphic />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Social Proof Bar — auto-scroll ticker */}
-      <section className="bg-surface py-4 sm:py-6 border-y border-slate-100 overflow-hidden">
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-xs sm:text-sm text-muted uppercase tracking-wider mb-4 font-medium">
-            Trusted by teams at
-          </p>
+      {/* Social proof marquee */}
+      <section className="trusted-panel overflow-hidden">
+        <div className="trusted-panel-inner w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="trusted-panel-label">Trusted by teams at</p>
+          <span className="trusted-panel-rule" aria-hidden="true" />
         </div>
         <div className="overflow-hidden">
-          <div className="ticker-track items-center gap-x-10 sm:gap-x-16 gap-y-2 py-1">
+          <div className="ticker-track items-center gap-x-12 sm:gap-x-20 gap-y-3 py-2">
             {[...clients, ...clients].map((client, i) => (
-              <span key={i} className="text-slate-600 font-semibold text-xs sm:text-sm whitespace-nowrap">
+              <span key={i} className="trusted-client whitespace-nowrap">
                 {client}
               </span>
             ))}

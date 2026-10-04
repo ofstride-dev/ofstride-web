@@ -10,6 +10,6 @@
     "NOTIFY_RECIPIENTS": "support@ofstrideservices.com,ofstride@gmail.com",
     "CAREERS_NOTIFY_URL": "http://localhost:7072/api/career-notify",
     "CONTACT_WEBHOOK_URL": "http://localhost:7072/api/career-notify",
-    "ALLOWED_ORIGINS": "http://localhost:5173,http://localhost:4280,https://white-water-027449900.7.azurestaticapps.net,https://ofstrideservices.com"
+    "ALLOWED_ORIGINS": "http://localhost:5173,http://localhost:4280,https://blue-forest-031e54600.5.azurestaticapps.net,https://white-water-027449900.7.azurestaticapps.net,https://ofstrideservices.com"
   }
 }
