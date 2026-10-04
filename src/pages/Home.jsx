@@ -241,7 +241,7 @@ function Home() {
       </section>
 
       {/* Services Bento Grid */}
-      <section className="py-10 sm:py-14 lg:py-16" ref={addToRefs}>
+      <section className="home-panel home-panel-light py-10 sm:py-14 lg:py-16" ref={addToRefs}>
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16 reveal">
             <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
@@ -295,17 +295,17 @@ function Home() {
       </section>
 
       {/* Why Ofstride */}
-      <section className="py-10 sm:py-14 lg:py-16 bg-surface" ref={addToRefs}>
+      <section className="home-panel home-panel-dark py-10 sm:py-14 lg:py-16" ref={addToRefs}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16 reveal">
-            <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
+            <span className="home-panel-eyebrow inline-block text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
               Why Us
             </span>
-            <h2 className="text-2xl sm:text-4xl font-bold text-primary mb-4">
+            <h2 className="text-2xl sm:text-4xl font-bold text-white mb-4">
               The Depth of Senior Expertise.<br />The Speed of Modern Tools.
             </h2>
-            <p className="text-text max-w-2xl mx-auto">
-              Every solution we deliver is built with senior oversight, practical execution, and tools that reduce friction.
+            <p className="home-panel-copy max-w-2xl mx-auto">
+              Senior judgement sets the direction. Modern systems make the work faster, clearer, and easier to measure.
             </p>
           </div>
 
@@ -313,16 +313,16 @@ function Home() {
             {whyPoints.map((point, index) => (
               <div 
                 key={index}
-                className="bg-white rounded-2xl p-5 sm:p-8 border border-slate-100 card-hover"
+                className="home-panel-card rounded-2xl p-5 sm:p-8 card-hover"
                 style={{ transitionDelay: `${index * 0.08}s` }}
               >
-                <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-6">
-                  <point.icon className="w-6 h-6 text-secondary" />
+                <div className="home-panel-icon w-12 h-12 rounded-xl flex items-center justify-center mb-6">
+                  <point.icon className="w-6 h-6" />
                 </div>
-                <h3 className="text-lg font-bold text-primary mb-2">
+                <h3 className="text-lg font-bold text-white mb-2">
                   {point.title}
                 </h3>
-                <p className="text-text text-sm leading-relaxed">
+                <p className="home-panel-card-copy text-sm leading-relaxed">
                   {point.desc}
                 </p>
               </div>
@@ -332,7 +332,7 @@ function Home() {
           <div className="text-center mt-12">
             <Link 
               to="/about"
-              className="inline-flex items-center gap-2 text-secondary font-semibold hover:gap-3 transition-all"
+              className="home-panel-link inline-flex items-center gap-2 font-semibold hover:gap-3 transition-all"
             >
               Meet Our Team <ArrowRight className="w-4 h-4" />
             </Link>
@@ -341,7 +341,7 @@ function Home() {
       </section>
 
       {/* What This Looks Like in Practice */}
-      <section className="py-12 sm:py-16" ref={addToRefs}>
+      <section className="home-panel home-panel-light py-12 sm:py-16" ref={addToRefs}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 reveal">
             <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
@@ -381,22 +381,25 @@ function Home() {
       </section>
 
       {/* Industries */}
-      <section className="py-10 sm:py-14 lg:py-16" ref={addToRefs}>
+      <section className="home-panel home-panel-dark py-10 sm:py-14 lg:py-16" ref={addToRefs}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16 reveal">
-            <span className="inline-block text-secondary text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
+            <span className="home-panel-eyebrow inline-block text-xs sm:text-sm font-semibold uppercase tracking-wider mb-2 sm:mb-3">
               Industries
             </span>
-            <h2 className="text-2xl sm:text-4xl font-bold text-primary mb-4">
+            <h2 className="text-2xl sm:text-4xl font-bold text-white mb-4">
               Built for Every Sector.<br />Powered by Intelligence.
             </h2>
+            <p className="home-panel-copy max-w-2xl mx-auto">
+              The operating discipline stays constant while the context changes, from the factory floor to the boardroom.
+            </p>
           </div>
 
           <div className="flex flex-wrap justify-center gap-3">
             {industries.map((industry) => (
               <span 
                 key={industry}
-                className="bg-surface text-text px-4 sm:px-5 py-2.5 rounded-full text-xs sm:text-sm font-medium border border-slate-100 hover:border-secondary hover:text-secondary transition-colors cursor-default"
+                className="home-industry-chip px-4 sm:px-5 py-2.5 rounded-full text-xs sm:text-sm font-medium transition-colors cursor-default"
               >
                 {industry}
               </span>
@@ -406,7 +409,7 @@ function Home() {
           <div className="text-center mt-12">
             <Link 
               to="/industries"
-              className="inline-flex items-center gap-2 text-secondary font-semibold hover:gap-3 transition-all"
+              className="home-panel-link inline-flex items-center gap-2 font-semibold hover:gap-3 transition-all"
             >
               See Industries We Serve <ArrowRight className="w-4 h-4" />
             </Link>
