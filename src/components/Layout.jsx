@@ -9,7 +9,7 @@ import { ChatWidget } from './chat/ChatWidget'
 const CASHFLOW_APP_URL =
   'https://cashpulse.ofstrideservices.com/cashflow/login'
 const VETERAN_CONNECT_APP_URL =
-  'https://blue-forest-031e54600.5.azurestaticapps.net/#top'
+  'https://veteran.ofstrideservices.com/'
 
 function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)

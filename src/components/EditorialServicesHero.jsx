@@ -41,7 +41,7 @@ const editorialSlides = [
     text: 'Veteran Connect helps employers find aligned talent with transparent job-match and ATS signals built for better decisions.',
     image: 'https://images.pexels.com/photos/3351448/pexels-photo-3351448.jpeg?auto=compress&cs=tinysrgb&w=2200',
     cta: 'Explore Veteran Connect',
-    href: 'https://blue-forest-031e54600.5.azurestaticapps.net/#top',
+    href: 'https://veteran.ofstrideservices.com/',
     visual: 'veteran',
   },
   {
